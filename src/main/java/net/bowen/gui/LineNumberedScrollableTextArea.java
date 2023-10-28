@@ -5,6 +5,7 @@ import java.awt.*;
 
 public class LineNumberedScrollableTextArea extends JScrollPane {
 
+    // Reference: https://www.tutorialspoint.com/how-can-we-display-the-line-numbers-inside-a-jtextarea-in-java
     public LineNumberedScrollableTextArea(Dimension preferredSize) {
         super();
         JTextArea textArea = new JTextArea(); // The component where you can type text.

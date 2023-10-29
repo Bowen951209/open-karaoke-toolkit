@@ -39,7 +39,13 @@ public class Main extends JFrame {
             viewport.setDisplayString(textArea.getText());
             viewport.repaint();
         });
-        textArea.setText("請由此編輯!");
+        textArea.setText(
+                """
+                請由此編輯!
+                這是第二行""")
+        ;
+
+        new Timer(10, (e)-> viewport.repaint()).start();
 
         lyricsPanel.add(textArea);
         add(lyricsPanel, BorderLayout.LINE_START);

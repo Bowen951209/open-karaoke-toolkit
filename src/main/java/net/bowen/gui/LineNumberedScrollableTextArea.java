@@ -5,12 +5,23 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Element;
 import java.awt.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class LineNumberedScrollableTextArea extends JScrollPane {
     private final JTextArea textArea, lineHead;
     private final StringBuilder lineStringBuilder;
+    private Set<Runnable> documentUpdateCallbacks;
     private int maxLine;
 
+    public String getText() {
+        return textArea.getText();
+    }
+
+    public void addDocumentUpdateCallback(Runnable e) {
+        if (documentUpdateCallbacks == null) documentUpdateCallbacks = new HashSet<>();
+        documentUpdateCallbacks.add(e);
+    }
 
     // Reference: https://www.tutorialspoint.com/how-can-we-display-the-line-numbers-inside-a-jtextarea-in-java
     public LineNumberedScrollableTextArea(Dimension preferredSize) {
@@ -27,29 +38,35 @@ public class LineNumberedScrollableTextArea extends JScrollPane {
         lineHead.setBackground(Color.BLACK);
         lineHead.setForeground(Color.WHITE);
         lineStringBuilder = new StringBuilder();
-        updateString();
+        documentUpdateCallback();
 
         textArea.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                updateString();
+                documentUpdateCallback();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                updateString();
+                documentUpdateCallback();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                updateString();
+                documentUpdateCallback();
             }
         });
 
         setRowHeaderView(lineHead);
     }
 
-    private void updateString() {
+    private void documentUpdateCallback() {
+        refreshLineHead();
+
+        if (documentUpdateCallbacks != null) documentUpdateCallbacks.forEach(Runnable::run);
+    }
+
+    private void refreshLineHead() {
         int caretPosition = textArea.getDocument().getLength();
         Element root = textArea.getDocument().getDefaultRootElement();
         int currentMaxLine = root.getElementIndex(caretPosition) + 1;

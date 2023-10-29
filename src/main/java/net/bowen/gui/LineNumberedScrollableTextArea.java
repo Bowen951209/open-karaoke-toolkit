@@ -14,6 +14,10 @@ public class LineNumberedScrollableTextArea extends JScrollPane {
     private Set<Runnable> documentUpdateCallbacks;
     private int maxLine;
 
+    public void setText(String s) {
+        textArea.setText(s);
+    }
+
     public String getText() {
         return textArea.getText();
     }

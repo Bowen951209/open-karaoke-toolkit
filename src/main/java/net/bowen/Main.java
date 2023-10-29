@@ -31,6 +31,7 @@ public class Main extends JFrame {
     public void addLyricsTextPanel() {
         JPanel lyricsPanel = new JPanel();
         lyricsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+
         LineNumberedScrollableTextArea textArea = new LineNumberedScrollableTextArea(
                 new Dimension((int) (this.getSize().width / 5f), (int) (this.getSize().height * 0.9f
                 )));
@@ -38,6 +39,8 @@ public class Main extends JFrame {
             viewport.setDisplayString(textArea.getText());
             viewport.repaint();
         });
+        textArea.setText("請由此編輯!");
+
         lyricsPanel.add(textArea);
         add(lyricsPanel, BorderLayout.LINE_START);
     }

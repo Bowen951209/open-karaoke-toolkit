@@ -1,11 +1,14 @@
 package net.bowen;
 
 import net.bowen.gui.LineNumberedScrollableTextArea;
+import net.bowen.gui.Viewport;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class Main extends JFrame {
+    private Viewport viewport;
+
     private Main(String title) {
         super(title);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -21,23 +24,21 @@ public class Main extends JFrame {
     }
 
     private void addViewPort() {
-        JPanel viewportPanel = new JPanel() {
-            @Override
-            public void paint(Graphics g) {
-                super.paint(g);
-                g.drawArc(0, 0, 50, 50, 0, 360);
-            }
-        };
-        viewportPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        add(viewportPanel, BorderLayout.CENTER);
+        viewport = new Viewport();
+        add(viewport, BorderLayout.CENTER);
     }
 
     public void addLyricsTextPanel() {
         JPanel lyricsPanel = new JPanel();
         lyricsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        lyricsPanel.add(new LineNumberedScrollableTextArea(
-                new Dimension((int) (this.getSize().width / 5f), (int) (this.getSize().height * 0.9f)
+        LineNumberedScrollableTextArea textArea = new LineNumberedScrollableTextArea(
+                new Dimension((int) (this.getSize().width / 5f), (int) (this.getSize().height * 0.9f
                 )));
+        textArea.addDocumentUpdateCallback(()->{
+            viewport.setDisplayString(textArea.getText());
+            viewport.repaint();
+        });
+        lyricsPanel.add(textArea);
         add(lyricsPanel, BorderLayout.LINE_START);
     }
 

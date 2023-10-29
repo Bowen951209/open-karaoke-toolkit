@@ -39,11 +39,9 @@ public class Main extends JFrame {
             viewport.setDisplayString(textArea.getText());
             viewport.repaint();
         });
-        textArea.setText(
-                """
+        textArea.setText("""
                 請由此編輯!
-                這是第二行""")
-        ;
+                這是第二行"""); // I use Chinese for just now, sorry to English speaker :)
 
         new Timer(10, (e)-> viewport.repaint()).start();
 

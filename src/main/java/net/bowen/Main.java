@@ -7,7 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Main extends JFrame {
-    private Viewport viewport;
+    private final JSplitPane mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    private final Viewport viewport = new Viewport();
 
     private Main(String title) {
         super(title);
@@ -17,15 +18,16 @@ public class Main extends JFrame {
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
         setLayout(new BorderLayout());
 
-        addViewPort();
+        add(mainSplitPane);
+
         addLyricsTextPanel();
+        addViewPort();
 
         setVisible(true);
     }
 
     private void addViewPort() {
-        viewport = new Viewport();
-        add(viewport, BorderLayout.CENTER);
+        mainSplitPane.add(viewport);
     }
 
     public void addLyricsTextPanel() {
@@ -46,7 +48,8 @@ public class Main extends JFrame {
         new Timer(10, (e)-> viewport.repaint()).start();
 
         lyricsPanel.add(textArea);
-        add(lyricsPanel, BorderLayout.LINE_START);
+//        add(lyricsPanel, BorderLayout.LINE_START);
+        mainSplitPane.add(lyricsPanel);
     }
 
     public static void main(String[] args) {

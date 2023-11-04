@@ -28,13 +28,11 @@ public class LineNumberedScrollableTextArea extends JScrollPane {
     }
 
     // Reference: https://www.tutorialspoint.com/how-can-we-display-the-line-numbers-inside-a-jtextarea-in-java
-    public LineNumberedScrollableTextArea(Dimension preferredSize) {
+    public LineNumberedScrollableTextArea() {
         super();
         textArea = new JTextArea(); // The component where you can type text.
 
-
         setViewportView(textArea); // Wrap the text area with scroll pane, so it becomes scrollable.
-        setPreferredSize(preferredSize);
 
         // View line number before each line.
         lineHead = new JTextArea();

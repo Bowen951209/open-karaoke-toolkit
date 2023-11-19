@@ -18,16 +18,16 @@ public class Main extends JFrame {
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
         setLayout(new BorderLayout());
 
-        JSplitPane textArea_viewportSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        textArea_viewportSplitPane.setPreferredSize(new Dimension(getWidth(), (int) (getHeight() * .8f)));
-        addTextArea(textArea_viewportSplitPane);
-        addViewPort(textArea_viewportSplitPane);
+        JSplitPane topSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        topSplitPane.setPreferredSize(new Dimension(getWidth(), (int) (getHeight() * .7f)));
+        addTextArea(topSplitPane);
+        addViewPort(topSplitPane);
 
-        JSplitPane timeline_splitPaneSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        timeline_splitPaneSplitPane.add(textArea_viewportSplitPane);
-        addTimeline(timeline_splitPaneSplitPane);
+        JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainSplitPane.add(topSplitPane);
+        addTimeline(mainSplitPane);
 
-        add(timeline_splitPaneSplitPane);
+        add(mainSplitPane);
 
 
         setVisible(true);

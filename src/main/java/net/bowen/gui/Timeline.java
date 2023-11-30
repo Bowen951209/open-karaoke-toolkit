@@ -2,13 +2,12 @@ package net.bowen.gui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.util.Objects;
 
 import static java.lang.System.currentTimeMillis;
 
 public class Timeline extends JPanel {
-    // TODO: 2023/11/15 Implement this class.
-
     private static final ImageIcon PLAY_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/play.png")));
     private static final ImageIcon PAUSE_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/pause.png")));
     private static final ImageIcon STOP_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/stop.png")));
@@ -28,6 +27,7 @@ public class Timeline extends JPanel {
     private static final int TIMER_DELAY = 10;
 
     private final Canvas canvas = new Canvas();
+    private final ControlPanel controlPanel = new ControlPanel();
 
     /**
      * The time the pointer is at in millisecond.
@@ -44,27 +44,57 @@ public class Timeline extends JPanel {
     public Timeline() {
         super();
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        setLayout(new GridLayout(0, 1)); // make child components full size
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        add(new ControlPanel());
+        add(controlPanel);
         add(getCanvasScrollPane());
     }
 
     public JScrollPane getCanvasScrollPane() {
-        if (this.scrollPane == null) { // if scrollPane == null, init it.
-            this.scrollPane = new JScrollPane(canvas);
-            this.scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        if (scrollPane == null) { // if scrollPane == null, init it.
+            scrollPane = new JScrollPane(canvas);
+            scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+
+            // Key listener
+            scrollPane.setFocusable(true);
+            scrollPane.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    scrollPane.requestFocus();
+                }
+            });
+            scrollPane.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    scrollPane.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    scrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                }
+            });
+            scrollPane.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_SPACE) controlPanel.playPauseButton.doClick();
+                }
+            });
         }
-        return this.scrollPane;
+        return scrollPane;
     }
 
     private class ControlPanel extends JPanel {
         JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
 
         public ControlPanel() {
-            setLayout(new FlowLayout(FlowLayout.LEFT));
+            setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, ICON_SIZE.height));
 
             playPauseButton.addActionListener(e -> {
+                scrollPane.requestFocus(); // we want to keep the timeline focused.
+
                 isPlaying = !isPlaying;
                 if (isPlaying)
                     timePlay();
@@ -75,6 +105,8 @@ public class Timeline extends JPanel {
 
             JButton restartButton = new JButton(STOP_BUTTON_ICON);
             restartButton.addActionListener(e -> {
+                scrollPane.requestFocus(); // we want to keep the timeline focused.
+
                 timeRestart();
                 canvas.repaint();
             });

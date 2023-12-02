@@ -1,0 +1,57 @@
+package net.bowen.audioUtils;
+
+import javax.sound.sampled.*;
+import java.io.IOException;
+import java.net.URL;
+
+public class Audio {
+    private final Clip clip;
+
+    private final long totalTime;
+
+    public long getTotalTime() {
+        return totalTime;
+    }
+
+    public Audio(URL src) {
+        try {
+            this.clip = AudioSystem.getClip();
+        } catch (LineUnavailableException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(src);
+            clip.open(audioInputStream);
+
+            AudioFormat format = audioInputStream.getFormat();
+            long frames = audioInputStream.getFrameLength();
+            totalTime = (long) ((float) frames / format.getFrameRate() * 1000);
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void play() {
+        clip.start();
+    }
+
+    public void pause() {
+        clip.stop();
+    }
+
+    /**
+     * Set the play time to zero.
+     */
+    public void zero() {
+        clip.setFramePosition(0);
+    }
+
+    /**
+     * @return The current playing time.
+     * */
+    public long getTimePosition() {
+        float timeScale = (float) clip.getLongFramePosition() / (float) clip.getFrameLength();
+        return (long) (timeScale * totalTime);
+    }
+}

@@ -1,11 +1,11 @@
 package net.bowen.gui;
 
+import net.bowen.system.SaveLoadManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Objects;
-
-import static java.lang.System.currentTimeMillis;
 
 public class Timeline extends JPanel {
     private static final ImageIcon PLAY_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/play.png")));
@@ -26,23 +26,27 @@ public class Timeline extends JPanel {
      */
     private static final int TIMER_DELAY = 10;
 
-    private final Canvas canvas = new Canvas();
+    private final Canvas canvas;
     private final ControlPanel controlPanel = new ControlPanel();
+    private final SaveLoadManager saveLoadManager;
 
-    /**
-     * The time the pointer is at in millisecond.
-     */
-    private float time;
-
-    private final Timer timer = new Timer(TIMER_DELAY);
+    private final Timer timer;
 
     private JScrollPane scrollPane;
 
     private boolean isPlaying;
+    private int pointerX;
 
 
-    public Timeline() {
+    public Timeline(SaveLoadManager saveLoadManager) {
         super();
+        this.saveLoadManager = saveLoadManager;
+        this.canvas = new Canvas();
+        this.timer = new Timer(TIMER_DELAY, (e) -> {
+            pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
+            canvas.repaint(pointerX - 10, 0, pointerX, canvas.getHeight()); // we need bigger clear area to clear properly.
+        });
+
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -85,7 +89,7 @@ public class Timeline extends JPanel {
         return scrollPane;
     }
 
-    private class ControlPanel extends JPanel {
+    private class ControlPanel extends JPanel{
         JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
 
         public ControlPanel() {
@@ -103,48 +107,59 @@ public class Timeline extends JPanel {
             });
             playPauseButton.setPreferredSize(ICON_SIZE);
 
-            JButton restartButton = new JButton(STOP_BUTTON_ICON);
-            restartButton.addActionListener(e -> {
-                scrollPane.requestFocus(); // we want to keep the timeline focused.
-
-                timeRestart();
-                canvas.repaint();
-            });
-            restartButton.setPreferredSize(ICON_SIZE);
+            JButton stopButton = getStopButton();
 
             add(playPauseButton);
-            add(restartButton);
+            add(stopButton);
+        }
+
+        private JButton getStopButton() {
+            JButton stopButton = new JButton(STOP_BUTTON_ICON);
+            stopButton.addActionListener(e -> {
+                scrollPane.requestFocus(); // we want to keep the timeline focused.
+
+                timeStop();
+
+                pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
+                canvas.repaint(pointerX, 0, pointerX, canvas.getHeight());
+            });
+            stopButton.setPreferredSize(ICON_SIZE);
+            return stopButton;
         }
 
         private void timePlay() {
             timer.start();
             playPauseButton.setIcon(PAUSE_BUTTON_ICON);
+            saveLoadManager.getLoadedAudio().play();
         }
 
         private void timePause() {
             timer.stop();
             playPauseButton.setIcon(PLAY_BUTTON_ICON);
+            saveLoadManager.getLoadedAudio().pause();
         }
 
-        private void timeRestart() {
+        private void timeStop() {
             isPlaying = false;
             timePause();
-            time = 0;
-
             getCanvasScrollPane().getHorizontalScrollBar().setValue(0);
+            saveLoadManager.getLoadedAudio().zero();
         }
     }
 
     private class Canvas extends JPanel {
+        public Canvas() {
+            setPreferredSize(new Dimension((int) (saveLoadManager.getLoadedAudio().getTotalTime() * PIXEL_TIME_RATIO), 0));
+        }
+
         @Override
         public void paint(Graphics g) {
-            super.paint(g);
             Graphics2D g2d = (Graphics2D) g;
             g2d.setColor(Color.LIGHT_GRAY);
             g2d.fillRect(0, 0, getWidth(), getHeight()); // background color
 
             drawSeparationLines(g2d);
-            drawPointer(g2d, time);
+            drawPointer(g2d);
         }
 
         private void drawSeparationLines(Graphics2D g2d) {
@@ -163,43 +178,9 @@ public class Timeline extends JPanel {
             }
         }
 
-        private void drawPointer(Graphics2D g2d, float time) {
+        private void drawPointer(Graphics2D g2d) {
             g2d.setColor(Color.RED);
-            int x = (int) (time * PIXEL_TIME_RATIO);
-            g2d.drawLine(x, 0, x, getHeight());
-        }
-    }
-
-    private class Timer extends javax.swing.Timer {
-        private static final int TIME_NuLL = 0;
-        private long previousSystemTime = TIME_NuLL;
-
-        public Timer(int delay) {
-            super(delay, null);
-            addActionListener((e) -> {
-                // Correct time
-                if (previousSystemTime == TIME_NuLL) previousSystemTime = currentTimeMillis();
-                time += currentTimeMillis() - previousSystemTime;
-
-                int reasonableWidth = (int) (time * PIXEL_TIME_RATIO);
-                if (reasonableWidth > canvas.getWidth()) {
-                    canvas.setPreferredSize(new Dimension(reasonableWidth, canvas.getHeight()));
-                    canvas.revalidate();
-
-                    JScrollBar scrollBar = getCanvasScrollPane().getHorizontalScrollBar();
-                    scrollBar.setValue(scrollBar.getMaximum());
-                }
-
-                canvas.repaint();
-
-                previousSystemTime = currentTimeMillis();
-            });
-        }
-
-        @Override
-        public void stop() {
-            super.stop();
-            previousSystemTime = TIME_NuLL;
+            g2d.drawLine(pointerX, 0, pointerX, getHeight());
         }
     }
 }

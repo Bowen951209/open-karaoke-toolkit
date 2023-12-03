@@ -6,14 +6,19 @@ import java.net.URL;
 
 public class Audio {
     private final Clip clip;
-
+    private final URL url;
     private final long totalTime;
 
     public long getTotalTime() {
         return totalTime;
     }
 
+    public URL getUrl() {
+        return url;
+    }
+
     public Audio(URL src) {
+        this.url = src;
         try {
             this.clip = AudioSystem.getClip();
         } catch (LineUnavailableException e) {

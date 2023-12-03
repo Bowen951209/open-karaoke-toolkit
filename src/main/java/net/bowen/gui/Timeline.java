@@ -1,10 +1,12 @@
 package net.bowen.gui;
 
+import net.bowen.audioUtils.BoxWaveform;
 import net.bowen.system.SaveLoadManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.util.Objects;
 
 public class Timeline extends JPanel {
@@ -29,6 +31,7 @@ public class Timeline extends JPanel {
     private final Canvas canvas;
     private final ControlPanel controlPanel = new ControlPanel();
     private final SaveLoadManager saveLoadManager;
+    private final BufferedImage waveImg;
 
     private final Timer timer;
 
@@ -46,6 +49,8 @@ public class Timeline extends JPanel {
             pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
             canvas.repaint(pointerX - 10, 0, pointerX, canvas.getHeight()); // we need bigger clear area to clear properly.
         });
+        this.waveImg = BoxWaveform.loadImage(saveLoadManager.getLoadedAudio().getUrl(),
+                new Dimension(canvas.getPreferredSize().width, 50), 1, new Color(5, 80, 20));
 
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -158,6 +163,7 @@ public class Timeline extends JPanel {
             g2d.setColor(Color.LIGHT_GRAY);
             g2d.fillRect(0, 0, getWidth(), getHeight()); // background color
 
+            g2d.drawImage(waveImg, 0, 0, getWidth(), getHeight(), null);
             drawSeparationLines(g2d);
             drawPointer(g2d);
         }

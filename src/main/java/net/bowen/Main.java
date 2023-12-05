@@ -10,8 +10,16 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 
 public class Main extends JFrame {
+    public static final String INIT_FRAME_TITLE = "Open Karaoke Toolkit";
+
     private final Viewport viewport = new Viewport();
     private final SaveLoadManager saveLoadManager = new SaveLoadManager(this);
+
+    private Timeline timeline;
+
+    public Timeline getTimeline() {
+        return timeline;
+    }
 
     private Main(String title) {
         super(title);
@@ -59,7 +67,7 @@ public class Main extends JFrame {
     }
 
     private void addTimeline(JComponent targetComponent) {
-        Timeline timeline = new Timeline(saveLoadManager);
+        timeline = new Timeline(saveLoadManager);
         targetComponent.add(timeline);
     }
 
@@ -73,7 +81,7 @@ public class Main extends JFrame {
         // load audio
         JMenuItem loadAudio = new JMenuItem("Load Audio");
         FileNameExtensionFilter wavExtensionFilter = new FileNameExtensionFilter("*.wav", "wav");
-        JFileChooser audioFileChooser = new JFileChooser();
+        JFileChooser audioFileChooser = new JFileChooser("src/main/resources/audios"); // for temporary path
         audioFileChooser.setFileFilter(wavExtensionFilter);
         loadAudio.addActionListener((e) -> {
             if (audioFileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
@@ -90,6 +98,6 @@ public class Main extends JFrame {
     }
 
     public static void main(String[] args) {
-        new Main("Open Karaoke Toolkit");
+        new Main(INIT_FRAME_TITLE);
     }
 }

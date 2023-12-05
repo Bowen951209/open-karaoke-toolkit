@@ -45,6 +45,10 @@ public class Audio {
         clip.stop();
     }
 
+    public void close() {
+        clip.close();
+    }
+
     /**
      * Set the play time to zero.
      */

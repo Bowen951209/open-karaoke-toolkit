@@ -22,7 +22,7 @@ public class Timeline extends JPanel {
      * The time interval between separation lines in milliseconds.
      */
     private static final int SEP_LINE_INTERVAL_MS = 500;
-    private static final float PIXEL_TIME_RATIO = (float) SEP_LINE_INTERVAL / (float) SEP_LINE_INTERVAL_MS;
+    public static final float PIXEL_TIME_RATIO = (float) SEP_LINE_INTERVAL / (float) SEP_LINE_INTERVAL_MS;
     /**
      * The delay time of {@link Timeline#timer}
      */
@@ -31,15 +31,21 @@ public class Timeline extends JPanel {
     private final Canvas canvas;
     private final ControlPanel controlPanel = new ControlPanel();
     private final SaveLoadManager saveLoadManager;
-    private final BufferedImage waveImg;
-
     private final Timer timer;
 
+    private BufferedImage waveImg;
     private JScrollPane scrollPane;
 
     private boolean isPlaying;
     private int pointerX;
 
+    public void setWaveImg(BufferedImage waveImg) {
+        this.waveImg = waveImg;
+    }
+
+    public Canvas getCanvas() {
+        return canvas;
+    }
 
     public Timeline(SaveLoadManager saveLoadManager) {
         super();
@@ -94,8 +100,30 @@ public class Timeline extends JPanel {
         return scrollPane;
     }
 
+    private void timePlay() {
+        timer.start();
+        controlPanel.playPauseButton.setIcon(PAUSE_BUTTON_ICON);
+        saveLoadManager.getLoadedAudio().play();
+    }
+
+    private void timePause() {
+        timer.stop();
+        controlPanel.playPauseButton.setIcon(PLAY_BUTTON_ICON);
+        saveLoadManager.getLoadedAudio().pause();
+    }
+
+    public void timeStop() {
+        isPlaying = false;
+        timePause();
+        getCanvasScrollPane().getHorizontalScrollBar().setValue(0);
+        saveLoadManager.getLoadedAudio().zero();
+
+        pointerX = 0;
+        canvas.repaint();
+    }
+
     private class ControlPanel extends JPanel{
-        JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
+        private final JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
 
         public ControlPanel() {
             setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -124,35 +152,13 @@ public class Timeline extends JPanel {
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
 
                 timeStop();
-
-                pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
-                canvas.repaint(pointerX, 0, pointerX, canvas.getHeight());
             });
             stopButton.setPreferredSize(ICON_SIZE);
             return stopButton;
         }
-
-        private void timePlay() {
-            timer.start();
-            playPauseButton.setIcon(PAUSE_BUTTON_ICON);
-            saveLoadManager.getLoadedAudio().play();
-        }
-
-        private void timePause() {
-            timer.stop();
-            playPauseButton.setIcon(PLAY_BUTTON_ICON);
-            saveLoadManager.getLoadedAudio().pause();
-        }
-
-        private void timeStop() {
-            isPlaying = false;
-            timePause();
-            getCanvasScrollPane().getHorizontalScrollBar().setValue(0);
-            saveLoadManager.getLoadedAudio().zero();
-        }
     }
 
-    private class Canvas extends JPanel {
+    public class Canvas extends JPanel {
         public Canvas() {
             setPreferredSize(new Dimension((int) (saveLoadManager.getLoadedAudio().getTotalTime() * PIXEL_TIME_RATIO), 0));
         }

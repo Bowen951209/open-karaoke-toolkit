@@ -22,3 +22,7 @@ test {
 application {
     mainClassName = 'net.bowen.Main'
 }
+
+tasks.withType(JavaCompile) {  
+    options.encoding = "UTF-8"  
+}

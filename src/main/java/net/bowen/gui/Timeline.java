@@ -53,6 +53,15 @@ public class Timeline extends JPanel {
         this.canvas = new Canvas();
         this.timer = new Timer(TIMER_DELAY, (e) -> {
             pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
+
+            JScrollBar scrollBar = getCanvasScrollPane().getHorizontalScrollBar();
+            int scrollX = scrollBar.getValue();
+            int distance = getWidth() - pointerX + scrollX;
+
+            // if less than 50 pixels from the end border || if we are viewing the further timeline and pointer is not in view
+            if (distance < 50 || distance > getWidth())
+                scrollBar.setValue(pointerX - getWidth() + 50); // set to 50 pixels from the end border
+
             canvas.repaint(pointerX - 10, 0, pointerX, canvas.getHeight()); // we need bigger clear area to clear properly.
         });
         this.waveImg = BoxWaveform.loadImage(saveLoadManager.getLoadedAudio().getUrl(),

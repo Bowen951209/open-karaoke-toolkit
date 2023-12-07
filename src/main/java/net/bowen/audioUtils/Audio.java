@@ -56,6 +56,11 @@ public class Audio {
         clip.setFramePosition(0);
     }
 
+    public void setTimeTo(int ms) {
+        float ratio = (float) ms / totalTime;
+        clip.setFramePosition((int) (ratio * clip.getFrameLength()));
+    }
+
     /**
      * @return The current playing time.
      * */

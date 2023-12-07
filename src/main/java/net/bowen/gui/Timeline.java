@@ -77,8 +77,22 @@ public class Timeline extends JPanel {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     scrollPane.requestFocus();
+                    float x = e.getX() + scrollPane.getHorizontalScrollBar().getValue();
+                    int ms = (int) (x / PIXEL_TIME_RATIO);
+
+                    saveLoadManager.getLoadedAudio().setTimeTo(ms);
+                    pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
+
+                    canvas.repaint();
                 }
             });
+            scrollPane.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    canvas.repaint();
+                }
+            });
+
             scrollPane.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusGained(FocusEvent e) {
@@ -122,7 +136,7 @@ public class Timeline extends JPanel {
         canvas.repaint();
     }
 
-    private class ControlPanel extends JPanel{
+    private class ControlPanel extends JPanel {
         private final JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
 
         public ControlPanel() {
@@ -171,7 +185,14 @@ public class Timeline extends JPanel {
 
             g2d.drawImage(waveImg, 0, 0, getWidth(), getHeight(), null);
             drawSeparationLines(g2d);
-            drawPointer(g2d);
+
+            // The current playing time pointer
+            drawPointer(g2d, Color.RED, pointerX);
+
+            // The cursor pointer
+            Point mousePosition = getMousePosition();
+            if (mousePosition != null)
+                drawPointer(g2d, Color.DARK_GRAY, mousePosition.x);
         }
 
         private void drawSeparationLines(Graphics2D g2d) {
@@ -190,9 +211,9 @@ public class Timeline extends JPanel {
             }
         }
 
-        private void drawPointer(Graphics2D g2d) {
-            g2d.setColor(Color.RED);
-            g2d.drawLine(pointerX, 0, pointerX, getHeight());
+        private void drawPointer(Graphics2D g2d, Color color, int x) {
+            g2d.setColor(color);
+            g2d.drawLine(x, 0, x, getHeight());
         }
     }
 }

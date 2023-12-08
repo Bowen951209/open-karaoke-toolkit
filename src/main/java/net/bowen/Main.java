@@ -16,8 +16,8 @@ public class Main extends JFrame {
     private static final FileNameExtensionFilter SER_EXT_FILTER = new FileNameExtensionFilter("*.ser", "ser");
 
 
-    private final Viewport viewport = new Viewport();
     private final SaveLoadManager saveLoadManager = new SaveLoadManager(this);
+    private final Viewport viewport = new Viewport(saveLoadManager);
 
     private Timeline timeline;
 
@@ -65,13 +65,11 @@ public class Main extends JFrame {
                 請由此編輯!
                 這是第二行"""); // I use Chinese for just now, sorry to English speaker :)
 
-        new Timer(10, (e) -> viewport.repaint()).start();
-
         targetComponent.add(textArea);
     }
 
     private void addTimeline(JComponent targetComponent) {
-        timeline = new Timeline(saveLoadManager);
+        timeline = new Timeline(saveLoadManager, viewport);
         targetComponent.add(timeline);
     }
 

@@ -13,6 +13,7 @@ public class Timeline extends JPanel {
     private static final ImageIcon PLAY_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/play.png")));
     private static final ImageIcon PAUSE_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/pause.png")));
     private static final ImageIcon STOP_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/stop.png")));
+    private static final ImageIcon MARK_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark.png")));
     private static final Dimension ICON_SIZE = new Dimension(PLAY_BUTTON_ICON.getIconHeight(), PLAY_BUTTON_ICON.getIconWidth());
     /**
      * The width between separation lines in pixel.
@@ -32,6 +33,7 @@ public class Timeline extends JPanel {
     private final ControlPanel controlPanel = new ControlPanel();
     private final SaveLoadManager saveLoadManager;
     private final Timer timer;
+    private final Viewport viewport;
 
     private BufferedImage waveImg;
     private JScrollPane scrollPane;
@@ -47,9 +49,10 @@ public class Timeline extends JPanel {
         return canvas;
     }
 
-    public Timeline(SaveLoadManager saveLoadManager) {
+    public Timeline(SaveLoadManager saveLoadManager, Viewport viewport) {
         super();
         this.saveLoadManager = saveLoadManager;
+        this.viewport = viewport;
         this.canvas = new Canvas();
         this.timer = new Timer(TIMER_DELAY, (e) -> {
             pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
@@ -63,6 +66,8 @@ public class Timeline extends JPanel {
                 scrollBar.setValue(pointerX - getWidth() + 50); // set to 50 pixels from the end border
 
             canvas.repaint(pointerX - 10, 0, pointerX, canvas.getHeight()); // we need bigger clear area to clear properly.
+
+            viewport.repaint();
         });
         this.waveImg = BoxWaveform.loadImage(saveLoadManager.getLoadedAudio().getUrl(),
                 new Dimension(canvas.getPreferredSize().width, 50), 1, new Color(5, 80, 20));
@@ -93,6 +98,7 @@ public class Timeline extends JPanel {
                     pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
 
                     canvas.repaint();
+                    viewport.repaint();
                 }
             });
             scrollPane.addMouseMotionListener(new MouseMotionAdapter() {
@@ -163,10 +169,9 @@ public class Timeline extends JPanel {
             });
             playPauseButton.setPreferredSize(ICON_SIZE);
 
-            JButton stopButton = getStopButton();
-
             add(playPauseButton);
-            add(stopButton);
+            add(getStopButton());
+            add(getMarkButton());
         }
 
         private JButton getStopButton() {
@@ -178,6 +183,19 @@ public class Timeline extends JPanel {
             });
             stopButton.setPreferredSize(ICON_SIZE);
             return stopButton;
+        }
+
+        private JButton getMarkButton() {
+            JButton btn = new JButton(MARK_BUTTON_ICON);
+            btn.addActionListener(e -> {
+                scrollPane.requestFocus(); // we want to keep the timeline focused.
+
+                long time = saveLoadManager.getLoadedAudio().getTimePosition();
+                saveLoadManager.getMarks().add(time);
+            });
+            btn.setPreferredSize(ICON_SIZE);
+
+            return btn;
         }
     }
 
@@ -194,6 +212,9 @@ public class Timeline extends JPanel {
 
             g2d.drawImage(waveImg, 0, 0, getWidth(), getHeight(), null);
             drawSeparationLines(g2d);
+
+            // Draw the marks
+            drawMarks(g2d);
 
             // The current playing time pointer
             drawPointer(g2d, Color.RED, pointerX);
@@ -223,6 +244,15 @@ public class Timeline extends JPanel {
         private void drawPointer(Graphics2D g2d, Color color, int x) {
             g2d.setColor(color);
             g2d.drawLine(x, 0, x, getHeight());
+        }
+
+        private void drawMarks(Graphics2D g2d) {
+            g2d.setColor(Color.YELLOW);
+            for (Long time : saveLoadManager.getMarks()) {
+                int x = (int) (time * PIXEL_TIME_RATIO);
+                g2d.drawImage(MARK_BUTTON_ICON.getImage(), x, 0, 10, 10, null);
+            }
+
         }
     }
 }

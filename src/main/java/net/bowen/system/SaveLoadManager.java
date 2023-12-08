@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import static net.bowen.gui.Timeline.PIXEL_TIME_RATIO;
 
@@ -28,6 +29,10 @@ public class SaveLoadManager {
 
     public Audio getLoadedAudio() {
         return loadedAudio;
+    }
+
+    public ArrayList<Long> getMarks() {
+        return data.marks;
     }
 
     public void setLoadedAudio(URL audio) {
@@ -98,5 +103,6 @@ public class SaveLoadManager {
 
     private static class Data implements Serializable {
         URL loadedAudioURL;
+        ArrayList<Long> marks = new ArrayList<>();
     }
 }

@@ -49,13 +49,6 @@ public class Audio {
         clip.close();
     }
 
-    /**
-     * Set the play time to zero.
-     */
-    public void zero() {
-        clip.setFramePosition(0);
-    }
-
     public void setTimeTo(int ms) {
         float ratio = (float) ms / totalTime;
         clip.setFramePosition((int) (ratio * clip.getFrameLength()));

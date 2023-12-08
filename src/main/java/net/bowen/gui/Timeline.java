@@ -139,7 +139,7 @@ public class Timeline extends JPanel {
         isPlaying = false;
         timePause();
         getCanvasScrollPane().getHorizontalScrollBar().setValue(0);
-        saveLoadManager.getLoadedAudio().zero();
+        saveLoadManager.getLoadedAudio().setTimeTo(0);
 
         pointerX = 0;
         canvas.repaint();

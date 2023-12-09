@@ -39,7 +39,9 @@ public class SaveLoadManager {
     }
 
     public void setLoadedAudio(URL audio) {
-        mainFrame.getTimeline().setDisplayFileName(new File(audio.getFile()).getName());
+        String path = audio.getPath();
+        String fileName = path.substring(path.lastIndexOf("/") + 1);
+        mainFrame.getTimeline().setDisplayFileName(fileName);
 
         if (loadedAudio != null)
             loadedAudio.close();

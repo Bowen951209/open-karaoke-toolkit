@@ -32,7 +32,7 @@ public class Timeline extends JPanel {
     private static final int TIMER_DELAY = 10;
 
     private final Canvas canvas;
-    private final ControlPanel controlPanel = new ControlPanel();
+    private final ControlPanel controlPanel;
     private final SaveLoadManager saveLoadManager;
     private final Timer timer;
     private final Viewport viewport;
@@ -47,6 +47,10 @@ public class Timeline extends JPanel {
         this.waveImg = waveImg;
     }
 
+    public void setDisplayFileName(String name) {
+        controlPanel.audioFileNameLabel.setText(name);
+    }
+
     public Canvas getCanvas() {
         return canvas;
     }
@@ -56,6 +60,7 @@ public class Timeline extends JPanel {
         this.saveLoadManager = saveLoadManager;
         this.viewport = viewport;
         this.canvas = new Canvas();
+        this.controlPanel = new ControlPanel();
         this.timer = new Timer(TIMER_DELAY, (e) -> {
             pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
 
@@ -166,6 +171,8 @@ public class Timeline extends JPanel {
     private class ControlPanel extends JPanel {
         private final JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
 
+        private final Label audioFileNameLabel = new Label();
+
         public ControlPanel() {
             setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, ICON_SIZE.height));
@@ -184,6 +191,7 @@ public class Timeline extends JPanel {
             add(playPauseButton);
             add(getStopButton());
             add(getMarkButton());
+            add(audioFileNameLabel);
         }
 
         private JButton getStopButton() {

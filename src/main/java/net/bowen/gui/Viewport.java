@@ -10,7 +10,6 @@ import java.util.ArrayList;
 
 public class Viewport extends JPanel {
     private final SaveLoadManager saveLoadManager;
-    private final ArrayList<Long> marks;
 
     private String displayString;
 
@@ -21,7 +20,6 @@ public class Viewport extends JPanel {
     public Viewport(SaveLoadManager saveLoadManager) {
         super();
         this.saveLoadManager = saveLoadManager;
-        this.marks = saveLoadManager.getMarks();
 
         setBorder(BorderFactory.createLineBorder(Color.black));
     }
@@ -85,6 +83,8 @@ public class Viewport extends JPanel {
     }
 
     private Rectangle getRectangle(int i, long time) {
+        ArrayList<Long> marks = saveLoadManager.getMarks();
+
         long lastWordEndTime = 0;
         long thisWordEndTime;
         long wordPeriod = 0;

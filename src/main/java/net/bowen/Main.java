@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.Objects;
 
 public class Main extends JFrame {
     public static final String INIT_FRAME_TITLE = "Open Karaoke Toolkit";
@@ -18,11 +19,25 @@ public class Main extends JFrame {
 
     private final SaveLoadManager saveLoadManager = new SaveLoadManager(this);
     private final Viewport viewport = new Viewport(saveLoadManager);
-
-    private Timeline timeline;
+    private final LineNumberedScrollableTextArea textArea;
+    private final Timeline timeline = new Timeline(saveLoadManager, viewport);
 
     public Timeline getTimeline() {
         return timeline;
+    }
+
+    public LineNumberedScrollableTextArea getTextArea() {
+        if (textArea != null) return textArea;
+
+        LineNumberedScrollableTextArea textArea = new LineNumberedScrollableTextArea();
+
+        textArea.addDocumentUpdateCallback(() -> {
+            viewport.setDisplayString(textArea.getText());
+            viewport.repaint();
+        });
+        textArea.setText(saveLoadManager.getText()); // I use Chinese for just now, sorry to English speaker :)
+
+        return textArea;
     }
 
     private Main(String title) {
@@ -37,40 +52,20 @@ public class Main extends JFrame {
 
         JSplitPane topSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         topSplitPane.setPreferredSize(new Dimension(getWidth(), (int) (getHeight() * .7f)));
-        addTextArea(topSplitPane);
-        addViewPort(topSplitPane);
+        this.textArea = getTextArea();
+        topSplitPane.add(textArea);
+        topSplitPane.add(viewport);
 
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         mainSplitPane.add(topSplitPane);
-        addTimeline(mainSplitPane);
+        mainSplitPane.add(timeline);
 
         add(mainSplitPane);
 
+        // Load the sample save file.
+        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.ser")));
 
         setVisible(true);
-    }
-
-    private void addViewPort(JComponent targetComponent) {
-        targetComponent.add(viewport);
-    }
-
-    private void addTextArea(JComponent targetComponent) {
-        LineNumberedScrollableTextArea textArea = new LineNumberedScrollableTextArea();
-
-        textArea.addDocumentUpdateCallback(() -> {
-            viewport.setDisplayString(textArea.getText());
-            viewport.repaint();
-        });
-        textArea.setText("""
-                請由此編輯!
-                這是第二行"""); // I use Chinese for just now, sorry to English speaker :)
-
-        targetComponent.add(textArea);
-    }
-
-    private void addTimeline(JComponent targetComponent) {
-        timeline = new Timeline(saveLoadManager, viewport);
-        targetComponent.add(timeline);
     }
 
     private void addMenuBar() {
@@ -107,7 +102,6 @@ public class Main extends JFrame {
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 saveLoadManager.load(selectedFile);
-                System.out.println("Loaded project: " + selectedFile);
             }
         });
         return loadProject;
@@ -126,7 +120,6 @@ public class Main extends JFrame {
                 }
 
                 saveLoadManager.saveFileAs(selectedFile);
-                System.out.println("Project saved to: " + selectedFile);
             }
         });
         return saveProject;
@@ -140,7 +133,6 @@ public class Main extends JFrame {
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 saveLoadManager.setLoadedAudio(selectedFile);
-                System.out.println("Loaded audio: " + selectedFile);
             }
         });
         return loadAudio;

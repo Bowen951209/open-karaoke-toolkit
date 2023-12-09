@@ -34,6 +34,9 @@ public class SaveLoadManager {
     public ArrayList<Long> getMarks() {
         return data.marks;
     }
+    public String getText() {
+        return data.text;
+    }
 
     public void setLoadedAudio(URL audio) {
         if (loadedAudio != null)
@@ -71,9 +74,13 @@ public class SaveLoadManager {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+
+        System.out.println("Loaded audio: " + f);
     }
 
     public void saveFileAs(File file) {
+        data.text = mainFrame.getTextArea().getText();
+
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
@@ -83,6 +90,8 @@ public class SaveLoadManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        System.out.println("Project saved to: " + file);
     }
 
     public void load(File file) {
@@ -99,10 +108,22 @@ public class SaveLoadManager {
         }
 
         setLoadedAudio(data.loadedAudioURL);
+        mainFrame.getTextArea().setText(data.text);
+
+        System.out.println("Loaded project: " + file);
+    }
+
+    public void load(URL url) {
+        try {
+            load(new File(url.toURI()));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static class Data implements Serializable {
         URL loadedAudioURL;
         ArrayList<Long> marks = new ArrayList<>();
+        String text = "";
     }
 }

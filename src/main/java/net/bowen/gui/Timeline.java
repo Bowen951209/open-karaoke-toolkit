@@ -1,6 +1,5 @@
 package net.bowen.gui;
 
-import net.bowen.audioUtils.BoxWaveform;
 import net.bowen.system.SaveLoadManager;
 
 import javax.swing.*;
@@ -72,8 +71,6 @@ public class Timeline extends JPanel {
 
             viewport.repaint();
         });
-        this.waveImg = BoxWaveform.loadImage(saveLoadManager.getLoadedAudio().getUrl(),
-                new Dimension(canvas.getPreferredSize().width, 50), 1, new Color(5, 80, 20));
 
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -218,10 +215,6 @@ public class Timeline extends JPanel {
 
     public class Canvas extends JPanel {
         private int selectedMark = -1;
-
-        public Canvas() {
-            setPreferredSize(new Dimension((int) (saveLoadManager.getLoadedAudio().getTotalTime() * PIXEL_TIME_RATIO), 0));
-        }
 
         @Override
         public void paint(Graphics g) {

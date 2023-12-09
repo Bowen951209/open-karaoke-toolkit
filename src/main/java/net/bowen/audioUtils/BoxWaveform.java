@@ -96,7 +96,6 @@ public class BoxWaveform {
 
             int i = 0;
             int bRead;
-//            System.out.println(samples.length);
             while ((bRead = in.read(buf)) > -1) {
 
                 for (int b = 0; b < bRead; ) {

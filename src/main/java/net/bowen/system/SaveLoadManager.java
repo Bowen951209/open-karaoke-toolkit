@@ -34,6 +34,7 @@ public class SaveLoadManager {
     public ArrayList<Long> getMarks() {
         return data.marks;
     }
+
     public String getText() {
         return data.text;
     }
@@ -48,11 +49,6 @@ public class SaveLoadManager {
 
         data.loadedAudioURL = audio;
         loadedAudio = new Audio(audio);
-        try {
-            mainFrame.setTitle(Main.INIT_FRAME_TITLE + " - *" + new File(audio.toURI()).getName());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
 
         Timeline timeline = mainFrame.getTimeline();
         if (timeline == null) return;
@@ -99,6 +95,9 @@ public class SaveLoadManager {
     }
 
     public void load(File file) {
+        mainFrame.setTitle(Main.INIT_FRAME_TITLE + " - " + file.getName());
+
+        // Load the serializable.
         FileInputStream fileInputStream;
         try {
             fileInputStream = new FileInputStream(file);

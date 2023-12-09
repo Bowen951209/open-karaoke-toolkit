@@ -16,6 +16,7 @@ public class Timeline extends JPanel {
     private static final ImageIcon STOP_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/stop.png")));
     private static final ImageIcon MARK_NORM_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_norm.png")));
     private static final ImageIcon MARK_END_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_end.png")));
+    private static final ImageIcon MARK_SELECTED_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_selected.png")));
     private static final Dimension ICON_SIZE = new Dimension(PLAY_BUTTON_ICON.getIconHeight(), PLAY_BUTTON_ICON.getIconWidth());
     /**
      * The width between separation lines in pixel.
@@ -96,8 +97,20 @@ public class Timeline extends JPanel {
                     float x = e.getX() + scrollPane.getHorizontalScrollBar().getValue();
                     int ms = (int) (x / PIXEL_TIME_RATIO);
 
-                    saveLoadManager.getLoadedAudio().setTimeTo(ms);
-                    pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
+                    switch (e.getButton()) {
+                        case MouseEvent.BUTTON1 -> {
+                            // If left click, Jump the time.
+                            saveLoadManager.getLoadedAudio().setTimeTo(ms);
+                            pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
+                        }
+
+                        case MouseEvent.BUTTON3 -> {
+                            // If right click, delete selected mark.
+                            if (canvas.selectedMark != -1) {
+                                saveLoadManager.getMarks().remove(canvas.selectedMark);
+                            }
+                        }
+                    }
 
                     canvas.repaint();
                     viewport.repaint();
@@ -204,6 +217,8 @@ public class Timeline extends JPanel {
     }
 
     public class Canvas extends JPanel {
+        private int selectedMark = -1;
+
         public Canvas() {
             setPreferredSize(new Dimension((int) (saveLoadManager.getLoadedAudio().getTotalTime() * PIXEL_TIME_RATIO), 0));
         }
@@ -253,22 +268,32 @@ public class Timeline extends JPanel {
         private void drawMarks(Graphics2D g2d) {
             g2d.setColor(Color.YELLOW);
             ArrayList<Long> marks = saveLoadManager.getMarks();
-//            for (Long time : saveLoadManager.getMarks()) {
+
+            selectedMark = -1;
             for (int i = 0; i < marks.size(); i++) {
                 long time = marks.get(i);
 
-                int iconWidth = 10;
+                int iconSize = 10;
                 // Make sure the icon draw position is on the very middle.
-                int x = (int) (time * PIXEL_TIME_RATIO) - iconWidth / 2;
+                int x = (int) (time * PIXEL_TIME_RATIO) - iconSize / 2;
+
+                // If mouse on icon, draw the selected icon.
+                Point mousePos = getMousePosition();
+                if (mousePos != null) {
+                    if (mousePos.x >= x && mousePos.x <= x + iconSize && mousePos.y <= iconSize) {
+                        selectedMark = i;
+                        g2d.drawImage(MARK_SELECTED_ICON.getImage(), x, 0, iconSize, iconSize, null);
+                        continue;
+                    }
+                }
 
                 // If the mark is the last mark, draw the end icon.
                 if (i != marks.size() - 1) {
-                    g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, iconWidth, 10, null);
+                    g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, iconSize, iconSize, null);
                 } else {
-                    g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconWidth, 10, null);
+                    g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconSize, iconSize, null);
                 }
             }
-
         }
     }
 }

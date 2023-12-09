@@ -190,7 +190,9 @@ public class Timeline extends JPanel {
             btn.addActionListener(e -> {
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
 
-                long time = saveLoadManager.getLoadedAudio().getTimePosition();
+                // don't know why when getting the audio play time would have precise error. So use another method to replace.
+                // long time = saveLoadManager.getLoadedAudio().getTimePosition();
+                long time = (long) ((float)pointerX / PIXEL_TIME_RATIO);
                 saveLoadManager.getMarks().add(time);
             });
             btn.setPreferredSize(ICON_SIZE);
@@ -249,8 +251,10 @@ public class Timeline extends JPanel {
         private void drawMarks(Graphics2D g2d) {
             g2d.setColor(Color.YELLOW);
             for (Long time : saveLoadManager.getMarks()) {
-                int x = (int) (time * PIXEL_TIME_RATIO);
-                g2d.drawImage(MARK_BUTTON_ICON.getImage(), x, 0, 10, 10, null);
+                int iconWidth = 10;
+                // Make sure the icon draw position is on the very middle.
+                int x = (int) (time * PIXEL_TIME_RATIO) - iconWidth / 2;
+                g2d.drawImage(MARK_BUTTON_ICON.getImage(), x, 0, iconWidth, 10, null);
             }
 
         }

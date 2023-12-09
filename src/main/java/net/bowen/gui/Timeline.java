@@ -7,13 +7,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Timeline extends JPanel {
     private static final ImageIcon PLAY_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/play.png")));
     private static final ImageIcon PAUSE_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/pause.png")));
     private static final ImageIcon STOP_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/stop.png")));
-    private static final ImageIcon MARK_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark.png")));
+    private static final ImageIcon MARK_NORM_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_norm.png")));
+    private static final ImageIcon MARK_END_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_end.png")));
     private static final Dimension ICON_SIZE = new Dimension(PLAY_BUTTON_ICON.getIconHeight(), PLAY_BUTTON_ICON.getIconWidth());
     /**
      * The width between separation lines in pixel.
@@ -186,13 +188,13 @@ public class Timeline extends JPanel {
         }
 
         private JButton getMarkButton() {
-            JButton btn = new JButton(MARK_BUTTON_ICON);
+            JButton btn = new JButton(MARK_NORM_BUTTON_ICON);
             btn.addActionListener(e -> {
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
 
                 // don't know why when getting the audio play time would have precise error. So use another method to replace.
                 // long time = saveLoadManager.getLoadedAudio().getTimePosition();
-                long time = (long) ((float)pointerX / PIXEL_TIME_RATIO);
+                long time = (long) ((float) pointerX / PIXEL_TIME_RATIO);
                 saveLoadManager.getMarks().add(time);
             });
             btn.setPreferredSize(ICON_SIZE);
@@ -250,11 +252,21 @@ public class Timeline extends JPanel {
 
         private void drawMarks(Graphics2D g2d) {
             g2d.setColor(Color.YELLOW);
-            for (Long time : saveLoadManager.getMarks()) {
+            ArrayList<Long> marks = saveLoadManager.getMarks();
+//            for (Long time : saveLoadManager.getMarks()) {
+            for (int i = 0; i < marks.size(); i++) {
+                long time = marks.get(i);
+
                 int iconWidth = 10;
                 // Make sure the icon draw position is on the very middle.
                 int x = (int) (time * PIXEL_TIME_RATIO) - iconWidth / 2;
-                g2d.drawImage(MARK_BUTTON_ICON.getImage(), x, 0, iconWidth, 10, null);
+
+                // If the mark is the last mark, draw the end icon.
+                if (i != marks.size() - 1) {
+                    g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, iconWidth, 10, null);
+                } else {
+                    g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconWidth, 10, null);
+                }
             }
 
         }

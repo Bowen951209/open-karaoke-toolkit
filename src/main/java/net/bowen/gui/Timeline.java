@@ -48,7 +48,9 @@ public class Timeline extends JPanel {
     }
 
     public void setDisplayFileName(String name) {
-        controlPanel.audioFileNameLabel.setText(name);
+        controlPanel.displayFileName = name;
+        controlPanel.textPanel.setPreferredSize(new Dimension(6 * name.length(), ICON_SIZE.height));
+        controlPanel.revalidate();
     }
 
     public Canvas getCanvas() {
@@ -68,11 +70,12 @@ public class Timeline extends JPanel {
             int scrollX = scrollBar.getValue();
             int distance = getWidth() - pointerX + scrollX;
 
-            // if less than 50 pixels from the end border || if we are viewing the further timeline and pointer is not in view
+            // if less than 50 pixels from the end border || if we are viewing the further timeline and the pointer is not in view
             if (distance < 50 || distance > getWidth())
                 scrollBar.setValue(pointerX - getWidth() + 50); // set to 50 pixels from the end border
 
-            canvas.repaint(pointerX - 10, 0, pointerX, canvas.getHeight()); // we need bigger clear area to clear properly.
+            // we need a bigger clear area to clear properly.
+            canvas.repaint(pointerX - 10, 0, pointerX, canvas.getHeight());
 
             viewport.repaint();
         });
@@ -101,13 +104,13 @@ public class Timeline extends JPanel {
 
                     switch (e.getButton()) {
                         case MouseEvent.BUTTON1 -> {
-                            // If left click, Jump the time.
+                            // If you left-click, Jump the time.
                             saveLoadManager.getLoadedAudio().setTimeTo(ms);
                             pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO);
                         }
 
                         case MouseEvent.BUTTON3 -> {
-                            // If right click, delete selected mark.
+                            // If you right-click, delete selected mark.
                             if (canvas.selectedMark != -1) {
                                 saveLoadManager.getMarks().remove(canvas.selectedMark);
                             }
@@ -170,12 +173,29 @@ public class Timeline extends JPanel {
 
     private class ControlPanel extends JPanel {
         private final JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
+        private final JPanel textPanel;
 
-        private final Label audioFileNameLabel = new Label();
+        private String displayFileName = "";
 
         public ControlPanel() {
-            setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            setMaximumSize(new Dimension(Integer.MAX_VALUE, ICON_SIZE.height));
+            Dimension size = new Dimension(Integer.MAX_VALUE, ICON_SIZE.height);
+            setLayout(new BorderLayout(0, 0));
+            setMaximumSize(size);
+
+            JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+
+            // I need a separate panel to stand on east to display playing audio.
+            // Simply adding a JLabel would have border problems, and thus the font size should be very tiny.
+            // I got a solution by drawing the string on ourselves, and it can be full space.
+            textPanel = new JPanel() {
+                @Override
+                public void paint(Graphics g) {
+                    super.paint(g); // This is necessary.(To clear)
+
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.drawString(displayFileName, 0, 10);
+                 }
+            };
 
             playPauseButton.addActionListener(e -> {
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
@@ -188,10 +208,11 @@ public class Timeline extends JPanel {
             });
             playPauseButton.setPreferredSize(ICON_SIZE);
 
-            add(playPauseButton);
-            add(getStopButton());
-            add(getMarkButton());
-            add(audioFileNameLabel);
+            buttonsPanel.add(playPauseButton);
+            buttonsPanel.add(getStopButton());
+            buttonsPanel.add(getMarkButton());
+            add(buttonsPanel, BorderLayout.WEST);
+            add(textPanel, BorderLayout.EAST);
         }
 
         private JButton getStopButton() {
@@ -210,7 +231,9 @@ public class Timeline extends JPanel {
             btn.addActionListener(e -> {
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
 
-                // don't know why when getting the audio play time would have precise error. So use another method to replace.
+                // don't know why when getting the audio play time would have precise error,
+                // so use another method to replace.
+
                 // long time = saveLoadManager.getLoadedAudio().getTimePosition();
                 long time = (long) ((float) pointerX / PIXEL_TIME_RATIO);
                 saveLoadManager.getMarks().add(time);

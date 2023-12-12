@@ -120,10 +120,21 @@ public class Timeline extends JPanel {
                     canvas.repaint();
                     viewport.repaint();
                 }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    canvas.isMouseDragging = false;
+                }
             });
             scrollPane.addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent e) {
+                    canvas.repaint();
+                }
+
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    canvas.isMouseDragging = true;
                     canvas.repaint();
                 }
             });
@@ -194,7 +205,7 @@ public class Timeline extends JPanel {
 
                     Graphics2D g2d = (Graphics2D) g;
                     g2d.drawString(displayFileName, 0, 10);
-                 }
+                }
             };
 
             playPauseButton.addActionListener(e -> {
@@ -246,6 +257,7 @@ public class Timeline extends JPanel {
 
     public class Canvas extends JPanel {
         private int selectedMark = -1;
+        private boolean isMouseDragging;
 
         @Override
         public void paint(Graphics g) {
@@ -293,7 +305,9 @@ public class Timeline extends JPanel {
             g2d.setColor(Color.YELLOW);
             ArrayList<Long> marks = saveLoadManager.getMarks();
 
-            selectedMark = -1;
+            if (!isMouseDragging) // Only if the mouse is not dragging to set to 0. This is for dragging control stability.
+                selectedMark = -1;
+
             for (int i = 0; i < marks.size(); i++) {
                 long time = marks.get(i);
 
@@ -301,11 +315,18 @@ public class Timeline extends JPanel {
                 // Make sure the icon draw position is on the very middle.
                 int x = (int) (time * PIXEL_TIME_RATIO) - iconSize / 2;
 
-                // If mouse on icon, draw the selected icon.
+                // If icon selected, draw the selected icon.
                 Point mousePos = getMousePosition();
                 if (mousePos != null) {
-                    if (mousePos.x >= x && mousePos.x <= x + iconSize && mousePos.y <= iconSize) {
+                    // The cursor should cover on the icon.
+                    boolean isCovered =
+                            !isMouseDragging && mousePos.x >= x && mousePos.x <= x + iconSize && mousePos.y <= iconSize;
+
+                    if (isCovered || selectedMark == i) { // selectedMark == i for dragging control stability.
                         selectedMark = i;
+                        if (isMouseDragging)
+                            marks.set(selectedMark, (long)((float) mousePos.x / PIXEL_TIME_RATIO));
+
                         g2d.drawImage(MARK_SELECTED_ICON.getImage(), x, 0, iconSize, iconSize, null);
                         continue;
                     }

@@ -24,7 +24,7 @@ public class Timeline extends JPanel {
     /**
      * The time interval between separation lines in milliseconds.
      */
-    private static final int SEP_LINE_INTERVAL_MS = 500;
+    private static final int SEP_LINE_INTERVAL_MS = 1000;
     public static final float PIXEL_TIME_RATIO = (float) SEP_LINE_INTERVAL / (float) SEP_LINE_INTERVAL_MS;
     /**
      * The delay time of {@link Timeline#timer}
@@ -284,15 +284,15 @@ public class Timeline extends JPanel {
             g2d.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
 
             int pointingPixel = 0; // the pixel we are current at
-            float second = 0; // the time we are current at in second.
+            int millisecond = 0; // the time we are current at in millisecond.
             while (pointingPixel < getWidth()) {
                 pointingPixel += SEP_LINE_INTERVAL;
-                second += SEP_LINE_INTERVAL_MS * 0.001f;
+                millisecond += SEP_LINE_INTERVAL_MS;
 
                 g2d.setColor(Color.GRAY);
                 g2d.drawLine(pointingPixel, 0, pointingPixel, getHeight());
                 g2d.setColor(Color.BLACK);
-                g2d.drawString(Float.toString(second), pointingPixel, 10);
+                g2d.drawString(toMinutesAndSecond(millisecond), pointingPixel, 10);
             }
         }
 
@@ -339,6 +339,13 @@ public class Timeline extends JPanel {
                     g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconSize, iconSize, null);
                 }
             }
+        }
+
+        private static String toMinutesAndSecond(int millis) {
+            int seconds = millis / 1000;
+            int minutes = seconds / 60;
+            seconds -= minutes * 60;
+            return minutes + "′ " + String.format("%02d", seconds) + "″";
         }
     }
 }

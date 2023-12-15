@@ -56,12 +56,11 @@ public class SaveLoadManager {
         Timeline.Canvas canvas = timeline.getCanvas();
 
 
-        int canvasWidth = (int) (getLoadedAudio().getTotalTime() * PIXEL_TIME_RATIO);
-        canvas.setPreferredSize(new Dimension(canvasWidth, 0));
+        int imgWidth = (int) (getLoadedAudio().getTotalTime() * PIXEL_TIME_RATIO * Timeline.SLIDER_MAX_VAL * 0.01f);
 
         mainFrame.getTimeline().setWaveImg(BoxWaveform.loadImage(
                 audio,
-                new Dimension(canvasWidth, 50), 1,
+                new Dimension(imgWidth, 50), 1,
                 new Color(5, 80, 20)));
 
         timeline.timeStop();

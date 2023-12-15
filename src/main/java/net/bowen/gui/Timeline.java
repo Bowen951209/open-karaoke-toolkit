@@ -32,6 +32,7 @@ public class Timeline extends JPanel {
      * The delay time of {@link Timeline#timer}
      */
     private static final int TIMER_DELAY = 10;
+    public static final int SLIDER_MAX_VAL = 500;
 
     private final Canvas canvas;
     private final ControlPanel controlPanel;
@@ -59,6 +60,14 @@ public class Timeline extends JPanel {
         return canvas;
     }
 
+    private int toX(long time) {
+        return (int) (time * PIXEL_TIME_RATIO * canvas.scale);
+    }
+
+    private int toTime(int x) {
+        return (int) ((float)x / (PIXEL_TIME_RATIO * canvas.scale));
+    }
+
     public Timeline(SaveLoadManager saveLoadManager, Viewport viewport) {
         super();
         this.saveLoadManager = saveLoadManager;
@@ -66,7 +75,7 @@ public class Timeline extends JPanel {
         this.canvas = new Canvas();
         this.controlPanel = new ControlPanel();
         this.timer = new Timer(TIMER_DELAY, (e) -> {
-            pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO * canvas.scale);
+            pointerX = toX(saveLoadManager.getLoadedAudio().getTimePosition());
 
             JScrollBar scrollBar = getCanvasScrollPane().getHorizontalScrollBar();
             int scrollX = scrollBar.getValue();
@@ -100,14 +109,14 @@ public class Timeline extends JPanel {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     scrollPane.requestFocus();
-                    float x = (e.getX() + scrollPane.getHorizontalScrollBar().getValue()) / canvas.scale;
-                    int ms = (int) (x / PIXEL_TIME_RATIO);
+                    int x = (e.getX() + scrollPane.getHorizontalScrollBar().getValue());
+                    int ms = toTime(x);
 
                     switch (e.getButton()) {
                         case MouseEvent.BUTTON1 -> {
                             // If you left-click, Jump the time.
                             saveLoadManager.getLoadedAudio().setTimeTo(ms);
-                            pointerX = (int) (saveLoadManager.getLoadedAudio().getTimePosition() * PIXEL_TIME_RATIO * canvas.scale);
+                            pointerX = toX(saveLoadManager.getLoadedAudio().getTimePosition());
                         }
 
                         case MouseEvent.BUTTON3 -> {
@@ -248,7 +257,7 @@ public class Timeline extends JPanel {
                 // so use another method to replace.
 
                 // long time = saveLoadManager.getLoadedAudio().getTimePosition();
-                long time = (long) ((float) pointerX / PIXEL_TIME_RATIO * canvas.scale);
+                long time = toTime(pointerX);
                 saveLoadManager.getMarks().add(time);
             });
             btn.setPreferredSize(ICON_SIZE);
@@ -257,7 +266,7 @@ public class Timeline extends JPanel {
         }
 
         private JSlider getSlider() {
-            JSlider slider = new JSlider(100, 500, 100);
+            JSlider slider = new JSlider(100, SLIDER_MAX_VAL, 100);
             slider.setPreferredSize(new Dimension(100, ICON_SIZE.height));
             SliderUI sliderUI = new BasicSliderUI() {
                 @Override
@@ -272,8 +281,7 @@ public class Timeline extends JPanel {
             slider.addChangeListener(e -> {
                 canvas.scale = (float) slider.getValue() * 0.01f;
                 long audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
-                canvas.setPreferredSize(new Dimension((int) (audioTime * PIXEL_TIME_RATIO * canvas.scale), getHeight()));
-                System.out.println(canvas.scale);
+                canvas.setPreferredSize(new Dimension(toX(audioTime), getHeight()));
                 canvas.revalidate();
                 scrollPane.requestFocus();
             });
@@ -341,7 +349,7 @@ public class Timeline extends JPanel {
 
                 int iconSize = 10;
                 // Make sure the icon draw position is on the very middle.
-                int x = (int) (time * PIXEL_TIME_RATIO * scale) - iconSize / 2;
+                int x = toX(time) - iconSize / 2;
 
                 // If icon selected, draw the selected icon.
                 Point mousePos = getMousePosition();
@@ -353,7 +361,7 @@ public class Timeline extends JPanel {
                     if (isCovered || selectedMark == i) { // selectedMark == i for dragging control stability.
                         selectedMark = i;
                         if (isMouseDragging)
-                            marks.set(selectedMark, (long)((float) mousePos.x / (PIXEL_TIME_RATIO * scale)));
+                            marks.set(selectedMark, (long) toTime(mousePos.x));
 
                         g2d.drawImage(MARK_SELECTED_ICON.getImage(), x, 0, iconSize, iconSize, null);
                         continue;

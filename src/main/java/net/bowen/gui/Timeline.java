@@ -273,7 +273,12 @@ public class Timeline extends JPanel {
                 public void paintThumb(Graphics g) {
                     Graphics2D g2d = (Graphics2D) g;
                     g2d.setColor(Color.DARK_GRAY);
-                    g2d.fillRect(thumbRect.x, thumbRect.y + 4, 5, 10);
+                    int valRange = slider.getMaximum() - slider.getMinimum();
+
+                    // We calculate the x ourselves rather than using thumbRect.x is because the latter's value seems to
+                    // be not accurate when the value is bigger.
+                    int x = (int) ((float) (slider.getValue() - slider.getMinimum()) / valRange * slider.getWidth());
+                    g2d.fillRect(x, thumbRect.y + 4, 5, 10);
                 }
             };
             slider.setUI(sliderUI);
@@ -284,6 +289,16 @@ public class Timeline extends JPanel {
                 canvas.setPreferredSize(new Dimension(toX(audioTime), getHeight()));
                 canvas.revalidate();
                 scrollPane.requestFocus();
+            });
+
+            slider.addMouseWheelListener(e -> slider.setValue(slider.getValue() + e.getWheelRotation()));
+            slider.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    int valRange = slider.getMaximum() - slider.getMinimum();
+                    int val = (int) ((float) e.getX() / slider.getWidth() * valRange + slider.getMinimum());
+                    slider.setValue(val);
+                }
             });
 
             return slider;

@@ -64,6 +64,7 @@ public class SaveLoadManager {
                 new Color(5, 80, 20)));
 
         timeline.timeStop();
+        canvas.setSize();
         canvas.revalidate();
     }
 

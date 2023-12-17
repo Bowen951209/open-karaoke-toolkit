@@ -101,6 +101,8 @@ public class Timeline extends JPanel {
         if (scrollPane == null) { // if scrollPane == null, init it.
             scrollPane = new JScrollPane(canvas);
             scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+            scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+            scrollPane.setMinimumSize(new Dimension(0, 100));
 
 
             // Key listener
@@ -282,23 +284,12 @@ public class Timeline extends JPanel {
                 public void paintThumb(Graphics g) {
                     Graphics2D g2d = (Graphics2D) g;
                     g2d.setColor(Color.DARK_GRAY);
-                    int valRange = slider.getMaximum() - slider.getMinimum();
-
-                    // We calculate the x ourselves rather than using thumbRect.x is because the latter's value seems to
-                    // be not accurate when the value is bigger.
-                    int x = (int) ((float) (slider.getValue() - slider.getMinimum()) / valRange * slider.getWidth());
-                    g2d.fillRect(x, thumbRect.y + 4, 5, 10);
+                    g2d.fillRect(thumbRect.x, thumbRect.y + 4, 5, 10);
                 }
             };
             slider.setUI(sliderUI);
 
-            slider.addChangeListener(e -> {
-                canvas.scale = (float) slider.getValue() * 0.01f;
-                long audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
-                canvas.setPreferredSize(new Dimension(toX(audioTime), getHeight()));
-                canvas.revalidate();
-                scrollPane.requestFocus();
-            });
+            slider.addChangeListener(e -> canvas.setSize());
 
             slider.addMouseWheelListener(e -> slider.setValue(slider.getValue() + e.getWheelRotation()));
             slider.addMouseListener(new MouseAdapter() {
@@ -399,6 +390,14 @@ public class Timeline extends JPanel {
                     g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconSize, iconSize, null);
                 }
             }
+        }
+
+        public void setSize() {
+            canvas.scale = (float) controlPanel.slider.getValue() * 0.01f;
+            long audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
+            canvas.setPreferredSize(new Dimension(toX(audioTime), getHeight()));
+            canvas.revalidate();
+            scrollPane.requestFocus();
         }
 
         private static String toMinutesAndSecond(int millis) {

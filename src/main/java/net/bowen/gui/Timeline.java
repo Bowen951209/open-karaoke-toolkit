@@ -148,6 +148,14 @@ public class Timeline extends JPanel {
                     canvas.repaint();
                 }
             });
+            scrollPane.addMouseWheelListener(new MouseAdapter() {
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    if (e.isControlDown()) {
+                        controlPanel.slider.setValue(controlPanel.slider.getValue() - e.getWheelRotation() * 5);
+                    }
+                }
+            });
 
             scrollPane.addFocusListener(new FocusAdapter() {
                 @Override
@@ -195,6 +203,7 @@ public class Timeline extends JPanel {
     private class ControlPanel extends JPanel {
         private final JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
         private final JPanel textPanel;
+        private final JSlider slider = getSlider();
 
         private String displayFileName = "";
 
@@ -232,7 +241,7 @@ public class Timeline extends JPanel {
             componentsPanel.add(playPauseButton);
             componentsPanel.add(getStopButton());
             componentsPanel.add(getMarkButton());
-            componentsPanel.add(getSlider());
+            componentsPanel.add(slider);
             add(componentsPanel, BorderLayout.WEST);
             add(textPanel, BorderLayout.EAST);
         }

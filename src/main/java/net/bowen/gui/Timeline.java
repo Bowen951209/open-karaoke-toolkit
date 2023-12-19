@@ -400,17 +400,32 @@ public class Timeline extends JPanel {
 
                     if (isCovered || selectedMark == i) { // selectedMark == i for dragging control stability.
                         selectedMark = i;
-                        if (isMouseDragging)
-                            marks.set(selectedMark, (long) toTime(mousePos.x));
+                        if (isMouseDragging) {
+                            // Make sure user's not dragging out of available position.
+                            long t = toTime(mousePos.x);
+                            long lastT = i == 0 ? 0 : marks.get(i - 1);
+                            long nextT = i == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(i + 1);
+                            if (t < lastT)
+                                marks.set(i, lastT);
+                            else //noinspection ManualMinMaxCalculation
+                                if (t > nextT)
+                                    marks.set(i, nextT);
+                                else
+                                    marks.set(i, t);
+                        }
 
                         g2d.drawImage(MARK_SELECTED_ICON.getImage(), x, 0, iconSize, iconSize, null);
                         continue;
                     }
                 }
 
-                // If the mark is the last mark, draw the end icon.
+                // Draw the mark image. If the mark is the last mark, draw the special end icon.
                 if (i != marks.size() - 1) {
                     g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, iconSize, iconSize, null);
+                    g2d.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 8));
+
+                    g2d.setColor(Color.BLACK);
+                    g2d.drawString(Integer.toString(i), x + 3, 8);
                 } else {
                     g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconSize, iconSize, null);
                 }

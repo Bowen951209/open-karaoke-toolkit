@@ -46,28 +46,6 @@ public class Timeline extends JPanel {
     private boolean isPlaying;
     private int pointerX;
 
-    public void setWaveImg(BufferedImage waveImg) {
-        this.waveImg = waveImg;
-    }
-
-    public void setDisplayFileName(String name) {
-        controlPanel.displayFileName = name;
-        controlPanel.textPanel.setPreferredSize(new Dimension(6 * name.length(), ICON_SIZE.height));
-        controlPanel.revalidate();
-    }
-
-    public Canvas getCanvas() {
-        return canvas;
-    }
-
-    private int toX(long time) {
-        return (int) (time * PIXEL_TIME_RATIO * canvas.scale);
-    }
-
-    private int toTime(int x) {
-        return (int) ((float) x / (PIXEL_TIME_RATIO * canvas.scale));
-    }
-
     public Timeline(SaveLoadManager saveLoadManager, Viewport viewport) {
         super();
         this.saveLoadManager = saveLoadManager;
@@ -95,6 +73,20 @@ public class Timeline extends JPanel {
 
         add(controlPanel);
         add(getCanvasScrollPane());
+    }
+
+    public void setWaveImg(BufferedImage waveImg) {
+        this.waveImg = waveImg;
+    }
+
+    public void setDisplayFileName(String name) {
+        controlPanel.displayFileName = name;
+        controlPanel.textPanel.setPreferredSize(new Dimension(6 * name.length(), ICON_SIZE.height));
+        controlPanel.revalidate();
+    }
+
+    public Canvas getCanvas() {
+        return canvas;
     }
 
     public JScrollPane getCanvasScrollPane() {
@@ -189,6 +181,14 @@ public class Timeline extends JPanel {
             });
         }
         return scrollPane;
+    }
+
+    private int toX(long time) {
+        return (int) (time * PIXEL_TIME_RATIO * canvas.scale);
+    }
+
+    private int toTime(int x) {
+        return (int) ((float) x / (PIXEL_TIME_RATIO * canvas.scale));
     }
 
     private void timePlay() {

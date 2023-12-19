@@ -93,7 +93,6 @@ public class Timeline extends JPanel {
         if (scrollPane == null) { // if scrollPane == null, init it.
             scrollPane = new JScrollPane(canvas);
             scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-            scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
             scrollPane.setMinimumSize(new Dimension(0, 100));
 
 
@@ -335,6 +334,16 @@ public class Timeline extends JPanel {
         private int selectedMark = -1;
         private boolean isMouseDragging;
 
+        public Canvas() {
+            addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    setSize();
+                    Timeline.this.revalidate();
+                }
+            });
+        }
+
         @Override
         public void paint(Graphics g) {
             Graphics2D g2d = (Graphics2D) g;
@@ -435,7 +444,8 @@ public class Timeline extends JPanel {
         public void setSize() {
             canvas.scale = (float) controlPanel.slider.getValue() * 0.01f;
             long audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
-            canvas.setPreferredSize(new Dimension(toX(audioTime), getHeight()));
+            // I don't know why it's ICON_SIZE.height * 2, but it works.
+            canvas.setPreferredSize(new Dimension(toX(audioTime), getCanvasScrollPane().getHeight() - ICON_SIZE.height * 2));
             canvas.revalidate();
             scrollPane.requestFocus();
         }

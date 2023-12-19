@@ -65,7 +65,7 @@ public class Timeline extends JPanel {
     }
 
     private int toTime(int x) {
-        return (int) ((float)x / (PIXEL_TIME_RATIO * canvas.scale));
+        return (int) ((float) x / (PIXEL_TIME_RATIO * canvas.scale));
     }
 
     public Timeline(SaveLoadManager saveLoadManager, Viewport viewport) {
@@ -137,16 +137,27 @@ public class Timeline extends JPanel {
                 public void mouseReleased(MouseEvent e) {
                     canvas.isMouseDragging = false;
                 }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    controlPanel.timeLabel.setText("");
+                }
             });
             scrollPane.addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent e) {
+                    int time = toTime(e.getX() + scrollPane.getHorizontalScrollBar().getValue());
+                    controlPanel.timeLabel.setText(toMinutesAndSecond(time, 2));
+
                     canvas.repaint();
                 }
 
                 @Override
                 public void mouseDragged(MouseEvent e) {
                     canvas.isMouseDragging = true;
+                    int time = toTime(e.getX() + scrollPane.getHorizontalScrollBar().getValue());
+                    controlPanel.timeLabel.setText(toMinutesAndSecond(time, 2));
+
                     canvas.repaint();
                 }
             });
@@ -202,10 +213,23 @@ public class Timeline extends JPanel {
         canvas.repaint();
     }
 
+    /**
+     * @param d Number of digits after decimal point.
+     */
+    private static String toMinutesAndSecond(int millis, int d) {
+        float seconds = millis * .001f;
+        int minutes = (int) (seconds / 60);
+        seconds -= minutes * 60;
+        String format = d == 0 ? "%02.0f" : "%02." + d + "f";
+
+        return minutes + ":" + String.format(format, seconds);
+    }
+
     private class ControlPanel extends JPanel {
         private final JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
         private final JPanel textPanel;
         private final JSlider slider = getSlider();
+        private final JLabel timeLabel = new JLabel();
 
         private String displayFileName = "";
 
@@ -244,6 +268,7 @@ public class Timeline extends JPanel {
             componentsPanel.add(getStopButton());
             componentsPanel.add(getMarkButton());
             componentsPanel.add(slider);
+            componentsPanel.add(timeLabel);
             add(componentsPanel, BorderLayout.WEST);
             add(textPanel, BorderLayout.EAST);
         }
@@ -343,7 +368,7 @@ public class Timeline extends JPanel {
                 g2d.setColor(Color.GRAY);
                 g2d.drawLine(pointingPixel, 0, pointingPixel, getHeight());
                 g2d.setColor(Color.BLACK);
-                g2d.drawString(toMinutesAndSecond(millisecond), pointingPixel, 10);
+                g2d.drawString(toMinutesAndSecond(millisecond, 0), pointingPixel, 10);
             }
         }
 
@@ -398,13 +423,6 @@ public class Timeline extends JPanel {
             canvas.setPreferredSize(new Dimension(toX(audioTime), getHeight()));
             canvas.revalidate();
             scrollPane.requestFocus();
-        }
-
-        private static String toMinutesAndSecond(int millis) {
-            int seconds = millis / 1000;
-            int minutes = seconds / 60;
-            seconds -= minutes * 60;
-            return minutes + "′ " + String.format("%02d", seconds) + "″";
         }
     }
 }

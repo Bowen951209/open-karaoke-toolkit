@@ -137,9 +137,6 @@ public class Timeline extends JPanel {
             scrollPane.addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent e) {
-                    int time = toTime(e.getX() + scrollPane.getHorizontalScrollBar().getValue());
-                    controlPanel.timeLabel.setText(toMinutesAndSecond(time, 2));
-
                     canvas.repaint();
                 }
 
@@ -359,10 +356,14 @@ public class Timeline extends JPanel {
             // The current playing time pointer
             drawPointer(g2d, Color.RED, pointerX);
 
-            // The cursor pointer
+            // The cursor pointer & update label
             Point mousePosition = getMousePosition();
-            if (mousePosition != null)
+            if (mousePosition != null) {
+                int time = toTime(getMousePosition().x);
+                controlPanel.timeLabel.setText(toMinutesAndSecond(time, 2));
+
                 drawPointer(g2d, Color.DARK_GRAY, mousePosition.x);
+            }
         }
 
         private void drawSeparationLines(Graphics2D g2d) {

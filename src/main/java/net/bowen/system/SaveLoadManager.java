@@ -40,15 +40,15 @@ public class SaveLoadManager {
     }
 
     public void setLoadedAudio(URL audio) {
-        String path = audio.getPath();
-        String fileName = path.substring(path.lastIndexOf("/") + 1);
-        mainFrame.getTimeline().setDisplayFileName(fileName);
-
         if (loadedAudio != null)
             loadedAudio.close();
 
         data.loadedAudioURL = audio;
         loadedAudio = new Audio(audio);
+
+        String path = audio.getPath();
+        String fileName = path.substring(path.lastIndexOf("/") + 1);
+        mainFrame.getTimeline().setDisplayFileName(fileName);
 
         Timeline timeline = mainFrame.getTimeline();
         if (timeline == null) return;

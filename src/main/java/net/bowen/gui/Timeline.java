@@ -1,5 +1,6 @@
 package net.bowen.gui;
 
+import net.bowen.audioUtils.Audio;
 import net.bowen.system.SaveLoadManager;
 
 import javax.swing.*;
@@ -80,7 +81,11 @@ public class Timeline extends JPanel {
     }
 
     public void setDisplayFileName(String name) {
+        Audio audio = saveLoadManager.getLoadedAudio();
+        String totalTime = toMinutesAndSecond((int) audio.getTotalTime(), 0);
+        name += "(" + totalTime + ")";
         controlPanel.displayFileName = name;
+
         controlPanel.textPanel.setPreferredSize(new Dimension(6 * name.length(), ICON_SIZE.height));
         controlPanel.revalidate();
     }

@@ -364,7 +364,7 @@ public class Timeline extends JPanel {
             // The cursor pointer & update label
             Point mousePosition = getMousePosition();
             if (mousePosition != null) {
-                int time = toTime(getMousePosition().x);
+                int time = toTime(mousePosition.x);
                 controlPanel.timeLabel.setText(toMinutesAndSecond(time, 2));
 
                 drawPointer(g2d, Color.DARK_GRAY, mousePosition.x);
@@ -403,8 +403,26 @@ public class Timeline extends JPanel {
                 long time = marks.get(i);
 
                 int iconSize = 10;
+                int x = toX(time);
+
+                // Draw the gaps.
+                if (i > 0) {
+                    // x is applied to some adjusts to avoid covering the marks.
+                    int lastX = toX(marks.get(i - 1)) + iconSize / 2 - 1;
+                    int width = x - lastX - iconSize / 2 + 1;
+                    int height = 15;
+                    Font f = new Font(Font.SANS_SERIF, Font.BOLD, Math.min(height - 2, width));
+                    g2d.setColor(Color.WHITE);
+                    g2d.fillRect(lastX, 0, width, height);
+
+                    g2d.setColor(Color.BLACK);
+                    g2d.setFont(f);
+                    String s = String.valueOf(saveLoadManager.getText().charAt(i - 1));
+                    g2d.drawString(s, lastX + width / 2 - f.getSize() / 2, 10); // x is at the middle.
+                }
+
                 // Make sure the icon draw position is on the very middle.
-                int x = toX(time) - iconSize / 2;
+                x -= iconSize / 2;
 
                 // If icon selected, draw the selected icon.
                 Point mousePos = getMousePosition();

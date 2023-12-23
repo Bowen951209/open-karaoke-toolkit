@@ -99,7 +99,7 @@ public class Timeline extends JPanel {
             scrollPane = new JScrollPane(canvas);
             scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
             scrollPane.setMinimumSize(new Dimension(0, 100));
-
+            scrollPane.getHorizontalScrollBar().setUnitIncrement(15);
 
             // Key listener
             scrollPane.setFocusable(true);
@@ -157,8 +157,13 @@ public class Timeline extends JPanel {
             scrollPane.addMouseWheelListener(new MouseAdapter() {
                 @Override
                 public void mouseWheelMoved(MouseWheelEvent e) {
+                    scrollPane.setWheelScrollingEnabled(true);
+
                     if (e.isControlDown()) {
-                        controlPanel.slider.setValue(controlPanel.slider.getValue() - e.getWheelRotation() * 5);
+                        scrollPane.setWheelScrollingEnabled(false);
+
+                        JScrollBar scrollBar = scrollPane.getHorizontalScrollBar();
+                        controlPanel.sliderScale(-e.getWheelRotation(), e.getX() + scrollBar.getValue());
                     }
                 }
             });
@@ -322,7 +327,7 @@ public class Timeline extends JPanel {
 
             slider.addChangeListener(e -> canvas.setSize());
 
-            slider.addMouseWheelListener(e -> slider.setValue(slider.getValue() + e.getWheelRotation()));
+            slider.addMouseWheelListener(e -> sliderScale(e.getWheelRotation()));
             slider.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -333,6 +338,24 @@ public class Timeline extends JPanel {
             });
 
             return slider;
+        }
+
+        private void sliderScale(int orientation) {
+            int sliderSpeed = 10;
+            slider.setValue(slider.getValue() + orientation * sliderSpeed);
+        }
+
+        /**
+         * This method will ensure that we are focus on the time of the original specified x pos.
+         * @param x x position of the whole length of canvas.
+         * */
+        private void sliderScale(int orientation, int x) {
+            int time = toTime(x);
+            sliderScale(orientation);
+            int newX = toX(time);
+
+            JScrollBar scrollBar = getCanvasScrollPane().getHorizontalScrollBar();
+            scrollBar.setValue(scrollBar.getValue() + (newX - x));
         }
     }
 

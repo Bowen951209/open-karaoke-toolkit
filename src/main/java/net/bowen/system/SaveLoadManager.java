@@ -35,8 +35,16 @@ public class SaveLoadManager {
         return data.marks;
     }
 
+    public void setText(String text) {
+        data.text = text;
+    }
+
     public String getText() {
         return data.text;
+    }
+
+    public String getTextWithNoReturnSymbol() {
+        return data.text.replace("\n", "");
     }
 
     public void setLoadedAudio(URL audio) {

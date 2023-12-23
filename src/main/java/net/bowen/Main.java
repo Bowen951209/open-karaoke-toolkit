@@ -32,8 +32,10 @@ public class Main extends JFrame {
         LineNumberedScrollableTextArea textArea = new LineNumberedScrollableTextArea();
 
         textArea.addDocumentUpdateCallback(() -> {
+            saveLoadManager.setText(textArea.getText());
             viewport.setDisplayString(textArea.getText());
             viewport.repaint();
+            timeline.getCanvas().repaint();
         });
         textArea.setText(saveLoadManager.getText()); // I use Chinese for just now, sorry to English speaker :)
 

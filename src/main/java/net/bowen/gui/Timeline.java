@@ -424,8 +424,14 @@ public class Timeline extends JPanel {
             g2d.setColor(Color.YELLOW);
             ArrayList<Long> marks = saveLoadManager.getMarks();
 
-            if (!isMouseDragging) // Only if the mouse is not dragging to set to 0. This is for dragging control stability.
+            // Only if the mouse is not dragging to set to -1. This is for dragging control stability.
+            if (!isMouseDragging) {
                 selectedMark = -1;
+
+                // Restore mouse appearance.
+                Cursor dCursor = Cursor.getDefaultCursor();
+                setCursor(dCursor);
+            }
 
             for (int i = 0; i < marks.size(); i++) {
                 long time = marks.get(i);
@@ -474,6 +480,12 @@ public class Timeline extends JPanel {
 
                     if (isCovered || selectedMark == i) { // selectedMark == i for dragging control stability.
                         selectedMark = i;
+
+                        // Set mouse appearance.
+                        Cursor hMoveCursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
+                        setCursor(hMoveCursor);
+
+                        // Handle dragging.
                         if (isMouseDragging) {
                             // Make sure user's not dragging out of available position.
                             long t = toTime(mousePos.x);

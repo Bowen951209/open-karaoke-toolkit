@@ -300,12 +300,8 @@ public class Timeline extends JPanel {
 
                 // long time = saveLoadManager.getLoadedAudio().getTimePosition();
                 ArrayList<Long> marks = saveLoadManager.getMarks();
-                boolean canCarryMore = marks.size() - 1 < saveLoadManager.getText().length();
-
-                if (canCarryMore) {
-                    long time = toTime(pointerX);
-                    marks.add(time);
-                }
+                long time = toTime(pointerX);
+                marks.add(time);
             });
             btn.setPreferredSize(ICON_SIZE);
 
@@ -433,27 +429,30 @@ public class Timeline extends JPanel {
                 setCursor(dCursor);
             }
 
-            for (int i = 0; i < marks.size(); i++) {
+            for (int i = 0, wordIndex = -1; i < marks.size(); i++, wordIndex++) {
                 long time = marks.get(i);
 
                 int iconSize = 10;
                 int x = toX(time);
 
-
-                // Draw the gaps.
+                // -----Draw the gaps:-----
                 // First to reallocate marks size if the number of marks is too many.
-                String text = saveLoadManager.getTextWithNoReturnSymbol();
-                while (marks.size() > text.length() + 1) {
+                // (This will happen if the user delete words and influenced the exist marks.)
+                while (!saveLoadManager.canAddMoreMarks()) {
                     marks.remove(marks.size() - 1);
                 }
-                if (text.isEmpty()) {
+                if (saveLoadManager.getTextList().isEmpty()) {
                     marks.clear();
                     canvas.repaint();
                 }
 
                 // Then draw the rects and strings.
                 if (i > 0) {
-                    String s = String.valueOf(text.charAt(i - 1));
+                    String s = saveLoadManager.getTextList().get(wordIndex);
+                    if (s.equals("\n")) {
+                        wordIndex++;
+                        s = saveLoadManager.getTextList().get(wordIndex);
+                    }
 
                     // x is applied to some adjusts to avoid covering the marks.
                     int lastX = toX(marks.get(i - 1)) + iconSize / 2 - 1;
@@ -465,7 +464,7 @@ public class Timeline extends JPanel {
 
                     g2d.setColor(Color.BLACK);
                     g2d.setFont(f);
-                    g2d.drawString(s, lastX + width / 2 - f.getSize() / 2, 10); // x is at the middle.
+                    g2d.drawString(s, lastX + width / 2 - f.getSize() * s.length() / 2, 10); // x is at the middle.
                 }
 
                 // Make sure the icon draw position is on the very middle.

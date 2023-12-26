@@ -9,13 +9,11 @@ import java.awt.geom.Area;
 import java.util.ArrayList;
 
 public class Viewport extends JPanel {
+    private static final Font defaultFont = new Font(Font.SANS_SERIF, Font.BOLD, 50);
+    private static final Font samllFont = new Font(Font.SANS_SERIF, Font.BOLD, 40);
+    private static final Point linkedWordTrans = new Point(defaultFont.getSize(), 0);
+
     private final SaveLoadManager saveLoadManager;
-
-    private String displayString;
-
-    public void setDisplayString(String s) {
-        this.displayString = s;
-    }
 
     public Viewport(SaveLoadManager saveLoadManager) {
         super();
@@ -29,72 +27,78 @@ public class Viewport extends JPanel {
         super.paint(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.translate(50, 250); // translate to initial position.
+        g2d.translate(0, 50); // translate to initial position.
 
         // Draw the string.
-        if (displayString != null) {
+        if (saveLoadManager.getText() != null) {
             drawText(g2d);
         }
     }
 
 
     private void drawText(Graphics2D g2d) {
-        Font font = new Font(Font.SANS_SERIF, Font.BOLD, 50);
         g2d.setStroke(new BasicStroke(1));
 
         long time = saveLoadManager.getLoadedAudio().getTimePosition();
 
         // Draw strings.
-        String[] lines = displayString.split("\n");
-        for (int i = 0, index = 0; i < lines.length; i++) { // for each line of text
-            String line = lines[i];
+        int endMarkIndex = 1;
+        for (String s : saveLoadManager.getTextList()) {
+            // If no available mark for this word, break.
+            if (saveLoadManager.getMarks().size() - 1 < endMarkIndex)
+                break;
 
-            // for each char in the string
-            for (int j = 0; j < line.length(); j++) {
-                String single = String.valueOf(line.charAt(j));
-                // Get the glyph vector.
-                GlyphVector glyphVector = font.createGlyphVector(g2d.getFontRenderContext(), single);
-
-                // The shape of the font
-                Shape fontShape = glyphVector.getGlyphOutline(0);
-
-                // Set word space interval.
-                g2d.translate(font.getSize(), 0);
-
-                // The rectangle needs to consider the time point of the mark
-                Rectangle colorRect = getRectangle(index, time);
-                index++;
-
-                // Intersection area of colorRect and font Shape.
-                Area intersectArea = new Area(fontShape);
-                intersectArea.intersect(new Area(colorRect));
-
-                // Fill
-                g2d.setColor(Color.BLUE);
-                g2d.fill(intersectArea);
-
-                // Border
-                g2d.setColor(Color.BLACK);
-                g2d.draw(fontShape);
+            // If meet \n, next line.
+            if (s.equals("\n")) {
+                g2d.translate(-300, 50); // translate calculation for temporary.
+                continue;
             }
 
-            g2d.translate(font.getSize() * -3, font.getSize() + 10); // Next line go down and go forward a little bit.
+            // The shape of the font
+            Area fontArea = new Area();
+            for (int i = 0; i < s.length(); i++) { // i should <= 1
+                String c = String.valueOf(s.charAt(i));
+                // Get the glyph vector.
+                GlyphVector glyphVector;
+                if (i == 0) {
+                    glyphVector = defaultFont.createGlyphVector(g2d.getFontRenderContext(), c);
+                } else {
+                    glyphVector = samllFont.createGlyphVector(g2d.getFontRenderContext(), c);
+                    glyphVector.setGlyphPosition(0, linkedWordTrans);
+                }
+
+                fontArea.add(new Area(glyphVector.getGlyphOutline(0)));
+            }
+
+            // The rectangle needs to consider the time point of the mark
+            Rectangle colorRect = getRectangle(endMarkIndex, time, s.length() == 2);
+            endMarkIndex++;
+
+            // Intersection area of colorRect and font Shape.
+            Area intersectArea = new Area(fontArea);
+            intersectArea.intersect(new Area(colorRect));
+
+            // Fill
+            g2d.setColor(Color.BLUE);
+            g2d.fill(intersectArea);
+
+            // Border
+            g2d.setColor(Color.BLACK);
+            g2d.draw(fontArea);
+
+            // Set word space interval.
+            int space = s.length() == 2 ? samllFont.getSize() + defaultFont.getSize() : defaultFont.getSize();
+            g2d.translate(space, 0);
         }
     }
 
-    private Rectangle getRectangle(int i, long time) {
+    private Rectangle getRectangle(int i, long time, boolean linkedWord) {
         ArrayList<Long> marks = saveLoadManager.getMarks();
 
-        long lastWordEndTime = 0;
-        long thisWordEndTime;
-        long wordPeriod = 0;
-        if (marks.size() > i + 1) {
-            lastWordEndTime = marks.get(i);
-            thisWordEndTime = marks.get(i + 1);
-            wordPeriod = thisWordEndTime - lastWordEndTime;
-        }
-
-        int w = (int) ((float) (time - lastWordEndTime) / (float) wordPeriod * 50);
+        long wordStartTime = marks.get(i - 1);
+        long wordEndTime = marks.get(i);
+        long wordPeriod = wordEndTime - wordStartTime;
+        int w = (int) ((float) (time - wordStartTime) / (float) wordPeriod * (linkedWord ? 90 : 50));
         return new Rectangle(0, -40, w, 50);
     }
 }

@@ -33,7 +33,6 @@ public class Main extends JFrame {
 
         textArea.addDocumentUpdateCallback(() -> {
             saveLoadManager.setText(textArea.getText());
-            viewport.setDisplayString(textArea.getText());
             viewport.repaint();
             timeline.getCanvas().repaint();
         });

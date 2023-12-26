@@ -11,6 +11,8 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static net.bowen.gui.Timeline.PIXEL_TIME_RATIO;
 
@@ -19,6 +21,7 @@ import static net.bowen.gui.Timeline.PIXEL_TIME_RATIO;
  */
 public class SaveLoadManager {
     private final Main mainFrame;
+    private final List<String> textList = new ArrayList<>();
 
     private Data data = new Data();
     private Audio loadedAudio;
@@ -37,14 +40,40 @@ public class SaveLoadManager {
 
     public void setText(String text) {
         data.text = text;
+        textList.clear();
+
+        // Set the textList.
+        for (int i = 0; i < text.length(); i++) {
+            String thisWord = String.valueOf(text.charAt(i));
+
+            if (i + 1 < text.length()) {// IF not last word
+                String nextWord = String.valueOf(text.charAt(i + 1));
+
+                if (nextWord.equals("'")) {// linked word case
+                    String linkedWord = thisWord;
+                    i += 2;
+                    linkedWord += String.valueOf(text.charAt(i));
+                    textList.add(linkedWord);
+                } else {
+                    textList.add(thisWord);
+                }
+            } else {
+                textList.add(thisWord);
+            }
+        }
     }
 
     public String getText() {
         return data.text;
     }
 
-    public String getTextWithNoReturnSymbol() {
-        return data.text.replace("\n", "");
+    public List<String> getTextList() {
+        return textList;
+    }
+
+    public boolean canAddMoreMarks() {
+        int numSlashN = Collections.frequency(textList, "\n");
+        return data.marks.size() <= textList.size() - numSlashN + 1;
     }
 
     public void setLoadedAudio(URL audio) {

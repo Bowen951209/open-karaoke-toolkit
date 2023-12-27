@@ -297,11 +297,12 @@ public class Timeline extends JPanel {
 
                 // don't know why when getting the audio play time would have precise error,
                 // so use another method to replace.
-
                 // long time = saveLoadManager.getLoadedAudio().getTimePosition();
                 ArrayList<Long> marks = saveLoadManager.getMarks();
-                long time = toTime(pointerX);
-                marks.add(time);
+                long pointerTime = toTime(pointerX);
+                long lastMarkTime = marks.get(marks.size() - 1);
+                if (lastMarkTime < pointerTime) // It is only available to put a mark after the last one.
+                    marks.add(pointerTime);
             });
             btn.setPreferredSize(ICON_SIZE);
 

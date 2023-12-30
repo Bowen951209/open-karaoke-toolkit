@@ -7,13 +7,15 @@ import java.awt.*;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Area;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Viewport extends JPanel {
-    private static final Font defaultFont = new Font(Font.SANS_SERIF, Font.BOLD, 50);
-    private static final Font samllFont = new Font(Font.SANS_SERIF, Font.BOLD, 40);
-    private static final Point linkedWordTrans = new Point(defaultFont.getSize(), 0);
+    private static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 50);
+    private static final Font SAMLL_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 40);
+    private static final Point LINKED_WORD_TRANS = new Point(DEFAULT_FONT.getSize(), 0);
 
     private final SaveLoadManager saveLoadManager;
+    private final int[] renderingLines = {0, 1};
 
     public Viewport(SaveLoadManager saveLoadManager) {
         super();
@@ -42,37 +44,62 @@ public class Viewport extends JPanel {
         long time = saveLoadManager.getLoadedAudio().getTimePosition();
 
         // Draw strings.
-        int endMarkIndex = 1;
-        for (String s : saveLoadManager.getTextList()) {
+        final int secondLineIndent = 90;
+        final int lineSpace = 70;
+        int lineIndex = 0;
+        int translatedX = 0;
+        List<String> textList = saveLoadManager.getTextList();
+        refreshRenderingLines(time);
+        for (int i = 0; i < textList.size(); i++) {
+            String s = textList.get(i);
+
             // If no available mark for this word, break.
+            int endMarkIndex = i + 1 - lineIndex;
             if (saveLoadManager.getMarks().size() - 1 < endMarkIndex)
                 break;
 
             // If meet \n, next line.
             if (s.equals("\n")) {
-                g2d.translate(-300, 50); // translate calculation for temporary.
+                lineIndex++;
+
+                // Translate back to original
+                g2d.translate(-translatedX, 0);
+                translatedX = 0;
+
+                if (lineIndex % 2 == 0) { // on first line
+                    g2d.translate(0, -lineSpace);
+                } else { // on second line
+                    g2d.translate(secondLineIndent, lineSpace);
+                    translatedX += secondLineIndent;
+//                    g2d.translate(0, lineSpace);
+
+                }
+
                 continue;
             }
 
+            // If line not turn to render, continue.
+            if (lineIndex != renderingLines[0] && lineIndex != renderingLines[1])
+                continue;
+
             // The shape of the font
             Area fontArea = new Area();
-            for (int i = 0; i < s.length(); i++) { // i should <= 1
-                String c = String.valueOf(s.charAt(i));
+            for (int j = 0; j < s.length(); j++) { // j should <= 1
+                String c = String.valueOf(s.charAt(j));
                 // Get the glyph vector.
                 GlyphVector glyphVector;
-                if (i == 0) {
-                    glyphVector = defaultFont.createGlyphVector(g2d.getFontRenderContext(), c);
+                if (j == 0) {
+                    glyphVector = DEFAULT_FONT.createGlyphVector(g2d.getFontRenderContext(), c);
                 } else {
-                    glyphVector = samllFont.createGlyphVector(g2d.getFontRenderContext(), c);
-                    glyphVector.setGlyphPosition(0, linkedWordTrans);
+                    glyphVector = SAMLL_FONT.createGlyphVector(g2d.getFontRenderContext(), c);
+                    glyphVector.setGlyphPosition(0, LINKED_WORD_TRANS);
                 }
 
                 fontArea.add(new Area(glyphVector.getGlyphOutline(0)));
             }
 
-            // The rectangle needs to consider the time point of the mark
+            // The rectangle needs to consider the time point of the mark.
             Rectangle colorRect = getRectangle(endMarkIndex, time, s.length() == 2);
-            endMarkIndex++;
 
             // Intersection area of colorRect and font Shape.
             Area intersectArea = new Area(fontArea);
@@ -87,8 +114,30 @@ public class Viewport extends JPanel {
             g2d.draw(fontArea);
 
             // Set word space interval.
-            int space = s.length() == 2 ? samllFont.getSize() + defaultFont.getSize() : defaultFont.getSize();
+            int space = s.length() == 2 ? SAMLL_FONT.getSize() + DEFAULT_FONT.getSize() : DEFAULT_FONT.getSize();
             g2d.translate(space, 0);
+            translatedX += space;
+        }
+    }
+
+    private void refreshRenderingLines(long time) {
+        List<String> textList = saveLoadManager.getTextList();
+        List<Long> marks = saveLoadManager.getMarks();
+        renderingLines[0] = 0;
+        renderingLines[1] = 1;
+        for (int i = 0, line = 0; i < textList.size(); i++) {
+            String s = textList.get(i);
+            if (s.equals("\n") && i < marks.size()) {
+                long lastWordEndTime = marks.get(i);
+                if (lastWordEndTime < time) {
+                    if (line % 2 == 0) {
+                        renderingLines[0] = line + 2;
+                    } else {
+                        renderingLines[1] = line + 2;
+                    }
+                }
+                line++;
+            }
         }
     }
 
@@ -99,6 +148,6 @@ public class Viewport extends JPanel {
         long wordEndTime = marks.get(i);
         long wordPeriod = wordEndTime - wordStartTime;
         int w = (int) ((float) (time - wordStartTime) / (float) wordPeriod * (linkedWord ? 90 : 50));
-        return new Rectangle(0, -40, w, 50);
+        return new Rectangle(0, -40, w, DEFAULT_FONT.getSize());
     }
 }

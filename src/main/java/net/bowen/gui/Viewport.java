@@ -71,8 +71,6 @@ public class Viewport extends JPanel {
                 } else { // on second line
                     g2d.translate(secondLineIndent, lineSpace);
                     translatedX += secondLineIndent;
-//                    g2d.translate(0, lineSpace);
-
                 }
 
                 continue;
@@ -128,7 +126,7 @@ public class Viewport extends JPanel {
         for (int i = 0, line = 0; i < textList.size(); i++) {
             String s = textList.get(i);
             if (s.equals("\n") && i < marks.size()) {
-                long lastWordEndTime = marks.get(i);
+                long lastWordEndTime = marks.get(i - line);
                 if (lastWordEndTime < time) {
                     if (line % 2 == 0) {
                         renderingLines[0] = line + 2;

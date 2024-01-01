@@ -466,10 +466,11 @@ public class Timeline extends JPanel {
                 setCursor(dCursor);
             }
 
+            Point mousePos = getMousePosition();
+            final int iconSize = 10;
             for (int i = 0, wordIndex = -1; i < marks.size(); i++, wordIndex++) {
                 long time = marks.get(i);
 
-                int iconSize = 10;
                 int x = toX(time);
 
                 // -----Draw the gaps:-----
@@ -507,7 +508,6 @@ public class Timeline extends JPanel {
                 x -= iconSize / 2;
 
                 // If icon selected, draw the selected icon.
-                Point mousePos = getMousePosition();
                 if (mousePos != null) {
                     // The cursor should cover on the icon.
                     boolean isCovered =
@@ -522,15 +522,14 @@ public class Timeline extends JPanel {
 
                         // Handle dragging.
                         if (isMouseDragging) {
-                            draggingMark = i;
-
                             // Make sure user's not dragging out of available position.
                             long t = toTime(mousePos.x);
                             long lastT = i == 0 ? 0 : marks.get(i - 1);
                             long nextT = i == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(i + 1);
                             if (t > lastT && t < nextT) { // only in the range available.
-                                // TODO: 2024/1/1 Marks and background should on different layers, or marks will sometime be covered.
-                                g2d.drawImage(MARK_FLOAT_ICON.getImage(), mousePos.x - iconSize / 2, 0, iconSize, iconSize, null);
+                                draggingMark = i;
+                            } else {
+                                draggingMark = -1;
                             }
                         }
 
@@ -549,6 +548,11 @@ public class Timeline extends JPanel {
                 } else {
                     g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconSize, iconSize, null);
                 }
+            }
+
+            // Draw float mark(dragging mark)
+            if (draggingMark != -1 && mousePos != null) {
+                g2d.drawImage(MARK_FLOAT_ICON.getImage(), mousePos.x - iconSize / 2, 0, iconSize, iconSize, null);
             }
         }
 

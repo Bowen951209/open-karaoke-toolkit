@@ -2,6 +2,11 @@ package net.bowen.gui;
 
 import net.bowen.audioUtils.Audio;
 import net.bowen.system.SaveLoadManager;
+import net.bowen.system.command.CommandManager;
+import net.bowen.system.command.marks.MarkAddCommand;
+import net.bowen.system.command.marks.MarkPopQuantityCommand;
+import net.bowen.system.command.marks.MarkRemoveCommand;
+import net.bowen.system.command.marks.MarkSetCommand;
 
 import javax.swing.*;
 import javax.swing.plaf.SliderUI;
@@ -19,6 +24,7 @@ public class Timeline extends JPanel {
     private static final ImageIcon MARK_NORM_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_norm.png")));
     private static final ImageIcon MARK_END_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_end.png")));
     private static final ImageIcon MARK_SELECTED_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_selected.png")));
+    private static final ImageIcon MARK_FLOAT_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_float.png")));
     private static final Dimension ICON_SIZE = new Dimension(PLAY_BUTTON_ICON.getIconHeight(), PLAY_BUTTON_ICON.getIconWidth());
     /**
      * The width between separation lines in pixel.
@@ -35,6 +41,7 @@ public class Timeline extends JPanel {
     private static final int TIMER_DELAY = 10;
     public static final int SLIDER_MAX_VAL = 500;
 
+    private final CommandManager markCmdMgr = new CommandManager(15);
     private final Canvas canvas;
     private final ControlPanel controlPanel;
     private final SaveLoadManager saveLoadManager;
@@ -120,7 +127,8 @@ public class Timeline extends JPanel {
                         case MouseEvent.BUTTON3 -> {
                             // If you right-click, delete selected mark.
                             if (canvas.selectedMark != -1) {
-                                saveLoadManager.getMarks().remove(canvas.selectedMark);
+                                java.util.List<Long> marks = saveLoadManager.getMarks();
+                                markCmdMgr.execute(new MarkRemoveCommand(marks, canvas.selectedMark));
                             }
                         }
                     }
@@ -132,6 +140,12 @@ public class Timeline extends JPanel {
                 @Override
                 public void mouseReleased(MouseEvent e) {
                     canvas.isMouseDragging = false;
+                    if (canvas.draggingMark != -1) {
+                        int x = (e.getX() + scrollPane.getHorizontalScrollBar().getValue());
+                        markCmdMgr.execute(new MarkSetCommand(saveLoadManager.getMarks(), canvas.draggingMark, toTime(x)));
+                        canvas.draggingMark = -1;
+                        canvas.repaint();
+                    }
                 }
 
                 @Override
@@ -182,7 +196,18 @@ public class Timeline extends JPanel {
             scrollPane.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
+                    // Space: play/pause
                     if (e.getKeyCode() == KeyEvent.VK_SPACE) controlPanel.playPauseButton.doClick();
+                    else if (e.isControlDown()) {
+                        // Ctrl + Z: Undo
+                        if (e.getKeyCode() == KeyEvent.VK_Z) {
+                            markUndo();
+                        }
+                        // Ctrl + Y: Redo
+                        else if (e.getKeyCode() == KeyEvent.VK_Y) {
+                            markRedo();
+                        }
+                    }
                 }
             });
         }
@@ -216,6 +241,16 @@ public class Timeline extends JPanel {
         saveLoadManager.getLoadedAudio().setTimeTo(0);
 
         pointerX = 0;
+        canvas.repaint();
+    }
+
+    public void markUndo() {
+        markCmdMgr.undo();
+        canvas.repaint();
+    }
+
+    public void markRedo() {
+        markCmdMgr.redo();
         canvas.repaint();
     }
 
@@ -302,7 +337,7 @@ public class Timeline extends JPanel {
                 long pointerTime = toTime(pointerX);
                 long lastMarkTime = marks.get(marks.size() - 1);
                 if (lastMarkTime < pointerTime) // It is only available to put a mark after the last one.
-                    marks.add(pointerTime);
+                    markCmdMgr.execute(new MarkAddCommand(marks, pointerTime));
             });
             btn.setPreferredSize(ICON_SIZE);
 
@@ -359,6 +394,7 @@ public class Timeline extends JPanel {
     public class Canvas extends JPanel {
         private float scale = 1;
         private int selectedMark = -1;
+        private int draggingMark = -1;
         private boolean isMouseDragging;
 
         public Canvas() {
@@ -430,20 +466,20 @@ public class Timeline extends JPanel {
                 setCursor(dCursor);
             }
 
+            Point mousePos = getMousePosition();
+            final int iconSize = 10;
             for (int i = 0, wordIndex = -1; i < marks.size(); i++, wordIndex++) {
                 long time = marks.get(i);
 
-                int iconSize = 10;
                 int x = toX(time);
 
                 // -----Draw the gaps:-----
                 // First to reallocate marks size if the number of marks is too many.
                 // (This will happen if the user delete words and influenced the exist marks.)
-                while (!saveLoadManager.canAddMoreMarks()) {
-                    marks.remove(marks.size() - 1);
-                }
-                if (saveLoadManager.getTextList().isEmpty()) {
-                    marks.clear();
+                if (saveLoadManager.redundantMarkQuantity() != 0) {
+                    int rq = saveLoadManager.redundantMarkQuantity();
+                    int q = saveLoadManager.getTextList().isEmpty() ? marks.size() : rq;
+                    markCmdMgr.execute(new MarkPopQuantityCommand(marks, q));
                     canvas.repaint();
                 }
 
@@ -472,7 +508,6 @@ public class Timeline extends JPanel {
                 x -= iconSize / 2;
 
                 // If icon selected, draw the selected icon.
-                Point mousePos = getMousePosition();
                 if (mousePos != null) {
                     // The cursor should cover on the icon.
                     boolean isCovered =
@@ -491,13 +526,11 @@ public class Timeline extends JPanel {
                             long t = toTime(mousePos.x);
                             long lastT = i == 0 ? 0 : marks.get(i - 1);
                             long nextT = i == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(i + 1);
-                            if (t < lastT)
-                                marks.set(i, lastT);
-                            else //noinspection ManualMinMaxCalculation
-                                if (t > nextT)
-                                    marks.set(i, nextT);
-                                else
-                                    marks.set(i, t);
+                            if (t > lastT && t < nextT) { // only in the range available.
+                                draggingMark = i;
+                            } else {
+                                draggingMark = -1;
+                            }
                         }
 
                         g2d.drawImage(MARK_SELECTED_ICON.getImage(), x, 0, iconSize, iconSize, null);
@@ -515,6 +548,11 @@ public class Timeline extends JPanel {
                 } else {
                     g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconSize, iconSize, null);
                 }
+            }
+
+            // Draw float mark(dragging mark)
+            if (draggingMark != -1 && mousePos != null) {
+                g2d.drawImage(MARK_FLOAT_ICON.getImage(), mousePos.x - iconSize / 2, 0, iconSize, iconSize, null);
             }
         }
 

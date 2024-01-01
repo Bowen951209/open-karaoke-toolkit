@@ -6,6 +6,7 @@ import net.bowen.system.command.CommandManager;
 import net.bowen.system.command.marks.MarkAddCommand;
 import net.bowen.system.command.marks.MarkPopQuantityCommand;
 import net.bowen.system.command.marks.MarkRemoveCommand;
+import net.bowen.system.command.marks.MarkSetCommand;
 
 import javax.swing.*;
 import javax.swing.plaf.SliderUI;
@@ -23,6 +24,7 @@ public class Timeline extends JPanel {
     private static final ImageIcon MARK_NORM_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_norm.png")));
     private static final ImageIcon MARK_END_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_end.png")));
     private static final ImageIcon MARK_SELECTED_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_selected.png")));
+    private static final ImageIcon MARK_FLOAT_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_float.png")));
     private static final Dimension ICON_SIZE = new Dimension(PLAY_BUTTON_ICON.getIconHeight(), PLAY_BUTTON_ICON.getIconWidth());
     /**
      * The width between separation lines in pixel.
@@ -138,6 +140,12 @@ public class Timeline extends JPanel {
                 @Override
                 public void mouseReleased(MouseEvent e) {
                     canvas.isMouseDragging = false;
+                    if (canvas.draggingMark != -1) {
+                        int x = (e.getX() + scrollPane.getHorizontalScrollBar().getValue());
+                        markCmdMgr.execute(new MarkSetCommand(saveLoadManager.getMarks(), canvas.draggingMark, toTime(x)));
+                        canvas.draggingMark = -1;
+                        canvas.repaint();
+                    }
                 }
 
                 @Override
@@ -386,6 +394,7 @@ public class Timeline extends JPanel {
     public class Canvas extends JPanel {
         private float scale = 1;
         private int selectedMark = -1;
+        private int draggingMark = -1;
         private boolean isMouseDragging;
 
         public Canvas() {
@@ -511,20 +520,18 @@ public class Timeline extends JPanel {
                         Cursor hMoveCursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
                         setCursor(hMoveCursor);
 
-                        // TODO: 2023/12/31 Undo/redo handle time resetting.
                         // Handle dragging.
                         if (isMouseDragging) {
+                            draggingMark = i;
+
                             // Make sure user's not dragging out of available position.
                             long t = toTime(mousePos.x);
                             long lastT = i == 0 ? 0 : marks.get(i - 1);
                             long nextT = i == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(i + 1);
-                            if (t < lastT)
-                                marks.set(i, lastT);
-                            else //noinspection ManualMinMaxCalculation
-                                if (t > nextT)
-                                    marks.set(i, nextT);
-                                else
-                                    marks.set(i, t);
+                            if (t > lastT && t < nextT) { // only in the range available.
+                                // TODO: 2024/1/1 Marks and background should on different layers, or marks will sometime be covered.
+                                g2d.drawImage(MARK_FLOAT_ICON.getImage(), mousePos.x - iconSize / 2, 0, iconSize, iconSize, null);
+                            }
                         }
 
                         g2d.drawImage(MARK_SELECTED_ICON.getImage(), x, 0, iconSize, iconSize, null);

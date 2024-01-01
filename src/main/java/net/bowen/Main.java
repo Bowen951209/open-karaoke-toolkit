@@ -31,6 +31,9 @@ public class Main extends JFrame {
 
         LineNumberedScrollableTextArea textArea = new LineNumberedScrollableTextArea();
 
+        textArea.addUndoListener(timeline::markUndo);
+        textArea.addRedoListener(timeline::markRedo);
+
         textArea.addDocumentUpdateCallback(() -> {
             saveLoadManager.setText(textArea.getText());
             viewport.repaint();

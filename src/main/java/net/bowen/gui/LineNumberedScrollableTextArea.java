@@ -15,8 +15,19 @@ public class LineNumberedScrollableTextArea extends JScrollPane {
     private final JTextArea textArea, lineHead;
     private final StringBuilder lineStringBuilder;
     private final UndoManager undoManager = new UndoManager();
+    private final Set<Runnable> undoListeners = new HashSet<>();
+    private final Set<Runnable> redoListeners = new HashSet<>();
+
     private Set<Runnable> documentUpdateCallbacks;
     private int maxLine;
+
+    public void addUndoListener(Runnable e) {
+        undoListeners.add(e);
+    }
+
+    public void addRedoListener(Runnable e) {
+        redoListeners.add(e);
+    }
 
     public void setText(String s) {
         textArea.setText(s);
@@ -72,10 +83,12 @@ public class LineNumberedScrollableTextArea extends JScrollPane {
                     // Ctrl Z: Undo
                     if (e.getKeyCode() == KeyEvent.VK_Z && undoManager.canUndo()) {
                         undoManager.undo();
+                        undoListeners.forEach(Runnable::run);
                     }
                     //Ctrl Z: Redo
                     else if (e.getKeyCode() == KeyEvent.VK_Y && undoManager.canRedo()) {
                         undoManager.redo();
+                        redoListeners.forEach(Runnable::run);
                     }
                 }
             }

@@ -2,6 +2,10 @@ package net.bowen.gui;
 
 import net.bowen.audioUtils.Audio;
 import net.bowen.system.SaveLoadManager;
+import net.bowen.system.command.CommandManager;
+import net.bowen.system.command.marks.MarkAddCommand;
+import net.bowen.system.command.marks.MarkPopQuantityCommand;
+import net.bowen.system.command.marks.MarkRemoveCommand;
 
 import javax.swing.*;
 import javax.swing.plaf.SliderUI;
@@ -35,6 +39,7 @@ public class Timeline extends JPanel {
     private static final int TIMER_DELAY = 10;
     public static final int SLIDER_MAX_VAL = 500;
 
+    private final CommandManager markCmdMgr = new CommandManager(15);
     private final Canvas canvas;
     private final ControlPanel controlPanel;
     private final SaveLoadManager saveLoadManager;
@@ -120,7 +125,8 @@ public class Timeline extends JPanel {
                         case MouseEvent.BUTTON3 -> {
                             // If you right-click, delete selected mark.
                             if (canvas.selectedMark != -1) {
-                                saveLoadManager.getMarks().remove(canvas.selectedMark);
+                                java.util.List<Long> marks = saveLoadManager.getMarks();
+                                markCmdMgr.execute(new MarkRemoveCommand(marks, canvas.selectedMark));
                             }
                         }
                     }
@@ -182,7 +188,18 @@ public class Timeline extends JPanel {
             scrollPane.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
+                    // Space: play/pause
                     if (e.getKeyCode() == KeyEvent.VK_SPACE) controlPanel.playPauseButton.doClick();
+                    else if (e.isControlDown()) {
+                        // Ctrl + Z: Undo
+                        if (e.getKeyCode() == KeyEvent.VK_Z) {
+                            markUndo();
+                        }
+                        // Ctrl + Y: Redo
+                        else if (e.getKeyCode() == KeyEvent.VK_Y) {
+                            markRedo();
+                        }
+                    }
                 }
             });
         }
@@ -216,6 +233,16 @@ public class Timeline extends JPanel {
         saveLoadManager.getLoadedAudio().setTimeTo(0);
 
         pointerX = 0;
+        canvas.repaint();
+    }
+
+    public void markUndo() {
+        markCmdMgr.undo();
+        canvas.repaint();
+    }
+
+    public void markRedo() {
+        markCmdMgr.redo();
         canvas.repaint();
     }
 
@@ -302,7 +329,7 @@ public class Timeline extends JPanel {
                 long pointerTime = toTime(pointerX);
                 long lastMarkTime = marks.get(marks.size() - 1);
                 if (lastMarkTime < pointerTime) // It is only available to put a mark after the last one.
-                    marks.add(pointerTime);
+                    markCmdMgr.execute(new MarkAddCommand(marks, pointerTime));
             });
             btn.setPreferredSize(ICON_SIZE);
 
@@ -439,11 +466,10 @@ public class Timeline extends JPanel {
                 // -----Draw the gaps:-----
                 // First to reallocate marks size if the number of marks is too many.
                 // (This will happen if the user delete words and influenced the exist marks.)
-                while (!saveLoadManager.canAddMoreMarks()) {
-                    marks.remove(marks.size() - 1);
-                }
-                if (saveLoadManager.getTextList().isEmpty()) {
-                    marks.clear();
+                if (saveLoadManager.redundantMarkQuantity() != 0) {
+                    int rq = saveLoadManager.redundantMarkQuantity();
+                    int q = saveLoadManager.getTextList().isEmpty() ? marks.size() : rq;
+                    markCmdMgr.execute(new MarkPopQuantityCommand(marks, q));
                     canvas.repaint();
                 }
 
@@ -485,6 +511,7 @@ public class Timeline extends JPanel {
                         Cursor hMoveCursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
                         setCursor(hMoveCursor);
 
+                        // TODO: 2023/12/31 Undo/redo handle time resetting.
                         // Handle dragging.
                         if (isMouseDragging) {
                             // Make sure user's not dragging out of available position.

@@ -71,9 +71,10 @@ public class SaveLoadManager {
         return textList;
     }
 
-    public boolean canAddMoreMarks() {
+    public int redundantMarkQuantity() {
         int numSlashN = Collections.frequency(textList, "\n");
-        return data.marks.size() <= textList.size() - numSlashN + 1;
+        int q = data.marks.size() - (textList.size() - numSlashN + 1);
+        return Math.max(0, q);
     }
 
     public void setLoadedAudio(URL audio) {

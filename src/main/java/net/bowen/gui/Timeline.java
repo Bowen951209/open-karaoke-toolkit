@@ -108,7 +108,6 @@ public class Timeline extends JPanel {
             scrollPane.setMinimumSize(new Dimension(0, 100));
             scrollPane.getHorizontalScrollBar().setUnitIncrement(15);
 
-            // Key listener
             scrollPane.setFocusable(true);
             scrollPane.addMouseListener(new MouseAdapter() {
                 @Override
@@ -193,6 +192,10 @@ public class Timeline extends JPanel {
                     scrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                 }
             });
+
+            // Disable the IME of the pane. This way, the key event can be handled properly.
+            scrollPane.enableInputMethods(false);
+
             scrollPane.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
@@ -335,7 +338,7 @@ public class Timeline extends JPanel {
                 // long time = saveLoadManager.getLoadedAudio().getTimePosition();
                 ArrayList<Long> marks = saveLoadManager.getMarks();
                 long pointerTime = toTime(pointerX);
-                long lastMarkTime = marks.get(marks.size() - 1);
+                long lastMarkTime = marks.size() - 1 > 0 ? marks.get(marks.size() - 1) : 0;
                 if (lastMarkTime < pointerTime) // It is only available to put a mark after the last one.
                     markCmdMgr.execute(new MarkAddCommand(marks, pointerTime));
             });

@@ -1,5 +1,6 @@
 package net.bowen;
 
+import net.bowen.gui.FontSizeConfigBar;
 import net.bowen.gui.LineNumberedScrollableTextArea;
 import net.bowen.gui.Timeline;
 import net.bowen.gui.Viewport;
@@ -55,12 +56,17 @@ public class Main extends JFrame {
         // Menu bar on the top.
         addMenuBar();
 
-        // Top split pane(text area, viewport, settings menu).
+        // Top split pane(text area, viewport, config menu).
         JSplitPane topSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         topSplitPane.setPreferredSize(new Dimension(getWidth(), (int) (getHeight() * .7f)));
+        // sp1 hold: textArea & viewport. We have to separate like this because JSplitPane only support 2 splits.
+        JSplitPane sp1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        sp1.setPreferredSize(new Dimension((int) (getWidth() * .8f), 0));
+        topSplitPane.add(sp1);
         this.textArea = getTextArea();
-        topSplitPane.add(textArea);
-        topSplitPane.add(viewport);
+        sp1.add(textArea);
+        sp1.add(viewport);
+        topSplitPane.add(getConfPanel());
 
         // Main split pane (sep top pane and bottom timeline).
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -71,9 +77,21 @@ public class Main extends JFrame {
         add(mainSplitPane);
 
         // Load the sample save file.
-        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.ser")));
+//        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.ser")));
 
         setVisible(true);
+    }
+
+    /**
+     * Get the configure panel.
+     * */
+    private JPanel getConfPanel() {
+        JPanel panel = new JPanel();
+        FontSizeConfigBar fontSizeBar = new FontSizeConfigBar(3, 50, saveLoadManager, viewport);
+        panel.add(new JLabel("Font Size"));
+        panel.add(fontSizeBar);
+
+        return panel;
     }
 
     private void addMenuBar() {

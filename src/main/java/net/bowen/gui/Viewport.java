@@ -10,12 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Viewport extends JPanel {
-    private static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 50);
-    private static final Font SAMLL_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 40);
-    private static final Point LINKED_WORD_TRANS = new Point(DEFAULT_FONT.getSize(), 0);
+    private Font defaultFont = new Font(Font.SANS_SERIF, Font.BOLD, 50);
+    private Font samllFont = new Font(Font.SANS_SERIF, Font.BOLD, 40);
+    private Point linkedWordTrans = new Point(defaultFont.getSize(), 0);
 
     private final SaveLoadManager saveLoadManager;
     private final int[] renderingLines = {0, 1};
+
+    public void setDefaultFont(Font defaultFont) {
+        this.defaultFont = defaultFont;
+        linkedWordTrans = new Point(defaultFont.getSize(), 0);
+    }
 
     public Viewport(SaveLoadManager saveLoadManager) {
         super();
@@ -87,10 +92,10 @@ public class Viewport extends JPanel {
                 // Get the glyph vector.
                 GlyphVector glyphVector;
                 if (j == 0) {
-                    glyphVector = DEFAULT_FONT.createGlyphVector(g2d.getFontRenderContext(), c);
+                    glyphVector = defaultFont.createGlyphVector(g2d.getFontRenderContext(), c);
                 } else {
-                    glyphVector = SAMLL_FONT.createGlyphVector(g2d.getFontRenderContext(), c);
-                    glyphVector.setGlyphPosition(0, LINKED_WORD_TRANS);
+                    glyphVector = samllFont.createGlyphVector(g2d.getFontRenderContext(), c);
+                    glyphVector.setGlyphPosition(0, linkedWordTrans);
                 }
 
                 fontArea.add(new Area(glyphVector.getGlyphOutline(0)));
@@ -112,7 +117,7 @@ public class Viewport extends JPanel {
             g2d.draw(fontArea);
 
             // Set word space interval.
-            int space = s.length() == 2 ? SAMLL_FONT.getSize() + DEFAULT_FONT.getSize() : DEFAULT_FONT.getSize();
+            int space = s.length() == 2 ? samllFont.getSize() + defaultFont.getSize() : defaultFont.getSize();
             g2d.translate(space, 0);
             translatedX += space;
         }
@@ -146,6 +151,6 @@ public class Viewport extends JPanel {
         long wordEndTime = marks.get(i);
         long wordPeriod = wordEndTime - wordStartTime;
         int w = (int) ((float) (time - wordStartTime) / (float) wordPeriod * (linkedWord ? 90 : 50));
-        return new Rectangle(0, -40, w, DEFAULT_FONT.getSize());
+        return new Rectangle(0, -40, w, defaultFont.getSize());
     }
 }

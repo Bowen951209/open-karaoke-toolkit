@@ -45,25 +45,29 @@ public class Main extends JFrame {
     }
 
     private Main(String title) {
+        // Init settings.
         super(title);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
         setLayout(new BorderLayout());
 
+        // Menu bar on the top.
         addMenuBar();
 
+        // Top split pane(text area, viewport, settings menu).
         JSplitPane topSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         topSplitPane.setPreferredSize(new Dimension(getWidth(), (int) (getHeight() * .7f)));
         this.textArea = getTextArea();
         topSplitPane.add(textArea);
         topSplitPane.add(viewport);
 
+        // Main split pane (sep top pane and bottom timeline).
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         mainSplitPane.add(topSplitPane);
         mainSplitPane.add(timeline);
 
+        // Add main split pane to frame.
         add(mainSplitPane);
 
         // Load the sample save file.

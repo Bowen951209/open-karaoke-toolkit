@@ -47,9 +47,9 @@ public class SaveLoadManager {
             String thisWord = String.valueOf(text.charAt(i));
 
             if (i + 1 < text.length()) {// IF not last word
-                String nextWord = String.valueOf(text.charAt(i + 1));
+                char nextChar =  text.charAt(i + 1);
 
-                if (nextWord.equals("'")) {// linked word case
+                if (nextChar == '\'') {// linked word case
                     String linkedWord = thisWord;
                     i += 2;
                     linkedWord += String.valueOf(text.charAt(i));

@@ -91,7 +91,6 @@ public class Main extends JFrame {
 
         // load audio
         JMenuItem loadAudio = getLoadAudio(fileChooser);
-        saveLoadManager.setLoadedAudio(getClass().getResource("/audios/LiuLongKid.wav")); // for temporary test
         fileMenu.add(loadAudio);
 
         // save project

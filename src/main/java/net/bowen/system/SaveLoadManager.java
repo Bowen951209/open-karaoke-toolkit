@@ -69,6 +69,13 @@ public class SaveLoadManager {
         return data.text;
     }
 
+    public void setFontSize(int s) {
+        data.fontSize = s;
+    }
+    public int getFontSize() {
+        return data.fontSize;
+    }
+
     public List<String> getTextList() {
         return textList;
     }
@@ -187,5 +194,6 @@ public class SaveLoadManager {
         URL loadedAudioURL;
         ArrayList<Long> marks = new ArrayList<>();
         String text = "";
+        int fontSize;
     }
 }

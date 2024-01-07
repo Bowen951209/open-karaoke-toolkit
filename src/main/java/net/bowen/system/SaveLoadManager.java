@@ -10,9 +10,11 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import static net.bowen.gui.Timeline.PIXEL_TIME_RATIO;
 
@@ -23,7 +25,7 @@ public class SaveLoadManager {
     private final Main mainFrame;
     private final List<String> textList = new ArrayList<>();
 
-    private Data data = new Data();
+    private final Data data = new Data();
     private Audio loadedAudio;
 
     public SaveLoadManager(Main mainFrame) {
@@ -47,7 +49,7 @@ public class SaveLoadManager {
             String thisWord = String.valueOf(text.charAt(i));
 
             if (i + 1 < text.length()) {// IF not last word
-                char nextChar =  text.charAt(i + 1);
+                char nextChar = text.charAt(i + 1);
 
                 if (nextChar == '\'') {// linked word case
                     String linkedWord = thisWord;
@@ -117,14 +119,27 @@ public class SaveLoadManager {
     }
 
     public void saveFileAs(File file) {
-        data.text = mainFrame.getTextArea().getText();
+        Properties props = new Properties();
 
+        // General information.
+        props.setProperty("audio", data.loadedAudioURL.getPath());
+        props.setProperty("text", data.text);
+
+        // Marks.
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Long t : data.marks) {
+            stringBuilder.append(t).append(",");
+        }
+        props.setProperty("marks", stringBuilder.toString());
+
+        // Save to file.
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(data);
-            objectOutputStream.close();
-            fileOutputStream.close();
+            OutputStream outputStream = new FileOutputStream(file);
+            Writer fileWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+
+            props.store(fileWriter, null);
+            outputStream.close();
+            fileWriter.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -135,21 +150,27 @@ public class SaveLoadManager {
     public void load(File file) {
         mainFrame.setTitle(Main.INIT_FRAME_TITLE + " - " + file.getName());
 
-        // Load the serializable.
-        FileInputStream fileInputStream;
         try {
-            fileInputStream = new FileInputStream(file);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            data = (Data) objectInputStream.readObject();
+            // Load the properties file.
+            Properties props = new Properties();
+            FileInputStream inputStream = new FileInputStream(file);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+            props.load(inputStreamReader);
+            inputStream.close();
 
-            fileInputStream.close();
-            objectInputStream.close();
-        } catch (ClassNotFoundException | IOException e) {
+            // Set the values to data.
+            setLoadedAudio(new File(props.getProperty("audio")));
+            setText(props.getProperty("text"));
+            mainFrame.getTextArea().setText(data.text); // also update to text area.
+            // marks
+            String[] marksStrings = props.getProperty("marks").split(",");
+            data.marks.clear();
+            for (String string : marksStrings) {
+                data.marks.add(Long.valueOf(string));
+            }
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        setLoadedAudio(data.loadedAudioURL);
-        mainFrame.getTextArea().setText(data.text);
 
         System.out.println("Loaded project: " + file);
     }

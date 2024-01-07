@@ -14,7 +14,7 @@ import java.util.Objects;
 public class Main extends JFrame {
     public static final String INIT_FRAME_TITLE = "Open Karaoke Toolkit";
     private static final FileNameExtensionFilter WAV_EXT_FILTER = new FileNameExtensionFilter("*.wav", "wav");
-    private static final FileNameExtensionFilter SER_EXT_FILTER = new FileNameExtensionFilter("*.ser", "ser");
+    private static final FileNameExtensionFilter PROPS_EXT_FILTER = new FileNameExtensionFilter("*.properties", "properties");
 
 
     private final SaveLoadManager saveLoadManager = new SaveLoadManager(this);
@@ -71,7 +71,7 @@ public class Main extends JFrame {
         add(mainSplitPane);
 
         // Load the sample save file.
-        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.ser")));
+        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.properties")));
 
         setVisible(true);
     }
@@ -105,7 +105,7 @@ public class Main extends JFrame {
         JMenuItem loadProject = new JMenuItem("Load Project");
         loadProject.addActionListener(e -> {
             fileChooser.setDialogTitle("Choose Project");
-            fileChooser.setFileFilter(Main.SER_EXT_FILTER);
+            fileChooser.setFileFilter(Main.PROPS_EXT_FILTER);
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 saveLoadManager.load(selectedFile);
@@ -118,12 +118,13 @@ public class Main extends JFrame {
         JMenuItem saveProject = new JMenuItem("Save Project");
         saveProject.addActionListener(e -> {
             fileChooser.setDialogTitle("Save as");
-            fileChooser.setFileFilter(Main.SER_EXT_FILTER);
+            fileChooser.setFileFilter(Main.PROPS_EXT_FILTER);
 
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
-                if (!selectedFile.getName().endsWith(".ser")) {
-                    selectedFile = new File(selectedFile + ".ser");
+                String extension = "." + PROPS_EXT_FILTER.getExtensions()[0];
+                if (!selectedFile.getName().endsWith(extension)) {
+                    selectedFile = new File(selectedFile + extension);
                 }
 
                 saveLoadManager.saveFileAs(selectedFile);

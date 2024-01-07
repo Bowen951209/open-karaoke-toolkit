@@ -131,6 +131,7 @@ public class SaveLoadManager {
         // General information.
         props.setProperty("audio", data.loadedAudioURL.getPath());
         props.setProperty("text", data.text);
+        props.setProperty("fontSize", String.valueOf(data.fontSize));
 
         // Marks.
         StringBuilder stringBuilder = new StringBuilder();
@@ -169,6 +170,8 @@ public class SaveLoadManager {
             setLoadedAudio(new File(props.getProperty("audio")));
             setText(props.getProperty("text"));
             mainFrame.getTextArea().setText(data.text); // also update to text area.
+            data.fontSize = Integer.parseInt(props.getProperty("fontSize"));
+            mainFrame.getFontSizeBar().set(data.fontSize);// also update to bar.
             // marks
             String[] marksStrings = props.getProperty("marks").split(",");
             data.marks.clear();

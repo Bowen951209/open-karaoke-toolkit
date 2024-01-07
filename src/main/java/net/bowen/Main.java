@@ -22,9 +22,14 @@ public class Main extends JFrame {
     private final Viewport viewport = new Viewport(saveLoadManager);
     private final LineNumberedScrollableTextArea textArea;
     private final Timeline timeline = new Timeline(saveLoadManager, viewport);
+    private final FontSizeConfigBar fontSizeBar = new FontSizeConfigBar(3, 50, saveLoadManager, viewport);
 
     public Timeline getTimeline() {
         return timeline;
+    }
+
+    public FontSizeConfigBar getFontSizeBar() {
+        return fontSizeBar;
     }
 
     public LineNumberedScrollableTextArea getTextArea() {
@@ -87,7 +92,6 @@ public class Main extends JFrame {
      * */
     private JPanel getConfPanel() {
         JPanel panel = new JPanel();
-        FontSizeConfigBar fontSizeBar = new FontSizeConfigBar(3, 50, saveLoadManager, viewport);
         panel.add(new JLabel("Font Size"));
         panel.add(fontSizeBar);
 

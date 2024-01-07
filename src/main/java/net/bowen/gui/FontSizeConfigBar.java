@@ -11,6 +11,11 @@ import java.awt.event.MouseMotionAdapter;
 public class FontSizeConfigBar extends JTextFieldLimit {
     private int oVal, size;
 
+    public void set(int size) {
+        this.size = size;
+        setText(String.valueOf(size));
+    }
+
     /**
      * @param limitDigit limit digit of font size.
      */
@@ -44,7 +49,7 @@ public class FontSizeConfigBar extends JTextFieldLimit {
             }
         });
 
-        getDocument().addDocumentListener(new SimpleDocumentListener(()-> {
+        getDocument().addDocumentListener(new SimpleDocumentListener(() -> {
             saveLoadManager.setFontSize(size);
             viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getFontSize()));
             viewport.repaint();

@@ -124,13 +124,13 @@ public class SaveLoadManager {
         // General information.
         props.setProperty("audio", data.loadedAudioURL.getPath());
         props.setProperty("text", data.text);
-        props.setProperty("marksSize", String.valueOf(data.marks.size()));
 
         // Marks.
-        for (int i = 0; i < data.marks.size(); i++) {
-            String key = String.format("m%02d", i);
-            props.setProperty(key, String.valueOf(data.marks.get(i)));
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Long t : data.marks) {
+            stringBuilder.append(t).append(",");
         }
+        props.setProperty("marks", stringBuilder.toString());
 
         // Save to file.
         try {
@@ -163,10 +163,10 @@ public class SaveLoadManager {
             setText(props.getProperty("text"));
             mainFrame.getTextArea().setText(data.text); // also update to text area.
             // marks
-            for (int i = 0, marksSize = Integer.parseInt(props.getProperty("marksSize")); i < marksSize; i++) {
-                String key = String.format("m%02d", i);
-                long val = Long.parseLong(props.getProperty(key));
-                data.marks.add(val);
+            String[] marksStrings = props.getProperty("marks").split(",");
+            data.marks.clear();
+            for (String string : marksStrings) {
+                data.marks.add(Long.valueOf(string));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

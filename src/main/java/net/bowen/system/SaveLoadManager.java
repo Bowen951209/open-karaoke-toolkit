@@ -8,6 +8,7 @@ import net.bowen.gui.Timeline;
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -128,8 +129,16 @@ public class SaveLoadManager {
     public void saveFileAs(File file) {
         Properties props = new Properties();
 
+        URI base = new File(System.getProperty("user.dir")).toURI();
+        String audioRelativePath;
+        try {
+            audioRelativePath = String.valueOf(base.relativize(data.loadedAudioURL.toURI()));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
         // General information.
-        props.setProperty("audio", data.loadedAudioURL.getPath());
+        props.setProperty("audio", audioRelativePath);
         props.setProperty("text", data.text);
         props.setProperty("fontSize", String.valueOf(data.fontSize));
 

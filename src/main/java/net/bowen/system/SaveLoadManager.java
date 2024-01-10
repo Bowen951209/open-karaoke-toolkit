@@ -150,13 +150,8 @@ public class SaveLoadManager {
         props.setProperty("marks", stringBuilder.toString());
 
         // Save to file.
-        try {
-            OutputStream outputStream = new FileOutputStream(file);
-            Writer fileWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
-
+        try (Writer fileWriter = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)){
             props.store(fileWriter, null);
-            outputStream.close();
-            fileWriter.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -167,14 +162,10 @@ public class SaveLoadManager {
     public void load(File file) {
         mainFrame.setTitle(Main.INIT_FRAME_TITLE + " - " + file.getName());
 
-        try {
+        try (InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)){
             // Load the properties file.
             Properties props = new Properties();
-            FileInputStream inputStream = new FileInputStream(file);
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
             props.load(inputStreamReader);
-            inputStream.close();
-            inputStreamReader.close();
 
             // Set the values to data.
             setLoadedAudio(new File(props.getProperty("audio")));

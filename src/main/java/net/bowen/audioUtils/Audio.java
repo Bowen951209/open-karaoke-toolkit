@@ -19,14 +19,11 @@ public class Audio {
             throw new RuntimeException(e);
         }
 
-        try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(src);
+        try(AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(src)) {
             clip.open(audioInputStream);
-
             AudioFormat format = audioInputStream.getFormat();
             long frames = audioInputStream.getFrameLength();
             totalTime = (long) ((float) frames / format.getFrameRate() * 1000);
-            audioInputStream.close();
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             throw new RuntimeException(e);
         }

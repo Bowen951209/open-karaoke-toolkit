@@ -75,8 +75,7 @@ public class BoxWaveform {
 
 
         //Now procceeed orgasm...
-        try {
-            AudioInputStream in = AudioSystem.getAudioInputStream(file);
+        try (AudioInputStream in = AudioSystem.getAudioInputStream(file)){
             AudioFormat fmt = in.getFormat();
 
             if (fmt.getEncoding() != AudioFormat.Encoding.PCM_SIGNED) {
@@ -133,8 +132,6 @@ public class BoxWaveform {
                     samples[i++] = (float) (sum / chans);
                 }
             }
-
-            in.close();
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new RuntimeException(e);
         }

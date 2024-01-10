@@ -195,8 +195,8 @@ public class SaveLoadManager {
     }
 
     private static class Data implements Serializable {
+        final ArrayList<Long> marks = new ArrayList<>();
         URL loadedAudioURL;
-        ArrayList<Long> marks = new ArrayList<>();
         String text = "";
         int fontSize;
     }

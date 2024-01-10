@@ -22,6 +22,11 @@ public class Viewport extends JPanel {
         linkedWordTrans = new Point(defaultFont.getSize(), 0);
     }
 
+    public void setLinkedFont(Font linkedFont) {
+        this.samllFont = linkedFont;
+    }
+
+
     public Viewport(SaveLoadManager saveLoadManager) {
         super();
         this.saveLoadManager = saveLoadManager;

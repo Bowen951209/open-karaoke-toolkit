@@ -70,11 +70,20 @@ public class SaveLoadManager {
         return data.text;
     }
 
-    public void setFontSize(int s) {
-        data.fontSize = s;
+    public void setDefaultFontSize(int s) {
+        data.defaultFontSize = s;
     }
-    public int getFontSize() {
-        return data.fontSize;
+
+    public int getDefaultFontSize() {
+        return data.defaultFontSize;
+    }
+
+    public void setLinkedFontSize(int s) {
+        data.linkedFontSize = s;
+    }
+
+    public int getLinkedFontSize() {
+        return data.linkedFontSize;
     }
 
     public List<String> getTextList() {
@@ -140,7 +149,8 @@ public class SaveLoadManager {
         // General information.
         props.setProperty("audio", audioRelativePath);
         props.setProperty("text", data.text);
-        props.setProperty("fontSize", String.valueOf(data.fontSize));
+        props.setProperty("defaultFontSize", String.valueOf(data.defaultFontSize));
+        props.setProperty("linkedFontSize", String.valueOf(data.linkedFontSize));
 
         // Marks.
         StringBuilder stringBuilder = new StringBuilder();
@@ -150,7 +160,7 @@ public class SaveLoadManager {
         props.setProperty("marks", stringBuilder.toString());
 
         // Save to file.
-        try (Writer fileWriter = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)){
+        try (Writer fileWriter = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
             props.store(fileWriter, null);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -162,7 +172,7 @@ public class SaveLoadManager {
     public void load(File file) {
         mainFrame.setTitle(Main.INIT_FRAME_TITLE + " - " + file.getName());
 
-        try (InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)){
+        try (InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             // Load the properties file.
             Properties props = new Properties();
             props.load(inputStreamReader);
@@ -171,8 +181,10 @@ public class SaveLoadManager {
             setLoadedAudio(new File(props.getProperty("audio")));
             setText(props.getProperty("text"));
             mainFrame.getTextArea().setText(data.text); // also update to text area.
-            data.fontSize = Integer.parseInt(props.getProperty("fontSize"));
-            mainFrame.getFontSizeBar().set(data.fontSize);// also update to bar.
+            data.defaultFontSize = Integer.parseInt(props.getProperty("defaultFontSize"));
+            mainFrame.getDefaultFontSizeBar().set(data.defaultFontSize);// also update to bar.
+            data.linkedFontSize = Integer.parseInt(props.getProperty("linkedFontSize"));
+            mainFrame.getLinkedFontSizeBar().set(data.linkedFontSize);// also update to bar.
             // marks
             String[] marksStrings = props.getProperty("marks").split(",");
             data.marks.clear();
@@ -198,6 +210,7 @@ public class SaveLoadManager {
         final ArrayList<Long> marks = new ArrayList<>();
         URL loadedAudioURL;
         String text = "";
-        int fontSize;
+        int defaultFontSize;
+        int linkedFontSize;
     }
 }

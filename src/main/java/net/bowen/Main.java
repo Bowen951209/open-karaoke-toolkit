@@ -22,14 +22,33 @@ public class Main extends JFrame {
     private final Viewport viewport = new Viewport(saveLoadManager);
     private final LineNumberedScrollableTextArea textArea;
     private final Timeline timeline = new Timeline(saveLoadManager, viewport);
-    private final FontSizeConfigBar fontSizeBar = new FontSizeConfigBar(3, 50, saveLoadManager, viewport);
+    private final FontSizeConfigBar defaultFontSizeBar = new FontSizeConfigBar(3, 50) {
+        @Override
+        public void documentCallback() {
+            saveLoadManager.setDefaultFontSize(super.size);
+            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getDefaultFontSize()));
+            viewport.repaint();
+        }
+    };
+    private final FontSizeConfigBar linkedFontSizeBar = new FontSizeConfigBar(3, 40) {
+        @Override
+        public void documentCallback() {
+            saveLoadManager.setLinkedFontSize(super.size);
+            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getLinkedFontSize()));
+            viewport.repaint();
+        }
+    };
 
     public Timeline getTimeline() {
         return timeline;
     }
 
-    public FontSizeConfigBar getFontSizeBar() {
-        return fontSizeBar;
+    public FontSizeConfigBar getDefaultFontSizeBar() {
+        return defaultFontSizeBar;
+    }
+
+    public FontSizeConfigBar getLinkedFontSizeBar() {
+        return linkedFontSizeBar;
     }
 
     public LineNumberedScrollableTextArea getTextArea() {
@@ -89,11 +108,17 @@ public class Main extends JFrame {
 
     /**
      * Get the configure panel.
-     * */
+     */
     private JPanel getConfPanel() {
         JPanel panel = new JPanel();
-        panel.add(new JLabel("Font Size"));
-        panel.add(fontSizeBar);
+        BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
+        panel.setLayout(layout);
+
+        panel.add(new JLabel("Default Font Size"));
+        panel.add(defaultFontSizeBar);
+
+        panel.add(new JLabel("Linked Font Size"));
+        panel.add(linkedFontSizeBar);
 
         return panel;
     }

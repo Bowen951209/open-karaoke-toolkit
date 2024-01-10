@@ -134,6 +134,7 @@ public class BoxWaveform {
                 }
             }
 
+            in.close();
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new RuntimeException(e);
         }

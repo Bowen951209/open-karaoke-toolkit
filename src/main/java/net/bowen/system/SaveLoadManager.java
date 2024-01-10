@@ -174,6 +174,7 @@ public class SaveLoadManager {
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
             props.load(inputStreamReader);
             inputStream.close();
+            inputStreamReader.close();
 
             // Set the values to data.
             setLoadedAudio(new File(props.getProperty("audio")));

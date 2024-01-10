@@ -11,7 +11,9 @@ public abstract class FontSizeConfigBar extends JTextFieldLimit {
     private final int maxValue;
 
     protected int size;
+
     private int oVal;
+    private int mouseLastX;
 
     public void set(int size) {
         this.size = size;
@@ -38,6 +40,7 @@ public abstract class FontSizeConfigBar extends JTextFieldLimit {
                 setCursor(hMoveCursor);
 
                 oVal = Integer.parseInt(getText());
+                mouseLastX = e.getX();
             }
         });
 
@@ -45,14 +48,16 @@ public abstract class FontSizeConfigBar extends JTextFieldLimit {
             @Override
             public void mouseDragged(MouseEvent e) {
                 requestFocus(); // *This is for even mouse is outside the component, drag callback still calls.
-                int delta = e.getX() / 10;
+                int delta = e.getX() - mouseLastX;
                 size = Math.max(delta + oVal, 0);
                 size = Math.min(size, maxValue);
+                oVal = size;
                 setText(String.valueOf(size));
+                mouseLastX = e.getX();
             }
         });
 
-        getDocument().addDocumentListener(new SimpleDocumentListener(()-> {
+        getDocument().addDocumentListener(new SimpleDocumentListener(() -> {
             if (!getText().isEmpty())
                 size = Integer.parseInt(getText());
 

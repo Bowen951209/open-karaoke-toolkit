@@ -19,8 +19,8 @@ public abstract class FontSizeConfigBar extends JTextFieldLimit {
     /**
      * @param limitDigit limit digit of font size.
      */
-    public FontSizeConfigBar(int limitDigit, int defaultSize) {
-        super(true, limitDigit, String.valueOf(defaultSize));
+    public FontSizeConfigBar(int limitDigit) {
+        super(true, limitDigit, "-1");
 
         addMouseListener(new MouseAdapter() {
             @Override

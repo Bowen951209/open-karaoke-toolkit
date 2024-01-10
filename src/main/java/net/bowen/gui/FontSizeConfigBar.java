@@ -49,7 +49,12 @@ public abstract class FontSizeConfigBar extends JTextFieldLimit {
             }
         });
 
-        getDocument().addDocumentListener(new SimpleDocumentListener(this::documentCallback));
+        getDocument().addDocumentListener(new SimpleDocumentListener(()-> {
+            if (!getText().isEmpty())
+                size = Integer.parseInt(getText());
+
+            documentCallback();
+        }));
     }
 
     public abstract void documentCallback();

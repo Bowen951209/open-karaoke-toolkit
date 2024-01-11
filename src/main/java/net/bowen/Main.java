@@ -22,7 +22,7 @@ public class Main extends JFrame {
     private final Viewport viewport = new Viewport(saveLoadManager);
     private final LineNumberedScrollableTextArea textArea;
     private final Timeline timeline = new Timeline(saveLoadManager, viewport);
-    private final FontSizeConfigBar defaultFontSizeBar = new FontSizeConfigBar(3) {
+    private final FontSizeConfigBar defaultFontSizeBar = new FontSizeConfigBar(3, "Default Font Size") {
         @Override
         public void documentCallback() {
             saveLoadManager.setDefaultFontSize(super.size);
@@ -30,7 +30,7 @@ public class Main extends JFrame {
             viewport.repaint();
         }
     };
-    private final FontSizeConfigBar linkedFontSizeBar = new FontSizeConfigBar(3) {
+    private final FontSizeConfigBar linkedFontSizeBar = new FontSizeConfigBar(3, "Linked Font Size") {
         @Override
         public void documentCallback() {
             saveLoadManager.setLinkedFontSize(super.size);
@@ -114,10 +114,7 @@ public class Main extends JFrame {
         BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
         panel.setLayout(layout);
 
-        panel.add(new JLabel("Default Font Size"));
         panel.add(defaultFontSizeBar);
-
-        panel.add(new JLabel("Linked Font Size"));
         panel.add(linkedFontSizeBar);
 
         return panel;

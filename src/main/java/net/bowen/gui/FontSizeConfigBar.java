@@ -2,13 +2,15 @@ package net.bowen.gui;
 
 import net.bowen.system.SimpleDocumentListener;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
-public abstract class FontSizeConfigBar extends JTextFieldLimit {
+public abstract class FontSizeConfigBar extends JPanel {
     private final int maxValue;
+    private final JTextFieldLimit textField;
 
     protected int size;
 
@@ -17,21 +19,24 @@ public abstract class FontSizeConfigBar extends JTextFieldLimit {
 
     public void set(int size) {
         this.size = size;
-        setText(String.valueOf(size));
+        textField.setText(String.valueOf(size));
     }
 
     /**
      * @param limitDigit limit digit of font size.
      */
-    public FontSizeConfigBar(int limitDigit) {
-        super(true, limitDigit, "-1");
+    public FontSizeConfigBar(int limitDigit, String text) {
+        textField = new JTextFieldLimit(true, limitDigit, "-1");
         this.maxValue = (int) (Math.pow(10, limitDigit) - 1);
 
-        addMouseListener(new MouseAdapter() {
+        Dimension panelSize = new Dimension(150, 0);
+        setMinimumSize(panelSize);
+
+        textField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 Cursor hMoveCursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
-                setCursor(hMoveCursor);
+                textField.setCursor(hMoveCursor);
             }
 
             @Override
@@ -39,12 +44,12 @@ public abstract class FontSizeConfigBar extends JTextFieldLimit {
                 Cursor hMoveCursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
                 setCursor(hMoveCursor);
 
-                oVal = Integer.parseInt(getText());
+                oVal = Integer.parseInt(textField.getText());
                 mouseLastX = e.getX();
             }
         });
 
-        addMouseMotionListener(new MouseMotionAdapter() {
+        textField.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
                 requestFocus(); // *This is for even mouse is outside the component, drag callback still calls.
@@ -52,17 +57,21 @@ public abstract class FontSizeConfigBar extends JTextFieldLimit {
                 size = Math.max(delta + oVal, 0);
                 size = Math.min(size, maxValue);
                 oVal = size;
-                setText(String.valueOf(size));
+                textField.setText(String.valueOf(size));
                 mouseLastX = e.getX();
             }
         });
 
-        getDocument().addDocumentListener(new SimpleDocumentListener(() -> {
-            if (!getText().isEmpty())
-                size = Integer.parseInt(getText());
+        textField.getDocument().addDocumentListener(new SimpleDocumentListener(() -> {
+            if (!textField.getText().isEmpty())
+                size = Integer.parseInt(textField.getText());
 
             documentCallback();
         }));
+
+        JLabel label = new JLabel(text);
+        add(label);
+        add(textField);
     }
 
     public abstract void documentCallback();

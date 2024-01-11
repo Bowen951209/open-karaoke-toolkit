@@ -29,9 +29,6 @@ public abstract class FontSizeConfigBar extends JPanel {
         textField = new JTextFieldLimit(true, limitDigit, "-1");
         this.maxValue = (int) (Math.pow(10, limitDigit) - 1);
 
-        Dimension panelSize = new Dimension(150, 0);
-        setMinimumSize(panelSize);
-
         textField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {

@@ -85,7 +85,7 @@ public class Main extends JFrame {
         topSplitPane.setPreferredSize(new Dimension(getWidth(), (int) (getHeight() * .7f)));
         // sp1 hold: textArea & viewport. We have to separate like this because JSplitPane only support 2 splits.
         JSplitPane sp1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        sp1.setPreferredSize(new Dimension((int) (getWidth() * .8f), 0));
+        viewport.setPreferredSize(new Dimension((int) (getWidth() * .6), 0));
         topSplitPane.add(sp1);
         this.textArea = getTextArea();
         sp1.add(textArea);
@@ -94,6 +94,7 @@ public class Main extends JFrame {
 
         // Main split pane (sep top pane and bottom timeline).
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        timeline.setPreferredSize(getMinimumSize());
         mainSplitPane.add(topSplitPane);
         mainSplitPane.add(timeline);
 
@@ -116,6 +117,9 @@ public class Main extends JFrame {
 
         panel.add(defaultFontSizeBar);
         panel.add(linkedFontSizeBar);
+
+        Dimension size = new Dimension(150, 0);
+        panel.setMinimumSize(size);
 
         return panel;
     }

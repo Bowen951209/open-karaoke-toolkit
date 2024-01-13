@@ -54,7 +54,7 @@ public class Viewport extends JPanel {
         long time = saveLoadManager.getLoadedAudio().getTimePosition();
 
         // Draw strings.
-        final int secondLineIndent = 90;
+        final int secondLineIndent = saveLoadManager.getIndentSize();
         final int lineSpace = 70;
         int lineIndex = 0;
         int translatedX = 0;

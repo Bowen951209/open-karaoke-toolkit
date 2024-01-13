@@ -1,6 +1,6 @@
 package net.bowen;
 
-import net.bowen.gui.FontSizeConfigBar;
+import net.bowen.gui.SizeConfigBar;
 import net.bowen.gui.LineNumberedScrollableTextArea;
 import net.bowen.gui.Timeline;
 import net.bowen.gui.Viewport;
@@ -22,7 +22,8 @@ public class Main extends JFrame {
     private final Viewport viewport = new Viewport(saveLoadManager);
     private final LineNumberedScrollableTextArea textArea;
     private final Timeline timeline = new Timeline(saveLoadManager, viewport);
-    private final FontSizeConfigBar defaultFontSizeBar = new FontSizeConfigBar(3, "Default Font Size") {
+
+    public final SizeConfigBar defaultFontSizeBar = new SizeConfigBar(3, "Default Font Size") {
         @Override
         public void documentCallback() {
             saveLoadManager.setDefaultFontSize(super.size);
@@ -30,7 +31,7 @@ public class Main extends JFrame {
             viewport.repaint();
         }
     };
-    private final FontSizeConfigBar linkedFontSizeBar = new FontSizeConfigBar(3, "Linked Font Size") {
+    public final SizeConfigBar linkedFontSizeBar = new SizeConfigBar(3, "Linked Font Size") {
         @Override
         public void documentCallback() {
             saveLoadManager.setLinkedFontSize(super.size);
@@ -38,17 +39,16 @@ public class Main extends JFrame {
             viewport.repaint();
         }
     };
+    public final SizeConfigBar lineIndentSizeBar = new SizeConfigBar(3, "2nd Line Indent") {
+        @Override
+        public void documentCallback() {
+            saveLoadManager.setIndentSize(super.size);
+            viewport.repaint();
+        }
+    };
 
     public Timeline getTimeline() {
         return timeline;
-    }
-
-    public FontSizeConfigBar getDefaultFontSizeBar() {
-        return defaultFontSizeBar;
-    }
-
-    public FontSizeConfigBar getLinkedFontSizeBar() {
-        return linkedFontSizeBar;
     }
 
     public LineNumberedScrollableTextArea getTextArea() {
@@ -117,6 +117,7 @@ public class Main extends JFrame {
 
         panel.add(defaultFontSizeBar);
         panel.add(linkedFontSizeBar);
+        panel.add(lineIndentSizeBar);
 
         Dimension size = new Dimension(150, 0);
         panel.setMinimumSize(size);

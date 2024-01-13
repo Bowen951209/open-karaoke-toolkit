@@ -8,7 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
-public abstract class FontSizeConfigBar extends JPanel {
+public abstract class SizeConfigBar extends JPanel {
     private final int maxValue;
     private final JTextFieldLimit textField;
 
@@ -25,7 +25,7 @@ public abstract class FontSizeConfigBar extends JPanel {
     /**
      * @param limitDigit limit digit of font size.
      */
-    public FontSizeConfigBar(int limitDigit, String text) {
+    public SizeConfigBar(int limitDigit, String text) {
         textField = new JTextFieldLimit(true, limitDigit, "-1");
         this.maxValue = (int) (Math.pow(10, limitDigit) - 1);
 

@@ -14,9 +14,10 @@ import java.util.Objects;
 
 public class Main extends JFrame {
     public static final String INIT_FRAME_TITLE = "Open Karaoke Toolkit";
-    private static final FileNameExtensionFilter WAV_EXT_FILTER = new FileNameExtensionFilter("*.wav", "wav");
-    private static final FileNameExtensionFilter PROPS_EXT_FILTER = new FileNameExtensionFilter("*.properties", "properties");
+    public static final FileNameExtensionFilter WAV_EXT_FILTER = new FileNameExtensionFilter("*.wav", "wav");
+    public static final FileNameExtensionFilter PROPS_EXT_FILTER = new FileNameExtensionFilter("*.properties", "properties");
 
+    public static Main mainFrame;
 
     private final SaveLoadManager saveLoadManager = new SaveLoadManager(this);
     private final Viewport viewport = new Viewport(saveLoadManager);
@@ -204,6 +205,6 @@ public class Main extends JFrame {
     }
 
     public static void main(String[] args) {
-        new Main(INIT_FRAME_TITLE);
+        mainFrame = new Main(INIT_FRAME_TITLE);
     }
 }

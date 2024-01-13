@@ -86,6 +86,23 @@ public class SaveLoadManager {
         return data.linkedFontSize;
     }
 
+    public void setIndentSize(int s) {
+        data.indentSize = s;
+    }
+
+    public int getIndentSize() {
+        return data.indentSize;
+    }
+
+    public void setLineSpace(int s) {
+        data.lineSpace = s;
+    }
+
+    public int getLineSpace() {
+        return data.lineSpace;
+    }
+
+
     public List<String> getTextList() {
         return textList;
     }
@@ -151,6 +168,8 @@ public class SaveLoadManager {
         props.setProperty("text", data.text);
         props.setProperty("defaultFontSize", String.valueOf(data.defaultFontSize));
         props.setProperty("linkedFontSize", String.valueOf(data.linkedFontSize));
+        props.setProperty("indentSize", String.valueOf(data.indentSize));
+        props.setProperty("lineSpace", String.valueOf(data.lineSpace));
 
         // Marks.
         StringBuilder stringBuilder = new StringBuilder();
@@ -178,19 +197,30 @@ public class SaveLoadManager {
             props.load(inputStreamReader);
 
             // Set the values to data.
+
+            // simple ones
             setLoadedAudio(new File(props.getProperty("audio")));
             setText(props.getProperty("text"));
             mainFrame.getTextArea().setText(data.text); // also update to text area.
+
+            // size bars
             data.defaultFontSize = Integer.parseInt(props.getProperty("defaultFontSize"));
-            mainFrame.getDefaultFontSizeBar().set(data.defaultFontSize);// also update to bar.
+            mainFrame.defaultFontSizeBar.set(data.defaultFontSize);// also update to bar.
+
             data.linkedFontSize = Integer.parseInt(props.getProperty("linkedFontSize"));
-            mainFrame.getLinkedFontSizeBar().set(data.linkedFontSize);// also update to bar.
+            mainFrame.linkedFontSizeBar.set(data.linkedFontSize);// also update to bar.
+
+            data.indentSize = Integer.parseInt(props.getProperty("indentSize"));
+            mainFrame.lineIndentSizeBar.set(data.indentSize);// also update to bar.
+
+            data.lineSpace = Integer.parseInt(props.getProperty("lineSpace"));
+            mainFrame.lineSpaceSizeConfigBar.set(data.lineSpace);// also update to bar.
+
             // marks
             String[] marksStrings = props.getProperty("marks").split(",");
             data.marks.clear();
-            for (String string : marksStrings) {
+            for (String string : marksStrings)
                 data.marks.add(Long.valueOf(string));
-            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -212,5 +242,7 @@ public class SaveLoadManager {
         String text = "";
         int defaultFontSize;
         int linkedFontSize;
+        int indentSize;
+        int lineSpace;
     }
 }

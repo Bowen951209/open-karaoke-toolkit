@@ -5,6 +5,7 @@ import net.bowen.audioUtils.Audio;
 import net.bowen.audioUtils.BoxWaveform;
 import net.bowen.gui.Timeline;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -198,8 +199,7 @@ public class SaveLoadManager {
 
             // Set the values to data.
 
-            // simple ones
-            setLoadedAudio(new File(props.getProperty("audio")));
+            // Text
             setText(props.getProperty("text"));
             mainFrame.getTextArea().setText(data.text); // also update to text area.
 
@@ -221,6 +221,29 @@ public class SaveLoadManager {
             data.marks.clear();
             for (String string : marksStrings)
                 data.marks.add(Long.valueOf(string));
+
+            // Audio
+            File audioFile = new File(props.getProperty("audio"));
+            if (!audioFile.exists()) {
+                // Pop up a message.
+                JOptionPane.showMessageDialog(
+                        mainFrame,
+                        "Audio file missing(probably moved or deleted), please redirect it.",
+                        "Report",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                JFileChooser fcr = new JFileChooser(".");
+                fcr.setDialogTitle("Please redirect the file: ");
+                fcr.setFileFilter(Main.WAV_EXT_FILTER);
+                if (fcr.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    audioFile = fcr.getSelectedFile();
+                } else {
+                    System.out.println("File chooser not approved. Closing the program now.");
+                    System.exit(1);
+                }
+            }
+            setLoadedAudio(audioFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

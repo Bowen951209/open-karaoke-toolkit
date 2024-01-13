@@ -39,7 +39,7 @@ public class Viewport extends JPanel {
         super.paint(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.translate(0, 50); // translate to initial position.
+        g2d.translate(0, defaultFont.getSize()); // translate to initial position.
 
         // Draw the string.
         if (saveLoadManager.getText() != null) {
@@ -152,10 +152,15 @@ public class Viewport extends JPanel {
     private Rectangle getRectangle(int i, long time, boolean linkedWord) {
         ArrayList<Long> marks = saveLoadManager.getMarks();
 
+        final int dFontSize = defaultFont.getSize();
+        final int sFontSize = samllFont.getSize();
         long wordStartTime = marks.get(i - 1);
         long wordEndTime = marks.get(i);
         long wordPeriod = wordEndTime - wordStartTime;
-        int w = (int) ((float) (time - wordStartTime) / (float) wordPeriod * (linkedWord ? 90 : 50));
-        return new Rectangle(0, -40, w, defaultFont.getSize());
+        float ratio = (float) (time - wordStartTime) / (float) wordPeriod;
+        int rectMaxSize = linkedWord ? dFontSize + sFontSize : dFontSize;
+        int w = (int) (ratio * rectMaxSize);
+
+        return new Rectangle(0, -dFontSize, w, dFontSize + 20); // 20 is the needed adjustment.
     }
 }

@@ -90,12 +90,6 @@ public class SaveLoadManager {
         return textList;
     }
 
-    public int redundantMarkQuantity() {
-        int numSlashN = Collections.frequency(textList, "\n");
-        int q = data.marks.size() - (textList.size() - numSlashN + 1);
-        return Math.max(0, q);
-    }
-
     public void setLoadedAudio(URL audio) {
         if (loadedAudio != null)
             loadedAudio.close();
@@ -133,6 +127,12 @@ public class SaveLoadManager {
         }
 
         System.out.println("Loaded audio: " + f);
+    }
+
+    public int redundantMarkQuantity() {
+        int numSlashN = Collections.frequency(textList, "\n");
+        int q = data.marks.size() - (textList.size() - numSlashN + 1);
+        return Math.max(0, q);
     }
 
     public void saveFileAs(File file) {

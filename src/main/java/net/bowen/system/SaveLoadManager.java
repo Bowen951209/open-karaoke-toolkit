@@ -94,6 +94,14 @@ public class SaveLoadManager {
         return data.indentSize;
     }
 
+    public void setLineSpace(int s) {
+        data.lineSpace = s;
+    }
+
+    public int getLineSpace() {
+        return data.lineSpace;
+    }
+
 
     public List<String> getTextList() {
         return textList;
@@ -161,6 +169,7 @@ public class SaveLoadManager {
         props.setProperty("defaultFontSize", String.valueOf(data.defaultFontSize));
         props.setProperty("linkedFontSize", String.valueOf(data.linkedFontSize));
         props.setProperty("indentSize", String.valueOf(data.indentSize));
+        props.setProperty("lineSpace", String.valueOf(data.lineSpace));
 
         // Marks.
         StringBuilder stringBuilder = new StringBuilder();
@@ -204,6 +213,9 @@ public class SaveLoadManager {
             data.indentSize = Integer.parseInt(props.getProperty("indentSize"));
             mainFrame.lineIndentSizeBar.set(data.indentSize);// also update to bar.
 
+            data.lineSpace = Integer.parseInt(props.getProperty("lineSpace"));
+            mainFrame.lineSpaceSizeConfigBar.set(data.lineSpace);// also update to bar.
+
             // marks
             String[] marksStrings = props.getProperty("marks").split(",");
             data.marks.clear();
@@ -231,5 +243,6 @@ public class SaveLoadManager {
         int defaultFontSize;
         int linkedFontSize;
         int indentSize;
+        int lineSpace;
     }
 }

@@ -55,7 +55,7 @@ public class Viewport extends JPanel {
 
         // Draw strings.
         final int secondLineIndent = saveLoadManager.getIndentSize();
-        final int lineSpace = 70;
+        final int lineSpace = saveLoadManager.getLineSpace();
         int lineIndex = 0;
         int translatedX = 0;
         List<String> textList = saveLoadManager.getTextList();

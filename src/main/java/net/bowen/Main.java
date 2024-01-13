@@ -46,6 +46,13 @@ public class Main extends JFrame {
             viewport.repaint();
         }
     };
+    public final SizeConfigBar lineSpaceSizeConfigBar = new SizeConfigBar(3, "Line Space") {
+        @Override
+        public void documentCallback() {
+            saveLoadManager.setLineSpace(super.size);
+            viewport.repaint();
+        }
+    };
 
     public Timeline getTimeline() {
         return timeline;
@@ -118,6 +125,7 @@ public class Main extends JFrame {
         panel.add(defaultFontSizeBar);
         panel.add(linkedFontSizeBar);
         panel.add(lineIndentSizeBar);
+        panel.add(lineSpaceSizeConfigBar);
 
         Dimension size = new Dimension(150, 0);
         panel.setMinimumSize(size);

@@ -1,9 +1,6 @@
 package net.bowen;
 
-import net.bowen.gui.SizeConfigBar;
-import net.bowen.gui.LineNumberedScrollableTextArea;
-import net.bowen.gui.Timeline;
-import net.bowen.gui.Viewport;
+import net.bowen.gui.*;
 import net.bowen.system.SaveLoadManager;
 
 import javax.swing.*;
@@ -21,8 +18,8 @@ public class Main extends JFrame {
 
     private final SaveLoadManager saveLoadManager = new SaveLoadManager(this);
     private final Viewport viewport = new Viewport(saveLoadManager);
-    private final LineNumberedScrollableTextArea textArea;
     private final Timeline timeline = new Timeline(saveLoadManager, viewport);
+    private final LineNumberedScrollableTextArea textArea = getTextArea();
 
     public final SizeConfigBar defaultFontSizeBar = new SizeConfigBar(3, "Default Font Size") {
         @Override
@@ -83,6 +80,9 @@ public class Main extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
+    }
+
+    private void addComponents() {
         setLayout(new BorderLayout());
 
         // Menu bar on the top.
@@ -90,18 +90,19 @@ public class Main extends JFrame {
 
         // Top split pane(text area, viewport, config menu).
         JSplitPane topSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        topSplitPane.setResizeWeight(1); // make right part fixed when resizing.
         topSplitPane.setPreferredSize(new Dimension(getWidth(), (int) (getHeight() * .7f)));
         // sp1 hold: textArea & viewport. We have to separate like this because JSplitPane only support 2 splits.
         JSplitPane sp1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         viewport.setPreferredSize(new Dimension((int) (getWidth() * .6), 0));
         topSplitPane.add(sp1);
-        this.textArea = getTextArea();
         sp1.add(textArea);
         sp1.add(viewport);
         topSplitPane.add(getConfPanel());
 
         // Main split pane (sep top pane and bottom timeline).
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainSplitPane.setResizeWeight(1); // make right part fixed when resizing.
         timeline.setPreferredSize(getMinimumSize());
         mainSplitPane.add(topSplitPane);
         mainSplitPane.add(timeline);
@@ -203,5 +204,6 @@ public class Main extends JFrame {
 
     public static void main(String[] args) {
         mainFrame = new Main(INIT_FRAME_TITLE);
+        mainFrame.addComponents();
     }
 }

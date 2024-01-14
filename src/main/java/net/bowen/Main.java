@@ -128,9 +128,6 @@ public class Main extends JFrame {
         panel.add(lineIndentSizeBar);
         panel.add(lineSpaceSizeConfigBar);
 
-        Dimension size = new Dimension(150, 0);
-        panel.setMinimumSize(size);
-
         return panel;
     }
 

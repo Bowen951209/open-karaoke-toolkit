@@ -123,8 +123,8 @@ public class Timeline extends JPanel {
                             pointerX = toX(saveLoadManager.getLoadedAudio().getTimePosition());
                         }
 
-                        case MouseEvent.BUTTON3 -> {
-                            // If you right-click, delete selected mark.
+                        case MouseEvent.BUTTON2 -> {
+                            // If you middle-click, delete selected mark.
                             if (canvas.selectedMark != -1) {
                                 java.util.List<Long> marks = saveLoadManager.getMarks();
                                 markCmdMgr.execute(new MarkRemoveCommand(marks, canvas.selectedMark));

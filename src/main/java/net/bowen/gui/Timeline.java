@@ -458,7 +458,8 @@ public class Timeline extends JPanel {
 
         private void drawMarks(Graphics2D g2d) {
             g2d.setColor(Color.YELLOW);
-            ArrayList<Long> marks = saveLoadManager.getMarks();
+            var marks = saveLoadManager.getMarks();
+            var textList = saveLoadManager.getTextList();
 
             // Only if the mouse is not dragging to set to -1. This is for dragging control stability.
             if (!isMouseDragging) {
@@ -481,17 +482,23 @@ public class Timeline extends JPanel {
                 // (This will happen if the user delete words and influenced the exist marks.)
                 if (saveLoadManager.redundantMarkQuantity() != 0) {
                     int rq = saveLoadManager.redundantMarkQuantity();
-                    int q = saveLoadManager.getTextList().isEmpty() ? marks.size() : rq;
+                    int q = textList.isEmpty() ? marks.size() : rq;
                     markCmdMgr.execute(new MarkPopQuantityCommand(marks, q));
                     canvas.repaint();
                 }
 
                 // Then draw the rects and strings.
                 if (i > 0) {
-                    String s = saveLoadManager.getTextList().get(wordIndex);
+                    String s = textList.get(wordIndex);
+
+                    // Handle the \n || \n\n case.
                     if (s.equals("\n")) {
                         wordIndex++;
-                        s = saveLoadManager.getTextList().get(wordIndex);
+                        // if double \n
+                        if (textList.get(wordIndex).equals("\n"))
+                            wordIndex++;
+
+                        s = textList.get(wordIndex);
                     }
 
                     // x is applied to some adjusts to avoid covering the marks.

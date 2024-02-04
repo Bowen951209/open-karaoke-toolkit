@@ -488,17 +488,26 @@ public class Timeline extends JPanel {
                 }
 
                 // Then draw the rects and strings.
+                boolean isParagraphEnd = false;
+                boolean shouldDrawGap = true;
                 if (i > 0) {
-                    String s = textList.get(wordIndex);
+                    // This is for telling if it is the end of the paragraph.
+                    if (wordIndex + 2 < textList.size()) {
+                        String nextS = textList.get(wordIndex + 1);
+                        String nextnextS = textList.get(wordIndex + 2);
+                        // The \n\n case.
+                        if (nextS.equals("\n") && nextnextS.equals("\n"))
+                            isParagraphEnd = true;
+                    }
 
-                    // Handle the \n || \n\n case.
+                    String s = textList.get(wordIndex);
+                    // Handle the \n case.
                     if (s.equals("\n")) {
                         wordIndex++;
-                        // if double \n
-                        if (textList.get(wordIndex).equals("\n"))
-                            wordIndex++;
-
                         s = textList.get(wordIndex);
+
+                        // For this gap should not draw. (meeting double \n)
+                        if (s.equals("\n")) shouldDrawGap = false;
                     }
 
                     // x is applied to some adjusts to avoid covering the marks.
@@ -506,9 +515,14 @@ public class Timeline extends JPanel {
                     int width = x - lastX - iconSize / 2 + 1;
                     int height = 15;
                     Font f = new Font(Font.SANS_SERIF, Font.BOLD, Math.min(height - 2, width));
-                    g2d.setColor(Color.WHITE);
-                    g2d.fillRect(lastX, 0, width, height);
 
+                    // Draw the rectangle gaps.
+                    if (shouldDrawGap) {
+                        g2d.setColor(Color.WHITE);
+                        g2d.fillRect(lastX, 0, width, height);
+                    }
+
+                    // Draw the words in the marks.
                     g2d.setColor(Color.BLACK);
                     g2d.setFont(f);
                     g2d.drawString(s, lastX + width / 2 - f.getSize() * s.length() / 2, 10); // x is at the middle.
@@ -548,15 +562,18 @@ public class Timeline extends JPanel {
                     }
                 }
 
-                // Draw the mark image. If the mark is the last mark, draw the special end icon.
-                if (i != marks.size() - 1) {
+                // Draw the mark image. If the mark is the end mark, draw the special end icon.
+                // p.s. End marks are the last one of all the marks or the last mark of the paragraph.
+                if (i == marks.size() - 1 || isParagraphEnd) {
+                    // End mark case.
+                    g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconSize, iconSize, null);
+                } else {
+                    // General mark case.
                     g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, iconSize, iconSize, null);
                     g2d.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 8));
 
                     g2d.setColor(Color.BLACK);
                     g2d.drawString(Integer.toString(i), x + 3, 8);
-                } else {
-                    g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconSize, iconSize, null);
                 }
             }
 

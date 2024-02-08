@@ -480,8 +480,8 @@ public class Timeline extends JPanel {
                 // -----Draw the gaps:-----
                 // First to reallocate marks size if the number of marks is too many.
                 // (This will happen if the user delete words and influenced the exist marks.)
-                if (saveLoadManager.redundantMarkQuantity() != 0) {
-                    int rq = saveLoadManager.redundantMarkQuantity();
+                if (saveLoadManager.getRedundantMarkQuantity() != 0) {
+                    int rq = saveLoadManager.getRedundantMarkQuantity();
                     int q = textList.isEmpty() ? marks.size() : rq;
                     markCmdMgr.execute(new MarkPopQuantityCommand(marks, q));
                     canvas.repaint();

@@ -60,11 +60,20 @@ public class Viewport extends JPanel {
         int translatedX = 0;
         List<String> textList = saveLoadManager.getTextList();
         refreshRenderingLines(time);
-        for (int i = 0; i < textList.size(); i++) {
+        for (int i = 0, offset = 0; i < textList.size(); i++) {
             String s = textList.get(i);
 
+            // Checking if this word is the head of a new paragraph.
+            boolean isNewParagraph = false;
+            if (i > 2)
+                isNewParagraph = textList.get(i - 1).equals("\n") && textList.get(i - 2).equals("\n");
+
+            // Defining which mark has the end time of this word.
+            // If the word is the head of a new paragraph, the offset should + 1.
+            if (isNewParagraph) offset++;
+            int endMarkIndex = i + 1 - lineIndex + offset;
+
             // If no available mark for this word, break.
-            int endMarkIndex = i + 1 - lineIndex;
             if (saveLoadManager.getMarks().size() - 1 < endMarkIndex)
                 break;
 
@@ -133,10 +142,13 @@ public class Viewport extends JPanel {
         List<Long> marks = saveLoadManager.getMarks();
         renderingLines[0] = 0;
         renderingLines[1] = 1;
-        for (int i = 0, line = 0; i < textList.size(); i++) {
+        for (int i = 0, offset = 0, line = 0; i < textList.size(); i++) {
             String s = textList.get(i);
-            if (s.equals("\n") && i < marks.size()) {
-                long lastWordEndTime = marks.get(i - line);
+            if (s.equals("\n") && i + 1 < marks.size()) {
+                boolean isNewParagraph = textList.get(i + 1).equals("\n");
+                if (isNewParagraph) offset++;
+
+                long lastWordEndTime = marks.get(i - line + offset);
                 if (lastWordEndTime < time) {
                     if (line % 2 == 0) {
                         renderingLines[0] = line + 2;

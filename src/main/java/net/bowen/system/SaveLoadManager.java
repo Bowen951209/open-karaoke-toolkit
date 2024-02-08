@@ -25,6 +25,8 @@ import static net.bowen.gui.Timeline.PIXEL_TIME_RATIO;
  */
 public class SaveLoadManager {
     private final Main mainFrame;
+    
+    // TODO: String -> char
     private final List<String> textList = new ArrayList<>();
 
     private final Data data = new Data();
@@ -147,9 +149,10 @@ public class SaveLoadManager {
         System.out.println("Loaded audio: " + f);
     }
 
-    public int redundantMarkQuantity() {
+    public int getRedundantMarkQuantity() {
         int numSlashN = Collections.frequency(textList, "\n");
-        int q = data.marks.size() - (textList.size() - numSlashN + 1);
+        int numDoubleSlashN = getNumDoubleSlashN();
+        int q = data.marks.size() - (textList.size() - numSlashN + numDoubleSlashN + 1);
         return Math.max(0, q);
     }
 
@@ -257,6 +260,17 @@ public class SaveLoadManager {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private int getNumDoubleSlashN() {
+        String text = data.text;
+        int frequency = 0;
+        for (int i = 0; i < text.length() - 1; i++) {
+            if (text.charAt(i) == '\n' && text.charAt(i + 1) == '\n')
+                frequency++;
+        }
+
+        return frequency;
     }
 
     private static class Data implements Serializable {

@@ -278,8 +278,8 @@ public class Timeline extends JPanel {
         private String displayFileName = "";
 
         public ControlPanel() {
+            super(new BorderLayout(0, 0));
             Dimension size = new Dimension(Integer.MAX_VALUE, ICON_SIZE.height);
-            setLayout(new BorderLayout(0, 0));
             setMaximumSize(size);
 
             JPanel componentsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));

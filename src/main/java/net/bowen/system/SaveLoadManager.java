@@ -26,7 +26,10 @@ import static net.bowen.gui.Timeline.PIXEL_TIME_RATIO;
 public class SaveLoadManager {
     private final Main mainFrame;
 
-    // TODO: String -> char
+    /**
+     * This list stores the text(lyrics) string as an array, but with some modifications that the linked words would
+     * stay in the same elements. For example, the string "ab'c\ndef" would store as the list {a, bc, \n, d, e, f}.
+     */
     private final List<String> textList = new ArrayList<>();
 
     private final Data data = new Data();
@@ -52,15 +55,14 @@ public class SaveLoadManager {
         for (int i = 0; i < text.length(); i++) {
             String thisWord = String.valueOf(text.charAt(i));
 
-            if (i + 1 < text.length()) {// IF not last word
+            if (i + 1 < text.length()) {// If not last word
                 char nextChar = text.charAt(i + 1);
 
                 if (nextChar == '\'') {// linked word case
-                    String linkedWord = thisWord;
                     i += 2;
-                    linkedWord += String.valueOf(text.charAt(i));
+                    String linkedWord = thisWord + text.charAt(i);
                     textList.add(linkedWord);
-                } else {
+                } else { // single word case
                     textList.add(thisWord);
                 }
             } else {

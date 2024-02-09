@@ -12,14 +12,19 @@ public class SlidableNumberBar extends JPanel {
     private final int maxValue;
     private final JTextFieldLimit textField;
 
-    protected int val;
 
+    private int dragStep = 1;
     private int oVal;
+    private int val;
     private int mouseLastX;
 
     public void setValue(int val) {
         this.val = val;
         textField.setText(String.valueOf(val));
+    }
+
+    public void setDragStep(int v) {
+        this.dragStep = v;
     }
 
     public int getVal() {
@@ -40,15 +45,14 @@ public class SlidableNumberBar extends JPanel {
     /**
      * @param limitDigit limit digit of font size.
      */
-    public SlidableNumberBar(int limitDigit, String text) {
+    public SlidableNumberBar(int defaultVal, int limitDigit, String text) {
         super(new FlowLayout(FlowLayout.LEFT));
-        textField = new JTextFieldLimit(true, limitDigit, "-1");
+        textField = new JTextFieldLimit(true, limitDigit, String.valueOf(defaultVal));
+        this.val = defaultVal;
         this.maxValue = (int) (Math.pow(10, limitDigit) - 1);
 
         // Set the size.
-        setPreferredSize(new Dimension(150, 30));
-        setMaximumSize(getPreferredSize());
-        setMinimumSize(getPreferredSize());
+        fixSize(150);
 
         textField.addMouseListener(new MouseAdapter() {
             @Override
@@ -71,7 +75,7 @@ public class SlidableNumberBar extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
                 requestFocus(); // *This is for even mouse is outside the component, drag callback still calls.
-                int delta = e.getX() - mouseLastX;
+                int delta = (e.getX() - mouseLastX) * dragStep;
                 val = Math.max(delta + oVal, 0);
                 val = Math.min(val, maxValue);
                 oVal = val;
@@ -83,5 +87,18 @@ public class SlidableNumberBar extends JPanel {
         JLabel label = new JLabel(text);
         add(label);
         add(textField);
+    }
+
+    /**
+     * @param limitDigit limit digit of font size.
+     */
+    public SlidableNumberBar(int limitDigit, String text) {
+        this(-1, limitDigit, text);
+    }
+
+    public void fixSize(int width) {
+        setPreferredSize(new Dimension(width, 30));
+        setMaximumSize(getPreferredSize());
+        setMinimumSize(getPreferredSize());
     }
 }

@@ -5,6 +5,7 @@ import net.bowen.system.SaveLoadManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.font.GlyphVector;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,9 @@ public class Viewport extends JPanel {
         super.paint(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.translate(0, defaultFont.getSize()); // translate to initial position.
+        final int x = saveLoadManager.getTextPosX();
+        final int y = saveLoadManager.getTextPosY();
+        g2d.translate(x, y + defaultFont.getSize()); // translate to initial position.
 
         // Draw the string.
         if (saveLoadManager.getText() != null) {
@@ -49,8 +52,6 @@ public class Viewport extends JPanel {
 
 
     private void drawText(Graphics2D g2d) {
-        g2d.setStroke(new BasicStroke(1));
-
         long time = saveLoadManager.getLoadedAudio().getTimePosition();
 
         // Draw strings.
@@ -77,7 +78,11 @@ public class Viewport extends JPanel {
             if (saveLoadManager.getMarks().size() - 1 < endMarkIndex)
                 break;
 
-            // If meet \n, next line.
+            // If is new paragraph, try to draw the ready dots.
+            if (isNewParagraph || i == 0 )
+                drawReadyDots(g2d, time, endMarkIndex - 1);
+
+            // If meet single \n, next line.
             if (s.equals("\n")) {
                 lineIndex++;
 
@@ -127,6 +132,7 @@ public class Viewport extends JPanel {
             g2d.fill(intersectArea);
 
             // Border
+            g2d.setStroke(new BasicStroke(1));
             g2d.setColor(Color.BLACK);
             g2d.draw(fontArea);
 
@@ -174,5 +180,43 @@ public class Viewport extends JPanel {
         int w = (int) (ratio * rectMaxSize);
 
         return new Rectangle(0, -dFontSize, w, dFontSize + 20); // 20 is the needed adjustment.
+    }
+
+    private void drawReadyDots(Graphics2D g2d, long time, int wordStartMarkIdx) {
+        ArrayList<Long> marks = saveLoadManager.getMarks();
+        long wordStartTime = marks.get(wordStartMarkIdx);
+
+        final int period = saveLoadManager.getDotsPeriod();
+        final long dotsStartTime = wordStartTime - period;
+        final int dotsNum = saveLoadManager.getDotsNum();
+        final int dotSize = 50;
+
+        // If int the period, draw.
+        if (time > dotsStartTime && time < wordStartTime) {
+            final int startX = saveLoadManager.getDotsPosX() - saveLoadManager.getTextPosX();
+            final int startY = saveLoadManager.getDotsPosY() - saveLoadManager.getTextPosY() - defaultFont.getSize();
+            Area area = new Area();
+
+            // Dot shapes.
+            for (int i = 0, x = startX; i < dotsNum; i++, x += dotSize) {
+                // Get the shape.
+                Shape arcShape = new Arc2D.Float(x, startY, dotSize, dotSize, 0, 360, Arc2D.OPEN);
+
+                // Draw arc bounds.
+                g2d.setStroke(new BasicStroke(5));
+                g2d.draw(arcShape);
+
+                // Add to area.
+                area.add(new Area(arcShape));
+            }
+
+            // Scrolling rect.
+            int width = (int) ((float) (time - dotsStartTime) / period * dotSize * dotsNum);
+            Rectangle rect = new Rectangle(startX, startY, width, dotSize);
+            area.intersect(new Area(rect));
+
+            g2d.setColor(Color.CYAN);
+            g2d.fill(area);
+        }
     }
 }

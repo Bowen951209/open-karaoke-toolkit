@@ -25,7 +25,7 @@ import static net.bowen.gui.Timeline.PIXEL_TIME_RATIO;
  */
 public class SaveLoadManager {
     private final Main mainFrame;
-    
+
     // TODO: String -> char
     private final List<String> textList = new ArrayList<>();
 
@@ -71,6 +71,54 @@ public class SaveLoadManager {
 
     public String getText() {
         return data.text;
+    }
+
+    public void setDotsPosX(int x) {
+        data.dotsPosX = x;
+    }
+
+    public int getDotsPosX() {
+        return data.dotsPosX;
+    }
+
+    public void setDotsPosY(int y) {
+        data.dotsPosY = y;
+    }
+
+    public int getDotsPosY() {
+        return data.dotsPosY;
+    }
+
+    public void setTextPosX(int x) {
+        data.textPosX = x;
+    }
+
+    public int getTextPosX() {
+        return data.textPosX;
+    }
+
+    public void setTextPosY(int y) {
+        data.textPosY = y;
+    }
+
+    public int getTextPosY() {
+        return data.textPosY;
+    }
+
+    public void setDotsNum(int v) {
+        data.dotsNum = v;
+    }
+
+    public int getDotsNum() {
+        return data.dotsNum;
+    }
+
+    public void setDotsPeriod(int v) {
+        data.dotsPeriod = v;
+    }
+
+    public int getDotsPeriod() {
+        return data.dotsPeriod;
     }
 
     public void setDefaultFontSize(int s) {
@@ -170,6 +218,12 @@ public class SaveLoadManager {
         // General information.
         props.setProperty("audio", audioRelativePath);
         props.setProperty("text", data.text);
+        props.setProperty("textPosX", String.valueOf(data.textPosX));
+        props.setProperty("textPosY", String.valueOf(data.textPosY));
+        props.setProperty("dotsPosX", String.valueOf(data.dotsPosX));
+        props.setProperty("dotsPosY", String.valueOf(data.dotsPosY));
+        props.setProperty("dotsNum", String.valueOf(data.dotsNum));
+        props.setProperty("dotsPeriod", String.valueOf(data.dotsPeriod));
         props.setProperty("defaultFontSize", String.valueOf(data.defaultFontSize));
         props.setProperty("linkedFontSize", String.valueOf(data.linkedFontSize));
         props.setProperty("indentSize", String.valueOf(data.indentSize));
@@ -207,6 +261,24 @@ public class SaveLoadManager {
             mainFrame.getTextArea().setText(data.text); // also update to text area.
 
             // size bars
+            data.textPosX = Integer.parseInt(props.getProperty("textPosX"));
+            mainFrame.textPosXConfigBar.setValue(data.textPosX);// also update to bar.
+
+            data.textPosY = Integer.parseInt(props.getProperty("textPosY"));
+            mainFrame.textPosYConfigBar.setValue(data.textPosY);// also update to bar.
+
+            data.dotsPosX = Integer.parseInt(props.getProperty("dotsPosX"));
+            mainFrame.dotsPosXConfigBar.setValue(data.dotsPosX);// also update to bar.
+
+            data.dotsPosY = Integer.parseInt(props.getProperty("dotsPosY"));
+            mainFrame.dotsPosYConfigBar.setValue(data.dotsPosY);// also update to bar.
+
+            data.dotsNum = Integer.parseInt(props.getProperty("dotsNum"));
+            mainFrame.readyDotsNumComboBox.setSelectedItem(data.dotsNum);// also update to bar.
+
+            data.dotsPeriod = Integer.parseInt(props.getProperty("dotsPeriod"));
+            mainFrame.readyDotsTimeConfigBar.setValue(data.dotsPeriod);// also update to bar.
+
             data.defaultFontSize = Integer.parseInt(props.getProperty("defaultFontSize"));
             mainFrame.defaultFontSizeBar.setValue(data.defaultFontSize);// also update to bar.
 
@@ -277,6 +349,12 @@ public class SaveLoadManager {
         final ArrayList<Long> marks = new ArrayList<>();
         URL loadedAudioURL;
         String text = "";
+        int textPosX;
+        int textPosY;
+        int dotsPosX;
+        int dotsPosY;
+        int dotsPeriod;
+        int dotsNum;
         int defaultFontSize;
         int linkedFontSize;
         int indentSize;

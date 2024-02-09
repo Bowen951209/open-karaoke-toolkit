@@ -208,16 +208,16 @@ public class SaveLoadManager {
 
             // size bars
             data.defaultFontSize = Integer.parseInt(props.getProperty("defaultFontSize"));
-            mainFrame.defaultFontSizeBar.set(data.defaultFontSize);// also update to bar.
+            mainFrame.defaultFontSizeBar.setValue(data.defaultFontSize);// also update to bar.
 
             data.linkedFontSize = Integer.parseInt(props.getProperty("linkedFontSize"));
-            mainFrame.linkedFontSizeBar.set(data.linkedFontSize);// also update to bar.
+            mainFrame.linkedFontSizeBar.setValue(data.linkedFontSize);// also update to bar.
 
             data.indentSize = Integer.parseInt(props.getProperty("indentSize"));
-            mainFrame.lineIndentSizeBar.set(data.indentSize);// also update to bar.
+            mainFrame.lineIndentSizeBar.setValue(data.indentSize);// also update to bar.
 
             data.lineSpace = Integer.parseInt(props.getProperty("lineSpace"));
-            mainFrame.lineSpaceSizeConfigBar.set(data.lineSpace);// also update to bar.
+            mainFrame.lineSpaceSizeConfigBar.setValue(data.lineSpace);// also update to bar.
 
             // marks
             String[] marksStrings = props.getProperty("marks").split(",");

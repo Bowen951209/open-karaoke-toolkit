@@ -21,36 +21,10 @@ public class Main extends JFrame {
     private final Timeline timeline = new Timeline(saveLoadManager, viewport);
     private final LineNumberedScrollableTextArea textArea = getTextArea();
 
-    public final SizeConfigBar defaultFontSizeBar = new SizeConfigBar(3, "Default Font Size") {
-        @Override
-        public void documentCallback() {
-            saveLoadManager.setDefaultFontSize(super.size);
-            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getDefaultFontSize()));
-            viewport.repaint();
-        }
-    };
-    public final SizeConfigBar linkedFontSizeBar = new SizeConfigBar(3, "Linked Font Size") {
-        @Override
-        public void documentCallback() {
-            saveLoadManager.setLinkedFontSize(super.size);
-            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getLinkedFontSize()));
-            viewport.repaint();
-        }
-    };
-    public final SizeConfigBar lineIndentSizeBar = new SizeConfigBar(3, "2nd Line Indent") {
-        @Override
-        public void documentCallback() {
-            saveLoadManager.setIndentSize(super.size);
-            viewport.repaint();
-        }
-    };
-    public final SizeConfigBar lineSpaceSizeConfigBar = new SizeConfigBar(3, "Line Space") {
-        @Override
-        public void documentCallback() {
-            saveLoadManager.setLineSpace(super.size);
-            viewport.repaint();
-        }
-    };
+    public final SlidableNumberBar defaultFontSizeBar;
+    public final SlidableNumberBar linkedFontSizeBar;
+    public final SlidableNumberBar lineIndentSizeBar;
+    public final SlidableNumberBar lineSpaceSizeConfigBar;
 
     public Timeline getTimeline() {
         return timeline;
@@ -80,6 +54,33 @@ public class Main extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
+
+        // Init the components.
+        this.defaultFontSizeBar = new SlidableNumberBar(3, "Default Font Size");
+        this.defaultFontSizeBar.addDocumentListener(() -> {
+            saveLoadManager.setDefaultFontSize(defaultFontSizeBar.getVal());
+            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getDefaultFontSize()));
+            viewport.repaint();
+        });
+
+        this.linkedFontSizeBar = new SlidableNumberBar(3, "Linked Font Size");
+        this.linkedFontSizeBar.addDocumentListener(() -> {
+            saveLoadManager.setLinkedFontSize(linkedFontSizeBar.getVal());
+            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getLinkedFontSize()));
+            viewport.repaint();
+        });
+
+        this.lineIndentSizeBar = new SlidableNumberBar(3, "2nd Line Indent");
+        this.lineIndentSizeBar.addDocumentListener(() -> {
+            saveLoadManager.setIndentSize(lineIndentSizeBar.getVal());
+            viewport.repaint();
+        });
+
+        this.lineSpaceSizeConfigBar = new SlidableNumberBar(3, "Line Space");
+        this.lineSpaceSizeConfigBar.addDocumentListener(() -> {
+            saveLoadManager.setLineSpace(lineSpaceSizeConfigBar.getVal());
+            viewport.repaint();
+        });
     }
 
     private void addComponents() {

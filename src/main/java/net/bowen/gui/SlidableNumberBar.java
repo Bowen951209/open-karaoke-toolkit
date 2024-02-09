@@ -8,24 +8,39 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
-public abstract class SizeConfigBar extends JPanel {
+public class SlidableNumberBar extends JPanel {
     private final int maxValue;
     private final JTextFieldLimit textField;
 
-    protected int size;
+    protected int val;
 
     private int oVal;
     private int mouseLastX;
 
-    public void set(int size) {
-        this.size = size;
-        textField.setText(String.valueOf(size));
+    public void setValue(int val) {
+        this.val = val;
+        textField.setText(String.valueOf(val));
+    }
+
+    public int getVal() {
+        return val;
+    }
+
+    public void addDocumentListener(Runnable e) {
+        textField.getDocument().addDocumentListener(new SimpleDocumentListener(() -> {
+            // If the text is not empty, convert the string to int value.
+            if (!textField.getText().isEmpty())
+                val = Integer.parseInt(textField.getText());
+
+            // The passed in listener.
+            e.run();
+        }));
     }
 
     /**
      * @param limitDigit limit digit of font size.
      */
-    public SizeConfigBar(int limitDigit, String text) {
+    public SlidableNumberBar(int limitDigit, String text) {
         super(new FlowLayout(FlowLayout.LEFT));
         textField = new JTextFieldLimit(true, limitDigit, "-1");
         this.maxValue = (int) (Math.pow(10, limitDigit) - 1);
@@ -57,25 +72,16 @@ public abstract class SizeConfigBar extends JPanel {
             public void mouseDragged(MouseEvent e) {
                 requestFocus(); // *This is for even mouse is outside the component, drag callback still calls.
                 int delta = e.getX() - mouseLastX;
-                size = Math.max(delta + oVal, 0);
-                size = Math.min(size, maxValue);
-                oVal = size;
-                textField.setText(String.valueOf(size));
+                val = Math.max(delta + oVal, 0);
+                val = Math.min(val, maxValue);
+                oVal = val;
+                textField.setText(String.valueOf(val));
                 mouseLastX = e.getX();
             }
         });
-
-        textField.getDocument().addDocumentListener(new SimpleDocumentListener(() -> {
-            if (!textField.getText().isEmpty())
-                size = Integer.parseInt(textField.getText());
-
-            documentCallback();
-        }));
 
         JLabel label = new JLabel(text);
         add(label);
         add(textField);
     }
-
-    public abstract void documentCallback();
 }

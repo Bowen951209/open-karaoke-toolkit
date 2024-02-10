@@ -25,14 +25,13 @@ import static net.bowen.gui.Timeline.PIXEL_TIME_RATIO;
  */
 public class SaveLoadManager {
     private final Main mainFrame;
-
     /**
      * This list stores the text(lyrics) string as an array, but with some modifications that the linked words would
      * stay in the same elements. For example, the string "ab'c\ndef" would store as the list {a, bc, \n, d, e, f}.
      */
     private final List<String> textList = new ArrayList<>();
-
     private final Data data = new Data();
+
     private Audio loadedAudio;
 
     public SaveLoadManager(Main mainFrame) {
@@ -161,29 +160,31 @@ public class SaveLoadManager {
     }
 
     public void setLoadedAudio(URL audio) {
+        Timeline timeline = mainFrame.getTimeline();
+        if (timeline == null) return;
+        Timeline.Canvas canvas = timeline.getCanvas();
+
+        // If there is a currently loaded audio, close it first.
         if (loadedAudio != null)
             loadedAudio.close();
 
         data.loadedAudioURL = audio;
         loadedAudio = new Audio(audio);
 
+        // Display the file name on the timeline.
         String path = audio.getPath();
         String fileName = path.substring(path.lastIndexOf("/") + 1);
-        mainFrame.getTimeline().setDisplayFileName(fileName);
+        timeline.setDisplayFileName(fileName);
 
-        Timeline timeline = mainFrame.getTimeline();
-        if (timeline == null) return;
-
-        Timeline.Canvas canvas = timeline.getCanvas();
-
-
+        // Ready the wave img.
         int imgWidth = (int) (getLoadedAudio().getTotalTime() * PIXEL_TIME_RATIO * Timeline.SLIDER_MAX_VAL * 0.01f);
 
-        mainFrame.getTimeline().setWaveImg(BoxWaveform.loadImage(
+        timeline.setWaveImg(BoxWaveform.loadImage(
                 audio,
                 new Dimension(imgWidth, 50), 1,
                 new Color(5, 80, 20)));
 
+        // Stop the timer and revalidate the canvas.
         timeline.timeStop();
         canvas.setSize();
         canvas.revalidate();

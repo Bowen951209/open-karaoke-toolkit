@@ -8,7 +8,6 @@ import net.bowen.gui.Timeline;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -159,7 +158,7 @@ public class SaveLoadManager {
         return textList;
     }
 
-    public void setLoadedAudio(URL audio) {
+    public void setLoadedAudio(File audio) {
         Timeline timeline = mainFrame.getTimeline();
         if (timeline == null) return;
         Timeline.Canvas canvas = timeline.getCanvas();
@@ -168,13 +167,11 @@ public class SaveLoadManager {
         if (loadedAudio != null)
             loadedAudio.close();
 
-        data.loadedAudioURL = audio;
+        data.loadedAudioPath = audio.getPath();
         loadedAudio = new Audio(audio);
 
         // Display the file name on the timeline.
-        String path = audio.getPath();
-        String fileName = path.substring(path.lastIndexOf("/") + 1);
-        timeline.setDisplayFileName(fileName);
+        timeline.setDisplayFileName(audio.getName());
 
         // Ready the wave img.
         int imgWidth = (int) (getLoadedAudio().getTotalTime() * PIXEL_TIME_RATIO * Timeline.SLIDER_MAX_VAL * 0.01f);
@@ -188,16 +185,8 @@ public class SaveLoadManager {
         timeline.timeStop();
         canvas.setSize();
         canvas.revalidate();
-    }
 
-    public void setLoadedAudio(File f) {
-        try {
-            setLoadedAudio(f.toURI().toURL());
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-
-        System.out.println("Loaded audio: " + f);
+        System.out.println("Loaded audio: " + audio);
     }
 
     public int getRedundantMarkQuantity() {
@@ -211,12 +200,8 @@ public class SaveLoadManager {
         Properties props = new Properties();
 
         URI base = new File(System.getProperty("user.dir")).toURI();
-        String audioRelativePath;
-        try {
-            audioRelativePath = String.valueOf(base.relativize(data.loadedAudioURL.toURI()));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        URI audio = new File(data.loadedAudioPath).toURI();
+        String audioRelativePath = String.valueOf(base.relativize(audio));
 
         // General information.
         props.setProperty("audio", audioRelativePath);
@@ -350,7 +335,7 @@ public class SaveLoadManager {
 
     private static class Data implements Serializable {
         final ArrayList<Long> marks = new ArrayList<>();
-        URL loadedAudioURL;
+        String loadedAudioPath;
         String text = "";
         int textPosX;
         int textPosY;

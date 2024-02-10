@@ -29,7 +29,8 @@ public class SaveLoadManager {
      * stay in the same elements. For example, the string "ab'c\ndef" would store as the list {a, bc, \n, d, e, f}.
      */
     private final List<String> textList = new ArrayList<>();
-    private final Data data = new Data();
+    private final ArrayList<Long> marks = new ArrayList<>();
+    private final Properties props = new Properties();
 
     private Audio loadedAudio;
 
@@ -42,11 +43,27 @@ public class SaveLoadManager {
     }
 
     public ArrayList<Long> getMarks() {
-        return data.marks;
+        return marks;
+    }
+
+    public String getProp(String key) {
+        return props.getProperty(key);
+    }
+
+    public int getPropInt(String key) {
+        return Integer.parseInt(getProp(key));
+    }
+
+    public void setProp(String key, String val) {
+        props.setProperty(key, val);
+    }
+
+    public void setProp(String key, int val) {
+        props.setProperty(key, String.valueOf(val));
     }
 
     public void setText(String text) {
-        data.text = text;
+        setProp("text", text);
         textList.clear();
 
         // Set the textList.
@@ -69,91 +86,6 @@ public class SaveLoadManager {
         }
     }
 
-    public String getText() {
-        return data.text;
-    }
-
-    public void setDotsPosX(int x) {
-        data.dotsPosX = x;
-    }
-
-    public int getDotsPosX() {
-        return data.dotsPosX;
-    }
-
-    public void setDotsPosY(int y) {
-        data.dotsPosY = y;
-    }
-
-    public int getDotsPosY() {
-        return data.dotsPosY;
-    }
-
-    public void setTextPosX(int x) {
-        data.textPosX = x;
-    }
-
-    public int getTextPosX() {
-        return data.textPosX;
-    }
-
-    public void setTextPosY(int y) {
-        data.textPosY = y;
-    }
-
-    public int getTextPosY() {
-        return data.textPosY;
-    }
-
-    public void setDotsNum(int v) {
-        data.dotsNum = v;
-    }
-
-    public int getDotsNum() {
-        return data.dotsNum;
-    }
-
-    public void setDotsPeriod(int v) {
-        data.dotsPeriod = v;
-    }
-
-    public int getDotsPeriod() {
-        return data.dotsPeriod;
-    }
-
-    public void setDefaultFontSize(int s) {
-        data.defaultFontSize = s;
-    }
-
-    public int getDefaultFontSize() {
-        return data.defaultFontSize;
-    }
-
-    public void setLinkedFontSize(int s) {
-        data.linkedFontSize = s;
-    }
-
-    public int getLinkedFontSize() {
-        return data.linkedFontSize;
-    }
-
-    public void setIndentSize(int s) {
-        data.indentSize = s;
-    }
-
-    public int getIndentSize() {
-        return data.indentSize;
-    }
-
-    public void setLineSpace(int s) {
-        data.lineSpace = s;
-    }
-
-    public int getLineSpace() {
-        return data.lineSpace;
-    }
-
-
     public List<String> getTextList() {
         return textList;
     }
@@ -167,8 +99,13 @@ public class SaveLoadManager {
         if (loadedAudio != null)
             loadedAudio.close();
 
-        data.loadedAudioPath = audio.getPath();
         loadedAudio = new Audio(audio);
+
+        // Store the audio file relative path.
+        URI base = new File(System.getProperty("user.dir")).toURI();
+        URI audioURI = audio.toURI();
+        String audioRelativePath = String.valueOf(base.relativize(audioURI));
+        setProp("audio", audioRelativePath);
 
         // Display the file name on the timeline.
         timeline.setDisplayFileName(audio.getName());
@@ -192,34 +129,14 @@ public class SaveLoadManager {
     public int getRedundantMarkQuantity() {
         int numSlashN = Collections.frequency(textList, "\n");
         int numDoubleSlashN = getNumDoubleSlashN();
-        int q = data.marks.size() - (textList.size() - numSlashN + numDoubleSlashN + 1);
+        int q = marks.size() - (textList.size() - numSlashN + numDoubleSlashN + 1);
         return Math.max(0, q);
     }
 
     public void saveFileAs(File file) {
-        Properties props = new Properties();
-
-        URI base = new File(System.getProperty("user.dir")).toURI();
-        URI audio = new File(data.loadedAudioPath).toURI();
-        String audioRelativePath = String.valueOf(base.relativize(audio));
-
-        // General information.
-        props.setProperty("audio", audioRelativePath);
-        props.setProperty("text", data.text);
-        props.setProperty("textPosX", String.valueOf(data.textPosX));
-        props.setProperty("textPosY", String.valueOf(data.textPosY));
-        props.setProperty("dotsPosX", String.valueOf(data.dotsPosX));
-        props.setProperty("dotsPosY", String.valueOf(data.dotsPosY));
-        props.setProperty("dotsNum", String.valueOf(data.dotsNum));
-        props.setProperty("dotsPeriod", String.valueOf(data.dotsPeriod));
-        props.setProperty("defaultFontSize", String.valueOf(data.defaultFontSize));
-        props.setProperty("linkedFontSize", String.valueOf(data.linkedFontSize));
-        props.setProperty("indentSize", String.valueOf(data.indentSize));
-        props.setProperty("lineSpace", String.valueOf(data.lineSpace));
-
         // Marks.
         StringBuilder stringBuilder = new StringBuilder();
-        for (Long t : data.marks) {
+        for (Long t : marks) {
             stringBuilder.append(t).append(",");
         }
         props.setProperty("marks", stringBuilder.toString());
@@ -239,51 +156,50 @@ public class SaveLoadManager {
 
         try (InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             // Load the properties file.
-            Properties props = new Properties();
             props.load(inputStreamReader);
 
             // Set the values to data.
 
             // Text
             setText(props.getProperty("text"));
-            mainFrame.getTextArea().setText(data.text); // also update to text area.
+            mainFrame.getTextArea().setText(getProp("text")); // also update to text area.
 
             // size bars
-            data.textPosX = Integer.parseInt(props.getProperty("textPosX"));
-            mainFrame.textPosXConfigBar.setValue(data.textPosX);// also update to bar.
+            setProp("textPosX", props.getProperty("textPosX"));
+            mainFrame.textPosXConfigBar.setValue(getPropInt("textPosX"));// also update to bar.
 
-            data.textPosY = Integer.parseInt(props.getProperty("textPosY"));
-            mainFrame.textPosYConfigBar.setValue(data.textPosY);// also update to bar.
+            setProp("textPosY", props.getProperty("textPosY"));
+            mainFrame.textPosYConfigBar.setValue(getPropInt("textPosY"));// also update to bar.
 
-            data.dotsPosX = Integer.parseInt(props.getProperty("dotsPosX"));
-            mainFrame.dotsPosXConfigBar.setValue(data.dotsPosX);// also update to bar.
+            setProp("dotsPosX", props.getProperty("dotsPosX"));
+            mainFrame.dotsPosXConfigBar.setValue(getPropInt("dotsPosX"));// also update to bar.
 
-            data.dotsPosY = Integer.parseInt(props.getProperty("dotsPosY"));
-            mainFrame.dotsPosYConfigBar.setValue(data.dotsPosY);// also update to bar.
+            setProp("dotsPosY", props.getProperty("dotsPosY"));
+            mainFrame.dotsPosYConfigBar.setValue(getPropInt("dotsPosY"));// also update to bar.
 
-            data.dotsNum = Integer.parseInt(props.getProperty("dotsNum"));
-            mainFrame.readyDotsNumComboBox.setSelectedItem(data.dotsNum);// also update to bar.
+            setProp("dotsNum", props.getProperty("dotsNum"));
+            mainFrame.readyDotsNumComboBox.setSelectedItem(getPropInt("dotsNum"));// also update to bar.
 
-            data.dotsPeriod = Integer.parseInt(props.getProperty("dotsPeriod"));
-            mainFrame.readyDotsTimeConfigBar.setValue(data.dotsPeriod);// also update to bar.
+            setProp("dotsPeriod", props.getProperty("dotsPeriod"));
+            mainFrame.readyDotsTimeConfigBar.setValue(getPropInt("dotsPeriod"));// also update to bar.
 
-            data.defaultFontSize = Integer.parseInt(props.getProperty("defaultFontSize"));
-            mainFrame.defaultFontSizeBar.setValue(data.defaultFontSize);// also update to bar.
+            setProp("defaultFontSize", props.getProperty("defaultFontSize"));
+            mainFrame.defaultFontSizeBar.setValue(getPropInt("defaultFontSize"));// also update to bar.
 
-            data.linkedFontSize = Integer.parseInt(props.getProperty("linkedFontSize"));
-            mainFrame.linkedFontSizeBar.setValue(data.linkedFontSize);// also update to bar.
+            setProp("linkedFontSize", props.getProperty("linkedFontSize"));
+            mainFrame.linkedFontSizeBar.setValue(getPropInt("linkedFontSize"));// also update to bar.
 
-            data.indentSize = Integer.parseInt(props.getProperty("indentSize"));
-            mainFrame.lineIndentSizeBar.setValue(data.indentSize);// also update to bar.
+            setProp("indentSize", props.getProperty("indentSize"));
+            mainFrame.lineIndentSizeBar.setValue(getPropInt("indentSize"));// also update to bar.
 
-            data.lineSpace = Integer.parseInt(props.getProperty("lineSpace"));
-            mainFrame.lineSpaceSizeConfigBar.setValue(data.lineSpace);// also update to bar.
+            setProp("lineSpace", props.getProperty("lineSpace"));
+            mainFrame.lineSpaceSizeConfigBar.setValue(getPropInt("lineSpace"));// also update to bar.
 
             // marks
             String[] marksStrings = props.getProperty("marks").split(",");
-            data.marks.clear();
+            marks.clear();
             for (String string : marksStrings)
-                data.marks.add(Long.valueOf(string));
+                marks.add(Long.valueOf(string));
 
             // Audio
             File audioFile = new File(props.getProperty("audio"));
@@ -323,7 +239,7 @@ public class SaveLoadManager {
     }
 
     private int getNumDoubleSlashN() {
-        String text = data.text;
+        String text = getProp("text");
         int frequency = 0;
         for (int i = 0; i < text.length() - 1; i++) {
             if (text.charAt(i) == '\n' && text.charAt(i + 1) == '\n')
@@ -331,21 +247,5 @@ public class SaveLoadManager {
         }
 
         return frequency;
-    }
-
-    private static class Data implements Serializable {
-        final ArrayList<Long> marks = new ArrayList<>();
-        String loadedAudioPath;
-        String text = "";
-        int textPosX;
-        int textPosY;
-        int dotsPosX;
-        int dotsPosY;
-        int dotsPeriod;
-        int dotsNum;
-        int defaultFontSize;
-        int linkedFontSize;
-        int indentSize;
-        int lineSpace;
     }
 }

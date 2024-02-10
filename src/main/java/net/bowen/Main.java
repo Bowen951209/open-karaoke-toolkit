@@ -49,7 +49,7 @@ public class Main extends JFrame {
             viewport.repaint();
             timeline.getCanvas().repaint();
         });
-        textArea.setText(saveLoadManager.getText()); // I use Chinese for just now, sorry to English speaker :)
+        textArea.setText(saveLoadManager.getProp("text")); // I use Chinese for just now, sorry to English speaker :)
 
         return textArea;
     }
@@ -65,54 +65,55 @@ public class Main extends JFrame {
         this.textPosXConfigBar = new SlidableNumberBar(3, "x:");
         textPosXConfigBar.fixSize(60);
         this.textPosXConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setTextPosX(textPosXConfigBar.getVal());
+            saveLoadManager.setProp("textPosX", textPosXConfigBar.getVal());
             viewport.repaint();
         });
 
         this.textPosYConfigBar = new SlidableNumberBar(3, "y:");
         textPosYConfigBar.fixSize(60);
         this.textPosYConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setTextPosY(textPosYConfigBar.getVal());
+            saveLoadManager.setProp("textPosY", textPosYConfigBar.getVal());
             viewport.repaint();
         });
 
         this.dotsPosXConfigBar = new SlidableNumberBar(3, "x:");
         dotsPosXConfigBar.fixSize(60);
         this.dotsPosXConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setDotsPosX(dotsPosXConfigBar.getVal());
+            // TODO: pass in this and use the :: lambda for ***.getVal()
+            saveLoadManager.setProp("dotsPosX", dotsPosXConfigBar.getVal());
             viewport.repaint();
         });
 
         this.dotsPosYConfigBar = new SlidableNumberBar(3, "y:");
         dotsPosYConfigBar.fixSize(60);
         this.dotsPosYConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setDotsPosY(dotsPosYConfigBar.getVal());
+            saveLoadManager.setProp("dotsPosY", dotsPosYConfigBar.getVal());
             viewport.repaint();
         });
 
         this.defaultFontSizeBar = new SlidableNumberBar(3, "Default Font Size");
         this.defaultFontSizeBar.addDocumentListener(() -> {
-            saveLoadManager.setDefaultFontSize(defaultFontSizeBar.getVal());
-            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getDefaultFontSize()));
+            saveLoadManager.setProp("defaultFontSize", defaultFontSizeBar.getVal());
+            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
             viewport.repaint();
         });
 
         this.linkedFontSizeBar = new SlidableNumberBar(3, "Linked Font Size");
         this.linkedFontSizeBar.addDocumentListener(() -> {
-            saveLoadManager.setLinkedFontSize(linkedFontSizeBar.getVal());
-            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getLinkedFontSize()));
+            saveLoadManager.setProp("linkedFontSize", linkedFontSizeBar.getVal());
+            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
             viewport.repaint();
         });
 
         this.lineIndentSizeBar = new SlidableNumberBar(3, "2nd Line Indent");
         this.lineIndentSizeBar.addDocumentListener(() -> {
-            saveLoadManager.setIndentSize(lineIndentSizeBar.getVal());
+            saveLoadManager.setProp("indentSize", lineIndentSizeBar.getVal());
             viewport.repaint();
         });
 
         this.lineSpaceSizeConfigBar = new SlidableNumberBar(3, "Line Space");
         this.lineSpaceSizeConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setLineSpace(lineSpaceSizeConfigBar.getVal());
+            saveLoadManager.setProp("lineSpace", lineSpaceSizeConfigBar.getVal());
             viewport.repaint();
         });
     }
@@ -181,11 +182,11 @@ public class Main extends JFrame {
         readyDotsSettingsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         readyDotsSettingsLabel.setFont(titleFont);
         readyDotsNumComboBox.addActionListener(() -> {
-            saveLoadManager.setDotsNum((int) readyDotsNumComboBox.getSelectedElement());
+            saveLoadManager.setProp("dotsNum", (int) readyDotsNumComboBox.getSelectedElement());
             viewport.repaint();
         });
         readyDotsTimeConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setDotsPeriod(readyDotsTimeConfigBar.getVal());
+            saveLoadManager.setProp("dotsPeriod", readyDotsTimeConfigBar.getVal());
             viewport.repaint();
         });
         readyDotsTimeConfigBar.setDragStep(5);

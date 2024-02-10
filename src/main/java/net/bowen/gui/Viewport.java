@@ -40,12 +40,12 @@ public class Viewport extends JPanel {
         super.paint(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        final int x = saveLoadManager.getTextPosX();
-        final int y = saveLoadManager.getTextPosY();
+        final int x = saveLoadManager.getPropInt("textPosX");
+        final int y = saveLoadManager.getPropInt("textPosY");
         g2d.translate(x, y + defaultFont.getSize()); // translate to initial position.
 
         // Draw the string.
-        if (saveLoadManager.getText() != null) {
+        if (saveLoadManager.getProp("text") != null) {
             drawText(g2d);
         }
     }
@@ -55,8 +55,8 @@ public class Viewport extends JPanel {
         long time = saveLoadManager.getLoadedAudio().getTimePosition();
 
         // Draw strings.
-        final int secondLineIndent = saveLoadManager.getIndentSize();
-        final int lineSpace = saveLoadManager.getLineSpace();
+        final int secondLineIndent = saveLoadManager.getPropInt("indentSize");
+        final int lineSpace = saveLoadManager.getPropInt("lineSpace");
         int lineIndex = 0;
         int translatedX = 0;
         List<String> textList = saveLoadManager.getTextList();
@@ -186,15 +186,18 @@ public class Viewport extends JPanel {
         ArrayList<Long> marks = saveLoadManager.getMarks();
         long wordStartTime = marks.get(wordStartMarkIdx);
 
-        final int period = saveLoadManager.getDotsPeriod();
+        final int period = saveLoadManager.getPropInt("dotsPeriod");
         final long dotsStartTime = wordStartTime - period;
-        final int dotsNum = saveLoadManager.getDotsNum();
+        final int dotsNum = saveLoadManager.getPropInt("dotsNum");
         final int dotSize = 50;
 
         // If int the period, draw.
         if (time > dotsStartTime && time < wordStartTime) {
-            final int startX = saveLoadManager.getDotsPosX() - saveLoadManager.getTextPosX();
-            final int startY = saveLoadManager.getDotsPosY() - saveLoadManager.getTextPosY() - defaultFont.getSize();
+            final int startX =
+                    saveLoadManager.getPropInt("dotsPosX") - saveLoadManager.getPropInt("textPosX");
+            final int startY =
+                    saveLoadManager.getPropInt("dotsPosY") - saveLoadManager.getPropInt("textPosY") - defaultFont.getSize();
+
             Area area = new Area();
 
             // Dot shapes.

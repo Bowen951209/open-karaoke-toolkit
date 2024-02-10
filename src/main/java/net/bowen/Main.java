@@ -64,56 +64,55 @@ public class Main extends JFrame {
         // Init the components.
         this.textPosXConfigBar = new SlidableNumberBar(3, "x:");
         textPosXConfigBar.fixSize(60);
-        this.textPosXConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setProp("textPosX", textPosXConfigBar.getVal());
+        this.textPosXConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("textPosX", b.getVal());
             viewport.repaint();
         });
 
         this.textPosYConfigBar = new SlidableNumberBar(3, "y:");
         textPosYConfigBar.fixSize(60);
-        this.textPosYConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setProp("textPosY", textPosYConfigBar.getVal());
+        this.textPosYConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("textPosY", b.getVal());
             viewport.repaint();
         });
 
         this.dotsPosXConfigBar = new SlidableNumberBar(3, "x:");
         dotsPosXConfigBar.fixSize(60);
-        this.dotsPosXConfigBar.addDocumentListener(() -> {
-            // TODO: pass in this and use the :: lambda for ***.getVal()
-            saveLoadManager.setProp("dotsPosX", dotsPosXConfigBar.getVal());
+        this.dotsPosXConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("dotsPosX", b.getVal());
             viewport.repaint();
         });
 
         this.dotsPosYConfigBar = new SlidableNumberBar(3, "y:");
         dotsPosYConfigBar.fixSize(60);
-        this.dotsPosYConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setProp("dotsPosY", dotsPosYConfigBar.getVal());
+        this.dotsPosYConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("dotsPosY", b.getVal());
             viewport.repaint();
         });
 
         this.defaultFontSizeBar = new SlidableNumberBar(3, "Default Font Size");
-        this.defaultFontSizeBar.addDocumentListener(() -> {
-            saveLoadManager.setProp("defaultFontSize", defaultFontSizeBar.getVal());
+        this.defaultFontSizeBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("defaultFontSize", b.getVal());
             viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
             viewport.repaint();
         });
 
         this.linkedFontSizeBar = new SlidableNumberBar(3, "Linked Font Size");
-        this.linkedFontSizeBar.addDocumentListener(() -> {
-            saveLoadManager.setProp("linkedFontSize", linkedFontSizeBar.getVal());
+        this.linkedFontSizeBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("linkedFontSize", b.getVal());
             viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
             viewport.repaint();
         });
 
         this.lineIndentSizeBar = new SlidableNumberBar(3, "2nd Line Indent");
-        this.lineIndentSizeBar.addDocumentListener(() -> {
-            saveLoadManager.setProp("indentSize", lineIndentSizeBar.getVal());
+        this.lineIndentSizeBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("indentSize", b.getVal());
             viewport.repaint();
         });
 
         this.lineSpaceSizeConfigBar = new SlidableNumberBar(3, "Line Space");
-        this.lineSpaceSizeConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setProp("lineSpace", lineSpaceSizeConfigBar.getVal());
+        this.lineSpaceSizeConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("lineSpace", b.getVal());
             viewport.repaint();
         });
     }
@@ -185,8 +184,8 @@ public class Main extends JFrame {
             saveLoadManager.setProp("dotsNum", (int) readyDotsNumComboBox.getSelectedElement());
             viewport.repaint();
         });
-        readyDotsTimeConfigBar.addDocumentListener(() -> {
-            saveLoadManager.setProp("dotsPeriod", readyDotsTimeConfigBar.getVal());
+        readyDotsTimeConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("dotsPeriod", b.getVal());
             viewport.repaint();
         });
         readyDotsTimeConfigBar.setDragStep(5);

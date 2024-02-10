@@ -31,14 +31,14 @@ public class SlidableNumberBar extends JPanel {
         return val;
     }
 
-    public void addDocumentListener(Runnable e) {
+    public void addDocumentListener(DocListener e) {
         textField.getDocument().addDocumentListener(new SimpleDocumentListener(() -> {
             // If the text is not empty, convert the string to int value.
             if (!textField.getText().isEmpty())
                 val = Integer.parseInt(textField.getText());
 
             // The passed in listener.
-            e.run();
+            e.run(this);
         }));
     }
 
@@ -100,5 +100,9 @@ public class SlidableNumberBar extends JPanel {
         setPreferredSize(new Dimension(width, 30));
         setMaximumSize(getPreferredSize());
         setMinimumSize(getPreferredSize());
+    }
+
+    public interface DocListener  {
+        void run(SlidableNumberBar bar);
     }
 }

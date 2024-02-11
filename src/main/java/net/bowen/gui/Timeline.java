@@ -422,9 +422,6 @@ public class Timeline extends JPanel {
             // Draw the marks
             drawMarks(g2d);
 
-            // The current playing time pointer
-            drawPointer(g2d, Color.RED, pointerX);
-
             // The cursor pointer & update label
             Point mousePosition = getMousePosition();
             if (mousePosition != null) {
@@ -433,6 +430,9 @@ public class Timeline extends JPanel {
 
                 drawPointer(g2d, Color.DARK_GRAY, mousePosition.x);
             }
+
+            // The current playing time pointer
+            drawPointer(g2d, Color.RED, pointerX);
         }
 
         private void drawSeparationLines(Graphics2D g2d) {

@@ -61,7 +61,7 @@ public class Timeline extends JPanel {
         this.canvas = new Canvas();
         this.controlPanel = new ControlPanel();
         this.timer = new Timer(TIMER_DELAY, (e) -> {
-            pointerX = toX(saveLoadManager.getLoadedAudio().getTimePosition());
+            resetPointerX();
 
             JScrollBar scrollBar = getCanvasScrollPane().getHorizontalScrollBar();
             int scrollX = scrollBar.getValue();
@@ -120,7 +120,7 @@ public class Timeline extends JPanel {
                         case MouseEvent.BUTTON1 -> {
                             // If you left-click, Jump the time.
                             saveLoadManager.getLoadedAudio().setTimeTo(ms);
-                            pointerX = toX(saveLoadManager.getLoadedAudio().getTimePosition());
+                            resetPointerX();
                         }
 
                         case MouseEvent.BUTTON2 -> {
@@ -223,6 +223,10 @@ public class Timeline extends JPanel {
 
     private int toTime(int x) {
         return (int) ((float) x / (PIXEL_TIME_RATIO * canvas.scale));
+    }
+
+    private void resetPointerX() {
+        pointerX = toX(saveLoadManager.getLoadedAudio().getTimePosition());
     }
 
     private void timePlay() {
@@ -360,7 +364,10 @@ public class Timeline extends JPanel {
             };
             slider.setUI(sliderUI);
 
-            slider.addChangeListener(e -> canvas.setSize());
+            slider.addChangeListener(e -> {
+                canvas.setSize();
+                resetPointerX();
+            });
 
             slider.addMouseWheelListener(e -> sliderScale(e.getWheelRotation()));
             slider.addMouseListener(new MouseAdapter() {

@@ -217,25 +217,13 @@ public class Timeline extends JPanel {
         return scrollPane;
     }
 
-    private int toX(long time) {
-        return (int) (time * PIXEL_TIME_RATIO * canvas.scale);
-    }
-
-    private int toTime(int x) {
-        return (int) ((float) x / (PIXEL_TIME_RATIO * canvas.scale));
-    }
-
-    private void resetPointerX() {
-        pointerX = toX(saveLoadManager.getLoadedAudio().getTimePosition());
-    }
-
-    private void timePlay() {
+    public void timePlay() {
         timer.start();
         controlPanel.playPauseButton.setIcon(PAUSE_BUTTON_ICON);
         saveLoadManager.getLoadedAudio().play();
     }
 
-    private void timePause() {
+    public void timePause() {
         timer.stop();
         controlPanel.playPauseButton.setIcon(PLAY_BUTTON_ICON);
         saveLoadManager.getLoadedAudio().pause();
@@ -259,6 +247,18 @@ public class Timeline extends JPanel {
     public void markRedo() {
         markCmdMgr.redo();
         canvas.repaint();
+    }
+
+    private int toX(long time) {
+        return (int) (time * PIXEL_TIME_RATIO * canvas.scale);
+    }
+
+    private int toTime(int x) {
+        return (int) ((float) x / (PIXEL_TIME_RATIO * canvas.scale));
+    }
+
+    private void resetPointerX() {
+        pointerX = toX(saveLoadManager.getLoadedAudio().getTimePosition());
     }
 
     /**

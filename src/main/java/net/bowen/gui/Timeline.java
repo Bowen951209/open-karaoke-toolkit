@@ -465,7 +465,6 @@ public class Timeline extends JPanel {
         }
 
         private void drawMarks(Graphics2D g2d) {
-            g2d.setColor(Color.YELLOW);
             var marks = saveLoadManager.getMarks();
             var textList = saveLoadManager.getTextList();
 

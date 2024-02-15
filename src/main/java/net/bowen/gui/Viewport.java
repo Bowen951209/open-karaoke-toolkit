@@ -79,7 +79,7 @@ public class Viewport extends JPanel {
                 break;
 
             // If is new paragraph, try to draw the ready dots.
-            if (isNewParagraph || i == 0 )
+            if (isNewParagraph || i == 0)
                 drawReadyDots(g2d, time, endMarkIndex - 1);
 
             // If meet single \n, next line.
@@ -162,6 +162,20 @@ public class Viewport extends JPanel {
                         renderingLines[1] = line + 2;
                     }
                 }
+
+                // Don't disappear the second last line of the paragraph.
+                // Generally, a line will disappear and switch to the next one when the animation is finished. But we
+                // want the second last line to stay appeared until the last line is finished. So what this will do is
+                // to set the second last line to last line - 1 if meet new paragraph.
+                if (isNewParagraph) {
+                    // If the last line is the upper line(index 0), set the lower line(index 1) to line - 1.
+                    if (renderingLines[0] == line)
+                        renderingLines[1] = line - 1;
+                    // If the last line is the lower line(index 1), set the upper line(index 0) to line - 1.
+                    else if (renderingLines[1] == line)
+                        renderingLines[0] = line - 1;
+                }
+
                 line++;
             }
         }

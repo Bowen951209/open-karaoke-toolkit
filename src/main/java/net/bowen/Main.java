@@ -186,6 +186,7 @@ public class Main extends JFrame {
         });
         readyDotsTimeConfigBar.addDocumentListener((b) -> {
             saveLoadManager.setProp("dotsPeriod", b.getVal());
+            timeline.getCanvas().repaint();
             viewport.repaint();
         });
         readyDotsTimeConfigBar.setDragStep(5);

@@ -389,8 +389,9 @@ public class Timeline extends JPanel {
 
         /**
          * This method will ensure that we are focus on the time of the original specified x pos.
+         *
          * @param x x position of the whole length of canvas.
-         * */
+         */
         private void sliderScale(int orientation, int x) {
             int time = toTime(x);
             sliderScale(orientation);
@@ -496,7 +497,8 @@ public class Timeline extends JPanel {
 
                 // Then draw the rects and strings.
                 boolean isParagraphEnd = false;
-                boolean shouldDrawGap = true;
+                boolean isParagraphHead = i == 0;
+
                 if (i > 0) {
                     // This is for telling if it is the end of the paragraph.
                     if (wordIndex + 2 < textList.size()) {
@@ -508,13 +510,13 @@ public class Timeline extends JPanel {
                     }
 
                     String s = textList.get(wordIndex);
-                    // Handle the \n case.
+                    // This is for telling if it is the head of the paragraph and handle the breaking lines.
                     if (s.equals("\n")) {
                         wordIndex++;
                         s = textList.get(wordIndex);
 
-                        // For this gap should not draw. (meeting double \n)
-                        if (s.equals("\n")) shouldDrawGap = false;
+                        // If meet double \n, isParagraphHead = true.
+                        if (s.equals("\n")) isParagraphHead = true;
                     }
 
                     // x is applied to some adjusts to avoid covering the marks.
@@ -523,8 +525,8 @@ public class Timeline extends JPanel {
                     int height = 15;
                     Font f = new Font(Font.SANS_SERIF, Font.BOLD, Math.min(height - 2, width));
 
-                    // Draw the rectangle gaps.
-                    if (shouldDrawGap) {
+                    // Draw the rectangle gap if it's not the paragraph head.
+                    if (!isParagraphHead) {
                         g2d.setColor(Color.WHITE);
                         g2d.fillRect(lastX, 0, width, height);
                     }
@@ -533,6 +535,28 @@ public class Timeline extends JPanel {
                     g2d.setColor(Color.BLACK);
                     g2d.setFont(f);
                     g2d.drawString(s, lastX + width / 2 - f.getSize() * s.length() / 2, 10); // x is at the middle.
+                }
+
+                // Draw the rectangle that displays the period of the ready dots.
+                if (isParagraphHead) {
+                    int markX = toX(marks.get(i));
+                    int period = saveLoadManager.getPropInt("dotsPeriod");
+                    int dotsNum = saveLoadManager.getPropInt("dotsNum");
+                    int width = toX(period);
+
+                    // Draw the rectangle.
+                    g2d.setColor(Color.GRAY);
+                    g2d.fillRect(markX - width, 0, width, 15);
+
+                    // Draw dots inside the rectangle.
+                    int arcSize = 10;
+                    int widthPerBlock = width / dotsNum;
+                    int dotX = markX - width + widthPerBlock / 2 - arcSize / 2;
+                    g2d.setColor(Color.BLUE);
+                    for (int j = 0; j < dotsNum; j++) {
+                        g2d.fillArc(dotX, 2, arcSize, arcSize, 0, 360);
+                        dotX += widthPerBlock;
+                    }
                 }
 
                 // Make sure the icon draw position is on the very middle.

@@ -4,7 +4,7 @@ import net.bowen.audioUtils.Audio;
 import net.bowen.system.SaveLoadManager;
 import net.bowen.system.command.CommandManager;
 import net.bowen.system.command.marks.MarkAddCommand;
-import net.bowen.system.command.marks.MarkPopQuantityCommand;
+import net.bowen.system.command.marks.MarkPopNumberCommand;
 import net.bowen.system.command.marks.MarkRemoveCommand;
 import net.bowen.system.command.marks.MarkSetCommand;
 
@@ -249,6 +249,24 @@ public class Timeline extends JPanel {
         canvas.repaint();
     }
 
+    /**
+     * Reallocate marks size if the number of marks is too many.
+     * (This will happen if the user delete words in the text field and influenced the exist marks.)
+     */
+    public void resetMarksNum() {
+        int redundantMarks = saveLoadManager.getRedundantMarkQuantity();
+        System.out.println(redundantMarks);
+
+        if (redundantMarks != 0) {
+            var textList = saveLoadManager.getTextList();
+            var marks = saveLoadManager.getMarks();
+
+            int popNum = textList.isEmpty() ? saveLoadManager.getMarks().size() : redundantMarks;
+            markCmdMgr.execute(new MarkPopNumberCommand(marks, popNum));
+            canvas.repaint();
+        }
+    }
+
     private int toX(long time) {
         return (int) (time * PIXEL_TIME_RATIO * canvas.scale);
     }
@@ -480,19 +498,13 @@ public class Timeline extends JPanel {
             Point mousePos = getMousePosition();
             final int iconSize = 10;
             for (int i = 0, wordIndex = -1; i < marks.size(); i++, wordIndex++) {
-                long time = marks.get(i);
+                // If text list's size is not enough, break.
+                if (wordIndex >= textList.size()) break;
 
+                long time = marks.get(i);
                 int x = toX(time);
 
                 // -----Draw the gaps:-----
-                // First to reallocate marks size if the number of marks is too many.
-                // (This will happen if the user delete words and influenced the exist marks.)
-                if (saveLoadManager.getRedundantMarkQuantity() != 0) {
-                    int rq = saveLoadManager.getRedundantMarkQuantity();
-                    int q = textList.isEmpty() ? marks.size() : rq;
-                    markCmdMgr.execute(new MarkPopQuantityCommand(marks, q));
-                    canvas.repaint();
-                }
 
                 // Then draw the rects and strings.
                 boolean isParagraphEnd = false;

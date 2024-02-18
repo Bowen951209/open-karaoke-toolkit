@@ -4,12 +4,12 @@ import net.bowen.system.command.Command;
 
 import java.util.List;
 
-public class MarkPopQuantityCommand implements Command {
+public class MarkPopNumberCommand implements Command {
     private final List<Long> markList;
     private final int q;
     private final long[] times;
 
-    public MarkPopQuantityCommand(List<Long> markList, int q) {
+    public MarkPopNumberCommand(List<Long> markList, int q) {
         this.markList = markList;
         this.q = q;
         this.times = new long[q];

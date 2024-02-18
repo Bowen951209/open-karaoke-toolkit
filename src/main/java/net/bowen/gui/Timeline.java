@@ -461,6 +461,17 @@ public class Timeline extends JPanel {
             drawPointer(g2d, Color.RED, pointerX);
         }
 
+        public void setSize() {
+            if (saveLoadManager.getLoadedAudio() == null) return;
+
+            canvas.scale = (float) controlPanel.slider.getValue() * 0.01f;
+            long audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
+            // I don't know why it's ICON_SIZE.height * 2, but it works.
+            canvas.setPreferredSize(new Dimension(toX(audioTime), getCanvasScrollPane().getHeight() - ICON_SIZE.height * 2));
+            canvas.revalidate();
+            scrollPane.requestFocus();
+        }
+
         private void drawSeparationLines(Graphics2D g2d) {
             g2d.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
 
@@ -623,17 +634,6 @@ public class Timeline extends JPanel {
             if (draggingMark != -1 && mousePos != null) {
                 g2d.drawImage(MARK_FLOAT_ICON.getImage(), mousePos.x - iconSize / 2, 0, iconSize, iconSize, null);
             }
-        }
-
-        public void setSize() {
-            if (saveLoadManager.getLoadedAudio() == null) return;
-
-            canvas.scale = (float) controlPanel.slider.getValue() * 0.01f;
-            long audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
-            // I don't know why it's ICON_SIZE.height * 2, but it works.
-            canvas.setPreferredSize(new Dimension(toX(audioTime), getCanvasScrollPane().getHeight() - ICON_SIZE.height * 2));
-            canvas.revalidate();
-            scrollPane.requestFocus();
         }
     }
 }

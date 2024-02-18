@@ -446,6 +446,8 @@ public class Timeline extends JPanel {
             g2d.drawImage(waveImg, 0, 0, getWidth(), getHeight(), null);
             drawSeparationLines(g2d);
 
+            handleMouseDrag();
+
             // Draw the marks
             drawMarks(g2d);
             drawDraggingMark(g2d);
@@ -498,15 +500,6 @@ public class Timeline extends JPanel {
         private void drawMarks(Graphics2D g2d) {
             var marks = saveLoadManager.getMarks();
             var textList = saveLoadManager.getTextList();
-
-            // Only if the mouse is not dragging to set to -1. This is for dragging control stability.
-            if (!isMouseDragging) {
-                selectedMark = -1;
-
-                // Restore mouse appearance.
-                Cursor dCursor = Cursor.getDefaultCursor();
-                setCursor(dCursor);
-            }
 
             Point mousePos = getMousePosition();
             for (int i = 0, wordIndex = -1; i < marks.size(); i++, wordIndex++) {
@@ -629,6 +622,21 @@ public class Timeline extends JPanel {
                     g2d.setColor(Color.BLACK);
                     g2d.drawString(Integer.toString(i), x + 3, 8);
                 }
+            }
+        }
+
+        /**
+         * If the mouse is not dragging, set selectedMark to -1. Rather than setting to -1 in every draw call, only when
+         * the mouse releases to set it will improve dragging control stability, which means it won't happen that when
+         * the mouse moves too fast, the selection drop.
+         */
+        private void handleMouseDrag() {
+            if (!isMouseDragging) {
+                selectedMark = -1;
+
+                // Restore mouse appearance.
+                Cursor dCursor = Cursor.getDefaultCursor();
+                setCursor(dCursor);
             }
         }
 

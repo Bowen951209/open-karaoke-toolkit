@@ -421,6 +421,7 @@ public class Timeline extends JPanel {
     }
 
     public class Canvas extends JPanel {
+        private final int MARK_ICON_SIZE = 10;
         private float scale = 1;
         private int selectedMark = -1;
         private int draggingMark = -1;
@@ -447,6 +448,7 @@ public class Timeline extends JPanel {
 
             // Draw the marks
             drawMarks(g2d);
+            drawDraggingMark(g2d);
 
             // The cursor pointer & update label
             Point mousePosition = getMousePosition();
@@ -507,7 +509,6 @@ public class Timeline extends JPanel {
             }
 
             Point mousePos = getMousePosition();
-            final int iconSize = 10;
             for (int i = 0, wordIndex = -1; i < marks.size(); i++, wordIndex++) {
                 // If text list's size is not enough, break.
                 if (wordIndex >= textList.size()) break;
@@ -542,8 +543,8 @@ public class Timeline extends JPanel {
                     }
 
                     // x is applied to some adjusts to avoid covering the marks.
-                    int lastX = toX(marks.get(i - 1)) + iconSize / 2 - 1;
-                    int width = x - lastX - iconSize / 2 + 1;
+                    int lastX = toX(marks.get(i - 1)) + MARK_ICON_SIZE / 2 - 1;
+                    int width = x - lastX - MARK_ICON_SIZE / 2 + 1;
                     int height = 15;
                     Font f = new Font(Font.SANS_SERIF, Font.BOLD, Math.min(height - 2, width));
 
@@ -582,13 +583,13 @@ public class Timeline extends JPanel {
                 }
 
                 // Make sure the icon draw position is on the very middle.
-                x -= iconSize / 2;
+                x -= MARK_ICON_SIZE / 2;
 
                 // If icon selected, draw the selected icon.
                 if (mousePos != null) {
                     // The cursor should cover on the icon.
                     boolean isCovered =
-                            !isMouseDragging && mousePos.x >= x && mousePos.x <= x + iconSize && mousePos.y <= iconSize;
+                            !isMouseDragging && mousePos.x >= x && mousePos.x <= x + MARK_ICON_SIZE && mousePos.y <= MARK_ICON_SIZE;
 
                     if (isCovered || selectedMark == i) { // selectedMark == i for dragging control stability.
                         selectedMark = i;
@@ -610,7 +611,7 @@ public class Timeline extends JPanel {
                             }
                         }
 
-                        g2d.drawImage(MARK_SELECTED_ICON.getImage(), x, 0, iconSize, iconSize, null);
+                        g2d.drawImage(MARK_SELECTED_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
                         continue;
                     }
                 }
@@ -619,20 +620,29 @@ public class Timeline extends JPanel {
                 // p.s. End marks are the last one of all the marks or the last mark of the paragraph.
                 if (i == marks.size() - 1 || isParagraphEnd) {
                     // End mark case.
-                    g2d.drawImage(MARK_END_ICON.getImage(), x, 0, iconSize, iconSize, null);
+                    g2d.drawImage(MARK_END_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
                 } else {
                     // General mark case.
-                    g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, iconSize, iconSize, null);
+                    g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
                     g2d.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 8));
 
                     g2d.setColor(Color.BLACK);
                     g2d.drawString(Integer.toString(i), x + 3, 8);
                 }
             }
+        }
 
-            // Draw float mark(dragging mark)
+        /**
+         * Draw the float mark that appears under the cursor if a mark is dragged.
+         */
+        private void drawDraggingMark(Graphics2D g2d) {
+            Point mousePos = getMousePosition();
+
             if (draggingMark != -1 && mousePos != null) {
-                g2d.drawImage(MARK_FLOAT_ICON.getImage(), mousePos.x - iconSize / 2, 0, iconSize, iconSize, null);
+                g2d.drawImage(
+                        MARK_FLOAT_ICON.getImage()
+                        , mousePos.x - MARK_ICON_SIZE / 2, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null
+                );
             }
         }
     }

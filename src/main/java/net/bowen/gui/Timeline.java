@@ -449,7 +449,7 @@ public class Timeline extends JPanel {
             handleMouseDrag();
 
             // Draw the marks
-            drawMarks(g2d);
+            drawMarksAndGaps(g2d);
             drawDraggingMark(g2d);
 
             // The cursor pointer & update label
@@ -497,7 +497,7 @@ public class Timeline extends JPanel {
             g2d.drawLine(x, 0, x, getHeight());
         }
 
-        private void drawMarks(Graphics2D g2d) {
+        private void drawMarksAndGaps(Graphics2D g2d) {
             var marks = saveLoadManager.getMarks();
             var textList = saveLoadManager.getTextList();
 
@@ -506,74 +506,26 @@ public class Timeline extends JPanel {
                 // If text list's size is not enough, break.
                 if (wordIndex >= textList.size()) break;
 
+                // Add wordIndex if meet \n.
+                if (i > 0) {
+                    String s = textList.get(wordIndex);
+                    if (s.equals("\n")) wordIndex++;
+                }
+
                 long time = marks.get(i);
                 int x = toX(time);
+                boolean isParagraphHead = isParagraphHead(wordIndex);
+                boolean isParagraphEnd = isParagraphEnd(wordIndex);
 
-                // -----Draw the gaps:-----
-
-                // Then draw the rects and strings.
-                boolean isParagraphEnd = false;
-                boolean isParagraphHead = i == 0;
-
-                if (i > 0) {
-                    // This is for telling if it is the end of the paragraph.
-                    if (wordIndex + 2 < textList.size()) {
-                        String nextS = textList.get(wordIndex + 1);
-                        String nextnextS = textList.get(wordIndex + 2);
-                        // The \n\n case.
-                        if (nextS.equals("\n") && nextnextS.equals("\n"))
-                            isParagraphEnd = true;
-                    }
-
+                // Draw the gaps if it's not the paragraph head.
+                if (!isParagraphHead) {
                     String s = textList.get(wordIndex);
-                    // This is for telling if it is the head of the paragraph and handle the breaking lines.
-                    if (s.equals("\n")) {
-                        wordIndex++;
-                        s = textList.get(wordIndex);
-
-                        // If meet double \n, isParagraphHead = true.
-                        if (s.equals("\n")) isParagraphHead = true;
-                    }
-
-                    // x is applied to some adjusts to avoid covering the marks.
-                    int lastX = toX(marks.get(i - 1)) + MARK_ICON_SIZE / 2 - 1;
-                    int width = x - lastX - MARK_ICON_SIZE / 2 + 1;
-                    int height = 15;
-                    Font f = new Font(Font.SANS_SERIF, Font.BOLD, Math.min(height - 2, width));
-
-                    // Draw the rectangle gap if it's not the paragraph head.
-                    if (!isParagraphHead) {
-                        g2d.setColor(Color.WHITE);
-                        g2d.fillRect(lastX, 0, width, height);
-                    }
-
-                    // Draw the words in the marks.
-                    g2d.setColor(Color.BLACK);
-                    g2d.setFont(f);
-                    g2d.drawString(s, lastX + width / 2 - f.getSize() * s.length() / 2, 10); // x is at the middle.
+                    drawGap(i, x, s, g2d);
                 }
 
                 // Draw the rectangle that displays the period of the ready dots.
-                if (isParagraphHead) {
-                    int markX = toX(marks.get(i));
-                    int period = saveLoadManager.getPropInt("dotsPeriod");
-                    int dotsNum = saveLoadManager.getPropInt("dotsNum");
-                    int width = toX(period);
-
-                    // Draw the rectangle.
-                    g2d.setColor(Color.GRAY);
-                    g2d.fillRect(markX - width, 0, width, 15);
-
-                    // Draw dots inside the rectangle.
-                    int arcSize = 10;
-                    int widthPerBlock = width / dotsNum;
-                    int dotX = markX - width + widthPerBlock / 2 - arcSize / 2;
-                    g2d.setColor(Color.BLUE);
-                    for (int j = 0; j < dotsNum; j++) {
-                        g2d.fillArc(dotX, 2, arcSize, arcSize, 0, 360);
-                        dotX += widthPerBlock;
-                    }
-                }
+                if (isParagraphHead)
+                    drawReadyDotsRect(x, g2d);
 
                 // Make sure the icon draw position is on the very middle.
                 x -= MARK_ICON_SIZE / 2;
@@ -611,17 +563,7 @@ public class Timeline extends JPanel {
 
                 // Draw the mark image. If the mark is the end mark, draw the special end icon.
                 // p.s. End marks are the last one of all the marks or the last mark of the paragraph.
-                if (i == marks.size() - 1 || isParagraphEnd) {
-                    // End mark case.
-                    g2d.drawImage(MARK_END_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
-                } else {
-                    // General mark case.
-                    g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
-                    g2d.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 8));
-
-                    g2d.setColor(Color.BLACK);
-                    g2d.drawString(Integer.toString(i), x + 3, 8);
-                }
+                drawMark(i, x, isParagraphEnd, g2d);
             }
         }
 
@@ -640,6 +582,43 @@ public class Timeline extends JPanel {
             }
         }
 
+        private boolean isParagraphHead(int wordIndex) {
+            if (wordIndex == -1) return true;
+            var textList = saveLoadManager.getTextList();
+
+            // If the word is "\n", it means we meet double "\n".
+            // Because when the program meet the 1st "\n" it'll skip to the next word idx, and if the next word is also
+            // "\n", we know it's double "\n".
+            return textList.get(wordIndex).equals("\n");
+        }
+
+        private boolean isParagraphEnd(int wordIndex) {
+            var textList = saveLoadManager.getTextList();
+
+            if (wordIndex + 2 < textList.size()) {
+                String nextS = textList.get(wordIndex + 1);
+                String nextnextS = textList.get(wordIndex + 2);
+                // If \n\n, it is the end of the paragraph.
+                return nextS.equals("\n") && nextnextS.equals("\n");
+            } else {
+                // If last word, it is the end of the paragraph.
+                return wordIndex == textList.size() - 1;
+            }
+        }
+
+        private void drawMark(int markIdx, int x, boolean isEndMark, Graphics2D g2d) {
+            if (isEndMark)
+                g2d.drawImage(MARK_END_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
+            else
+                g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
+
+            // Draw the first digit of the mark index on the mark.
+            String number = String.valueOf(markIdx % 10);
+            g2d.setColor(Color.BLACK);
+            g2d.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 8));
+            g2d.drawString(number, x + 3, 8);
+        }
+
         /**
          * Draw the float mark that appears under the cursor if a mark is dragged.
          */
@@ -651,6 +630,45 @@ public class Timeline extends JPanel {
                         MARK_FLOAT_ICON.getImage()
                         , mousePos.x - MARK_ICON_SIZE / 2, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null
                 );
+            }
+        }
+
+        private void drawGap(int markIdx, int x, String string, Graphics2D g2d) {
+            var marks = saveLoadManager.getMarks();
+
+            // lastX and width variables are applied to some adjusts to avoid covering the marks.
+            int lastX = toX(marks.get(markIdx - 1)) + MARK_ICON_SIZE / 2 - 1;
+            int width = x - lastX - MARK_ICON_SIZE / 2 + 1;
+            int height = 15;
+            Font f = new Font(Font.SANS_SERIF, Font.BOLD, Math.min(height - 2, width));
+
+            // Draw the rectangle.
+            g2d.setColor(Color.WHITE);
+            g2d.fillRect(lastX, 0, width, height);
+
+            // Draw the words in the gaps.
+            g2d.setColor(Color.BLACK);
+            g2d.setFont(f);
+            g2d.drawString(string, lastX + width / 2 - f.getSize() * string.length() / 2, 10); // x is at the middle.
+        }
+
+        private void drawReadyDotsRect(int markX, Graphics2D g2d) {
+            int period = saveLoadManager.getPropInt("dotsPeriod");
+            int dotsNum = saveLoadManager.getPropInt("dotsNum");
+            int width = toX(period);
+
+            // Draw the rectangle.
+            g2d.setColor(Color.GRAY);
+            g2d.fillRect(markX - width, 0, width, 15);
+
+            // Draw dots inside the rectangle.
+            int arcSize = 10;
+            int widthPerBlock = width / dotsNum;
+            int dotX = markX - width + widthPerBlock / 2 - arcSize / 2;
+            g2d.setColor(Color.BLUE);
+            for (int j = 0; j < dotsNum; j++) {
+                g2d.fillArc(dotX, 2, arcSize, arcSize, 0, 360);
+                dotX += widthPerBlock;
             }
         }
     }

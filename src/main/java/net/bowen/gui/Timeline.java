@@ -421,7 +421,10 @@ public class Timeline extends JPanel {
     }
 
     public class Canvas extends JPanel {
+        private final Font FONT_PLAIN_10 = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
+        private final Font FONT_BOLD_8 = new Font(Font.SANS_SERIF, Font.BOLD, 8);
         private final int MARK_ICON_SIZE = 10;
+
         private float scale = 1;
         private int selectedMark = -1;
         private int draggingMark = -1;
@@ -477,7 +480,7 @@ public class Timeline extends JPanel {
         }
 
         private void drawSeparationLines(Graphics2D g2d) {
-            g2d.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
+            g2d.setFont(FONT_PLAIN_10);
 
             int pointingPixel = 0; // the pixel we are current at
             int millisecond = 0; // the time we are current at in millisecond.
@@ -615,7 +618,7 @@ public class Timeline extends JPanel {
             // Draw the first digit of the mark index on the mark.
             String number = String.valueOf(markIdx % 10);
             g2d.setColor(Color.BLACK);
-            g2d.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 8));
+            g2d.setFont(FONT_BOLD_8);
             g2d.drawString(number, x + 3, 8);
         }
 

@@ -255,7 +255,6 @@ public class Timeline extends JPanel {
      */
     public void resetMarksNum() {
         int redundantMarks = saveLoadManager.getRedundantMarkQuantity();
-        System.out.println(redundantMarks);
 
         if (redundantMarks != 0) {
             var textList = saveLoadManager.getTextList();

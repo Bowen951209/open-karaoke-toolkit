@@ -183,6 +183,7 @@ public class Main extends JFrame {
         readyDotsSettingsLabel.setFont(titleFont);
         readyDotsNumComboBox.addActionListener(() -> {
             saveLoadManager.setProp("dotsNum", (int) readyDotsNumComboBox.getSelectedElement());
+            timeline.getCanvas().repaint();
             viewport.repaint();
         });
         readyDotsTimeConfigBar.addDocumentListener((b) -> {

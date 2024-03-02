@@ -51,7 +51,9 @@ public class SaveLoadManager {
     }
 
     public int getPropInt(String key) {
-        return Integer.parseInt(getProp(key));
+        String prop = getProp(key);
+        if (prop == null) return -1;
+        return Integer.parseInt(prop);
     }
 
     public void setProp(String key, String val) {
@@ -158,50 +160,29 @@ public class SaveLoadManager {
             // Load the properties file.
             props.load(inputStreamReader);
 
-            // Set the values to data.
+            setText(props.getProperty("text")); // Update the text list.
+            mainFrame.getTextArea().setText(getProp("text")); // Update to text area.
 
-            // Text
-            setText(props.getProperty("text"));
-            mainFrame.getTextArea().setText(getProp("text")); // also update to text area.
+            // Update the values to the bars.
+            mainFrame.textPosXConfigBar.setValue(getPropInt("textPosX"));
+            mainFrame.textPosYConfigBar.setValue(getPropInt("textPosY"));
+            mainFrame.dotsPosXConfigBar.setValue(getPropInt("dotsPosX"));
+            mainFrame.dotsPosYConfigBar.setValue(getPropInt("dotsPosY"));
+            mainFrame.readyDotsNumComboBox.setSelectedItem(getPropInt("dotsNum"));
+            mainFrame.readyDotsTimeConfigBar.setValue(getPropInt("dotsPeriod"));
+            mainFrame.defaultFontSizeBar.setValue(getPropInt("defaultFontSize"));
+            mainFrame.linkedFontSizeBar.setValue(getPropInt("linkedFontSize"));
+            mainFrame.lineIndentSizeBar.setValue(getPropInt("indentSize"));
+            mainFrame.lineSpaceSizeConfigBar.setValue(getPropInt("lineSpace"));
+            mainFrame.textDisappearTimeConfigBar.setValue(getPropInt("textDisappearTime"));
 
-            // size bars
-            setProp("textPosX", props.getProperty("textPosX"));
-            mainFrame.textPosXConfigBar.setValue(getPropInt("textPosX"));// also update to bar.
-
-            setProp("textPosY", props.getProperty("textPosY"));
-            mainFrame.textPosYConfigBar.setValue(getPropInt("textPosY"));// also update to bar.
-
-            setProp("dotsPosX", props.getProperty("dotsPosX"));
-            mainFrame.dotsPosXConfigBar.setValue(getPropInt("dotsPosX"));// also update to bar.
-
-            setProp("dotsPosY", props.getProperty("dotsPosY"));
-            mainFrame.dotsPosYConfigBar.setValue(getPropInt("dotsPosY"));// also update to bar.
-
-            setProp("dotsNum", props.getProperty("dotsNum"));
-            mainFrame.readyDotsNumComboBox.setSelectedItem(getPropInt("dotsNum"));// also update to bar.
-
-            setProp("dotsPeriod", props.getProperty("dotsPeriod"));
-            mainFrame.readyDotsTimeConfigBar.setValue(getPropInt("dotsPeriod"));// also update to bar.
-
-            setProp("defaultFontSize", props.getProperty("defaultFontSize"));
-            mainFrame.defaultFontSizeBar.setValue(getPropInt("defaultFontSize"));// also update to bar.
-
-            setProp("linkedFontSize", props.getProperty("linkedFontSize"));
-            mainFrame.linkedFontSizeBar.setValue(getPropInt("linkedFontSize"));// also update to bar.
-
-            setProp("indentSize", props.getProperty("indentSize"));
-            mainFrame.lineIndentSizeBar.setValue(getPropInt("indentSize"));// also update to bar.
-
-            setProp("lineSpace", props.getProperty("lineSpace"));
-            mainFrame.lineSpaceSizeConfigBar.setValue(getPropInt("lineSpace"));// also update to bar.
-
-            // marks
+            // Marks.
             String[] marksStrings = props.getProperty("marks").split(",");
             marks.clear();
             for (String string : marksStrings)
                 marks.add(Long.valueOf(string));
 
-            // Audio
+            // Audio.
             File audioFile = new File(props.getProperty("audio"));
             if (!audioFile.exists()) {
                 // Pop up a message.

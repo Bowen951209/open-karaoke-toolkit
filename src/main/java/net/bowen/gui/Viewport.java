@@ -18,6 +18,8 @@ public class Viewport extends JPanel {
     private final SaveLoadManager saveLoadManager;
     private final int[] renderingLines = {0, 1};
 
+    private boolean shouldShowText = true;
+
     public void setDefaultFont(Font defaultFont) {
         this.defaultFont = defaultFont;
         linkedWordTrans = new Point(defaultFont.getSize(), 0);
@@ -53,14 +55,15 @@ public class Viewport extends JPanel {
 
     private void drawText(Graphics2D g2d) {
         long time = saveLoadManager.getLoadedAudio().getTimePosition();
+        refreshRenderingLines(time);
+        if (!shouldShowText) return;
 
-        // Draw strings.
         final int secondLineIndent = saveLoadManager.getPropInt("indentSize");
         final int lineSpace = saveLoadManager.getPropInt("lineSpace");
         int lineIndex = 0;
         int translatedX = 0;
         List<String> textList = saveLoadManager.getTextList();
-        refreshRenderingLines(time);
+
         for (int i = 0, offset = 0; i < textList.size(); i++) {
             String s = textList.get(i);
 
@@ -148,32 +151,65 @@ public class Viewport extends JPanel {
         List<Long> marks = saveLoadManager.getMarks();
         renderingLines[0] = 0;
         renderingLines[1] = 1;
-        for (int i = 0, offset = 0, line = 0; i < textList.size(); i++) {
+
+        // For each line of the text.
+        for (int i = 0, paragraph = 0, line = 0; i < textList.size(); i++) {
             String s = textList.get(i);
             if (s.equals("\n") && i + 1 < marks.size()) {
-                boolean isNewParagraph = textList.get(i + 1).equals("\n");
-                if (isNewParagraph) offset++;
+                // If the next word is also "\n", means it's the end line of the paragraph.
+                boolean isParagraphEnd = textList.get(i + 1).equals("\n") || i == textList.size() - 1;
+                if (isParagraphEnd) paragraph++;
 
-                long lastWordEndTime = marks.get(i - line + offset);
+                long lastWordEndTime = marks.get(i - line + paragraph);
+
                 if (lastWordEndTime < time) {
                     if (line % 2 == 0) {
                         renderingLines[0] = line + 2;
                     } else {
                         renderingLines[1] = line + 2;
                     }
-                }
 
-                // Don't disappear the second last line of the paragraph.
-                // Generally, a line will disappear and switch to the next one when the animation is finished. But we
-                // want the second last line to stay appeared until the last line is finished. So what this will do is
-                // to set the second last line to last line - 1 if meet new paragraph.
-                if (isNewParagraph) {
-                    // If the last line is the upper line(index 0), set the lower line(index 1) to line - 1.
-                    if (renderingLines[0] == line)
-                        renderingLines[1] = line - 1;
-                    // If the last line is the lower line(index 1), set the upper line(index 0) to line - 1.
-                    else if (renderingLines[1] == line)
-                        renderingLines[0] = line - 1;
+                } else {
+                    // If we get here, it means the renderingLines is set to the correct value as it should be.
+
+                    // If it is the end line of a paragraph, we don't want the 2nd last line to disappear as it would
+                    // by default.
+                    // What this will do is to reset the changed 2nd last line back to the end line - 1.
+                    if (isParagraphEnd) {
+                        if (renderingLines[0] == line)
+                            // If the last line is the upper line(index 0), set the lower line(index 1) to line - 1.
+                            renderingLines[1] = line - 1;
+                        else
+                            // If the last line is the lower line(index 1), set the upper line(index 0) to line - 1.
+                            renderingLines[0] = line - 1;
+
+
+                        int disappearPeriod = saveLoadManager.getPropInt("textDisappearTime");
+                        int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
+                        long lastlastWordEndTime = marks.get(i - line + paragraph - 1);
+
+                        // After a certain period, we want the lines to disappear.
+                        // When the time is after the specified period, the text should not show.
+                        // When the ready dots should show, text should also show.
+                        shouldShowText = time < lastlastWordEndTime + disappearPeriod ||
+                                time > lastWordEndTime - readyDotsPeriod;
+
+                        // When the ready dots should show, the renderingLines should set to the new paragraph's lines.
+                        if (time > lastWordEndTime - readyDotsPeriod) {
+                            if (renderingLines[0] == line) {
+                                // If the last line is the upper line:
+                                renderingLines[0] += 2;
+                                renderingLines[1] += 4;
+                            }
+                            else {
+                                // If the last line is the lower line:
+                                renderingLines[0] += 4;
+                                renderingLines[1] += 2;
+                            }
+                        }
+                    }
+
+                    return; // We've found the correct rendering lines, no need to keep running the loop.
                 }
 
                 line++;
@@ -205,8 +241,11 @@ public class Viewport extends JPanel {
         final int dotsNum = saveLoadManager.getPropInt("dotsNum");
         final int dotSize = 50;
 
-        // If int the period, draw.
+        // If in the period, draw.
         if (time > dotsStartTime && time < wordStartTime) {
+            // When the ready dots should draw, the text should also appear.
+            shouldShowText = true;
+
             final int startX =
                     saveLoadManager.getPropInt("dotsPosX") - saveLoadManager.getPropInt("textPosX");
             final int startY =

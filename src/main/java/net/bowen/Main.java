@@ -29,6 +29,11 @@ public class Main extends JFrame {
     public final SlidableNumberBar linkedFontSizeBar;
     public final SlidableNumberBar lineIndentSizeBar;
     public final SlidableNumberBar lineSpaceSizeConfigBar;
+    /**
+     * The slider bar that configs how long to wait after a paragraph's last mark finished should the text animation
+     * disappear.
+     */
+    public final SlidableNumberBar textDisappearTimeConfigBar;
     public final SlidableNumberBar readyDotsTimeConfigBar = new SlidableNumberBar(4, "Time (ms)");
     public final TitledComboBox<Integer> readyDotsNumComboBox = new TitledComboBox<>("Number of Dots", new Integer[]{3, 4, 5});
 
@@ -116,6 +121,14 @@ public class Main extends JFrame {
             saveLoadManager.setProp("lineSpace", b.getVal());
             viewport.repaint();
         });
+
+        this.textDisappearTimeConfigBar = new SlidableNumberBar(4, "Disappear Time (ms)");
+        textDisappearTimeConfigBar.fixSize(200);
+        this.textDisappearTimeConfigBar.addDocumentListener((b -> {
+            saveLoadManager.setProp("textDisappearTime", b.getVal());
+            getTimeline().getCanvas().repaint();
+            viewport.repaint();
+        }));
     }
 
     private void addComponents() {
@@ -200,6 +213,7 @@ public class Main extends JFrame {
         panel.add(linkedFontSizeBar);
         panel.add(lineIndentSizeBar);
         panel.add(lineSpaceSizeConfigBar);
+        panel.add(textDisappearTimeConfigBar);
         panel.add(new JSeparator(SwingConstants.HORIZONTAL));
 
         // Ready dots settings.

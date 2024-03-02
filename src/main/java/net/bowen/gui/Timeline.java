@@ -529,6 +529,10 @@ public class Timeline extends JPanel {
                 if (isParagraphHead)
                     drawReadyDotsRect(x, g2d);
 
+                // Draw the rectangle that hints how long would it wait for the last lines of text to disappear.
+                if (isParagraphEnd)
+                    drawDisappearHintGap(x, g2d);
+
                 // Make sure the icon draw position is on the very middle.
                 x -= MARK_ICON_SIZE / 2;
 
@@ -672,6 +676,13 @@ public class Timeline extends JPanel {
                 g2d.fillArc(dotX, 2, arcSize, arcSize, 0, 360);
                 dotX += widthPerBlock;
             }
+        }
+
+        private void drawDisappearHintGap(int startX, Graphics2D g2d) {
+            int period = saveLoadManager.getPropInt("textDisappearTime");
+
+            g2d.setColor(Color.GREEN);
+            g2d.fillRect(startX, 0, toX(period), 15);
         }
     }
 }

@@ -171,6 +171,9 @@ public class Viewport extends JPanel {
 
                 } else {
                     // If we get here, it means the renderingLines is set to the correct value as it should be.
+                    int disappearPeriod = saveLoadManager.getPropInt("textDisappearTime");
+                    int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
+                    long lastlastWordEndTime = marks.get(i - line + paragraph - 1);
 
                     // If it is the end line of a paragraph, we don't want the 2nd last line to disappear as it would
                     // by default.
@@ -182,11 +185,6 @@ public class Viewport extends JPanel {
                         else
                             // If the last line is the lower line(index 1), set the upper line(index 0) to line - 1.
                             renderingLines[0] = line - 1;
-
-
-                        int disappearPeriod = saveLoadManager.getPropInt("textDisappearTime");
-                        int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
-                        long lastlastWordEndTime = marks.get(i - line + paragraph - 1);
 
                         // After a certain period, we want the lines to disappear.
                         // When the time is after the specified period, the text should not show.
@@ -207,7 +205,7 @@ public class Viewport extends JPanel {
                                 renderingLines[1] += 2;
                             }
                         }
-                    }
+                    } else if (time < lastlastWordEndTime) shouldShowText = true;
 
                     return; // We've found the correct rendering lines, no need to keep running the loop.
                 }
@@ -243,9 +241,6 @@ public class Viewport extends JPanel {
 
         // If in the period, draw.
         if (time > dotsStartTime && time < wordStartTime) {
-            // When the ready dots should draw, the text should also appear.
-            shouldShowText = true;
-
             final int startX =
                     saveLoadManager.getPropInt("dotsPosX") - saveLoadManager.getPropInt("textPosX");
             final int startY =

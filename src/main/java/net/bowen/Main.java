@@ -21,36 +21,21 @@ public class Main extends JFrame {
     private final Timeline timeline = new Timeline(saveLoadManager, viewport);
     private final LineNumberedScrollableTextArea textArea = getTextArea();
 
-    public final SizeConfigBar defaultFontSizeBar = new SizeConfigBar(3, "Default Font Size") {
-        @Override
-        public void documentCallback() {
-            saveLoadManager.setDefaultFontSize(super.size);
-            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getDefaultFontSize()));
-            viewport.repaint();
-        }
-    };
-    public final SizeConfigBar linkedFontSizeBar = new SizeConfigBar(3, "Linked Font Size") {
-        @Override
-        public void documentCallback() {
-            saveLoadManager.setLinkedFontSize(super.size);
-            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getLinkedFontSize()));
-            viewport.repaint();
-        }
-    };
-    public final SizeConfigBar lineIndentSizeBar = new SizeConfigBar(3, "2nd Line Indent") {
-        @Override
-        public void documentCallback() {
-            saveLoadManager.setIndentSize(super.size);
-            viewport.repaint();
-        }
-    };
-    public final SizeConfigBar lineSpaceSizeConfigBar = new SizeConfigBar(3, "Line Space") {
-        @Override
-        public void documentCallback() {
-            saveLoadManager.setLineSpace(super.size);
-            viewport.repaint();
-        }
-    };
+    public final SlidableNumberBar textPosXConfigBar;
+    public final SlidableNumberBar textPosYConfigBar;
+    public final SlidableNumberBar dotsPosXConfigBar;
+    public final SlidableNumberBar dotsPosYConfigBar;
+    public final SlidableNumberBar defaultFontSizeBar;
+    public final SlidableNumberBar linkedFontSizeBar;
+    public final SlidableNumberBar lineIndentSizeBar;
+    public final SlidableNumberBar lineSpaceSizeConfigBar;
+    /**
+     * The slider bar that configs how long to wait after a paragraph's last mark finished should the text animation
+     * disappear.
+     */
+    public final SlidableNumberBar textDisappearTimeConfigBar;
+    public final SlidableNumberBar readyDotsTimeConfigBar = new SlidableNumberBar(4, "Time (ms)");
+    public final TitledComboBox<Integer> readyDotsNumComboBox = new TitledComboBox<>("Number of Dots", new Integer[]{3, 4, 5});
 
     public Timeline getTimeline() {
         return timeline;
@@ -66,10 +51,11 @@ public class Main extends JFrame {
 
         textArea.addDocumentUpdateCallback(() -> {
             saveLoadManager.setText(textArea.getText());
+            timeline.resetMarksNum();
             viewport.repaint();
             timeline.getCanvas().repaint();
         });
-        textArea.setText(saveLoadManager.getText()); // I use Chinese for just now, sorry to English speaker :)
+        textArea.setText(saveLoadManager.getProp("text")); // I use Chinese for just now, sorry to English speaker :)
 
         return textArea;
     }
@@ -80,6 +66,69 @@ public class Main extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
+
+        // Init the components.
+        this.textPosXConfigBar = new SlidableNumberBar(3, "x:");
+        textPosXConfigBar.fixSize(60);
+        this.textPosXConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("textPosX", b.getVal());
+            viewport.repaint();
+        });
+
+        this.textPosYConfigBar = new SlidableNumberBar(3, "y:");
+        textPosYConfigBar.fixSize(60);
+        this.textPosYConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("textPosY", b.getVal());
+            viewport.repaint();
+        });
+
+        this.dotsPosXConfigBar = new SlidableNumberBar(3, "x:");
+        dotsPosXConfigBar.fixSize(60);
+        this.dotsPosXConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("dotsPosX", b.getVal());
+            viewport.repaint();
+        });
+
+        this.dotsPosYConfigBar = new SlidableNumberBar(3, "y:");
+        dotsPosYConfigBar.fixSize(60);
+        this.dotsPosYConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("dotsPosY", b.getVal());
+            viewport.repaint();
+        });
+
+        this.defaultFontSizeBar = new SlidableNumberBar(3, "Default Font Size");
+        this.defaultFontSizeBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("defaultFontSize", b.getVal());
+            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
+            viewport.repaint();
+        });
+
+        this.linkedFontSizeBar = new SlidableNumberBar(3, "Linked Font Size");
+        this.linkedFontSizeBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("linkedFontSize", b.getVal());
+            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
+            viewport.repaint();
+        });
+
+        this.lineIndentSizeBar = new SlidableNumberBar(3, "2nd Line Indent");
+        this.lineIndentSizeBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("indentSize", b.getVal());
+            viewport.repaint();
+        });
+
+        this.lineSpaceSizeConfigBar = new SlidableNumberBar(3, "Line Space");
+        this.lineSpaceSizeConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("lineSpace", b.getVal());
+            viewport.repaint();
+        });
+
+        this.textDisappearTimeConfigBar = new SlidableNumberBar(4, "Disappear Time (ms)");
+        textDisappearTimeConfigBar.fixSize(200);
+        this.textDisappearTimeConfigBar.addDocumentListener((b -> {
+            saveLoadManager.setProp("textDisappearTime", b.getVal());
+            getTimeline().getCanvas().repaint();
+            viewport.repaint();
+        }));
     }
 
     private void addComponents() {
@@ -119,17 +168,64 @@ public class Main extends JFrame {
     /**
      * Get the configure panel.
      */
-    private JPanel getConfPanel() {
+    private JScrollPane getConfPanel() {
         JPanel panel = new JPanel();
         BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
         panel.setLayout(layout);
 
+        // The title font.
+        Font titleFont = new Font(Font.SANS_SERIF, Font.BOLD | Font.ITALIC, 13);
+
+        // The components.
+        JLabel textSettingsLabel = new JLabel("Text Settings");
+        textSettingsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        textSettingsLabel.setFont(titleFont);
+        JPanel textPosPanel = new JPanel();
+        textPosPanel.setMaximumSize(new Dimension(500, 10));
+        textPosPanel.add(new JLabel("Position"));
+        textPosPanel.add(textPosXConfigBar);
+        textPosPanel.add(textPosYConfigBar);
+        JPanel dotsPosPanel = new JPanel();
+        dotsPosPanel.setMaximumSize(new Dimension(500, 10));
+        dotsPosPanel.add(new JLabel("Position"));
+        dotsPosPanel.add(dotsPosXConfigBar);
+        dotsPosPanel.add(dotsPosYConfigBar);
+        JLabel readyDotsSettingsLabel = new JLabel("Ready Dots Settings");
+        readyDotsSettingsLabel.setBackground(Color.BLACK);
+        readyDotsSettingsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        readyDotsSettingsLabel.setFont(titleFont);
+        readyDotsNumComboBox.addActionListener(() -> {
+            saveLoadManager.setProp("dotsNum", (int) readyDotsNumComboBox.getSelectedElement());
+            timeline.getCanvas().repaint();
+            viewport.repaint();
+        });
+        readyDotsTimeConfigBar.addDocumentListener((b) -> {
+            saveLoadManager.setProp("dotsPeriod", b.getVal());
+            timeline.getCanvas().repaint();
+            viewport.repaint();
+        });
+        readyDotsTimeConfigBar.setDragStep(5);
+
+        // Text settings.
+        panel.add(textSettingsLabel);
+        panel.add(textPosPanel);
         panel.add(defaultFontSizeBar);
         panel.add(linkedFontSizeBar);
         panel.add(lineIndentSizeBar);
         panel.add(lineSpaceSizeConfigBar);
+        panel.add(textDisappearTimeConfigBar);
+        panel.add(new JSeparator(SwingConstants.HORIZONTAL));
 
-        return panel;
+        // Ready dots settings.
+        panel.add(readyDotsSettingsLabel);
+        panel.add(dotsPosPanel);
+        panel.add(readyDotsNumComboBox);
+        panel.add(readyDotsTimeConfigBar);
+
+        JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setMinimumSize(new Dimension(200, 150));
+        return scrollPane;
     }
 
     private void addMenuBar() {

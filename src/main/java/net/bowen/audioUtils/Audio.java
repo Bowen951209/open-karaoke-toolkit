@@ -1,8 +1,8 @@
 package net.bowen.audioUtils;
 
 import javax.sound.sampled.*;
+import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 public class Audio {
     private final Clip clip;
@@ -12,7 +12,7 @@ public class Audio {
         return totalTime;
     }
 
-    public Audio(URL src) {
+    public Audio(File src) {
         try {
             this.clip = AudioSystem.getClip();
         } catch (LineUnavailableException e) {

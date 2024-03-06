@@ -7,8 +7,8 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 
 /**
@@ -70,7 +70,7 @@ public class BoxWaveform {
 
 
     // handle most WAV and AIFF files
-    public static BufferedImage loadImage(URL file, Dimension size, int boxWidth, Color color) {
+    public static BufferedImage loadImage(File file, Dimension size, int boxWidth, Color color) {
         float[] samples;
 
 

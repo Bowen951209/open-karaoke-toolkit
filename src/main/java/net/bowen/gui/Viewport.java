@@ -146,47 +146,39 @@ public class Viewport extends JPanel {
         }
     }
 
+    /**
+     * Refresh the {@link #renderingLines} according to the playing time. After refreshing it, we can know which 2
+     * lines we should render on the display.
+     */
     private void refreshRenderingLines(long time) {
         List<String> textList = saveLoadManager.getTextList();
-        List<Long> marks = saveLoadManager.getMarks();
         renderingLines[0] = 0;
         renderingLines[1] = 1;
 
-        // For each line of the text.
+        // The loop process through each line of the text.
+        // for each word:
         for (int i = 0, paragraph = 0, line = 0; i < textList.size(); i++) {
-            String s = textList.get(i);
-            if (s.equals("\n") && i + 1 < marks.size()) {
+            // If it's the end of a line, we process it.
+            if (isLineEnd(i)) {
                 // If the next word is also "\n", means it's the end line of the paragraph.
-                boolean isParagraphEnd = textList.get(i + 1).equals("\n") || i == textList.size() - 1;
+                boolean isParagraphEnd = isParagraphEnd(i);
                 if (isParagraphEnd) paragraph++;
 
-                long lastWordEndTime = marks.get(i - line + paragraph);
+                long lastWordEndTime = getLastWordEndTime(i, line, paragraph);
 
                 if (lastWordEndTime < time) {
-                    if (line % 2 == 0) {
-                        renderingLines[0] = line + 2;
-                    } else {
-                        renderingLines[1] = line + 2;
-                    }
-
+                    addLine(line);
                 } else {
                     // If we get here, it means the renderingLines is set to the correct value as it should be.
+                    int disappearPeriod = saveLoadManager.getPropInt("textDisappearTime");
+                    int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
+                    long lastlastWordEndTime = getLastLastWordEndTime(i, line, paragraph);
 
                     // If it is the end line of a paragraph, we don't want the 2nd last line to disappear as it would
                     // by default.
-                    // What this will do is to reset the changed 2nd last line back to the end line - 1.
                     if (isParagraphEnd) {
-                        if (renderingLines[0] == line)
-                            // If the last line is the upper line(index 0), set the lower line(index 1) to line - 1.
-                            renderingLines[1] = line - 1;
-                        else
-                            // If the last line is the lower line(index 1), set the upper line(index 0) to line - 1.
-                            renderingLines[0] = line - 1;
-
-
-                        int disappearPeriod = saveLoadManager.getPropInt("textDisappearTime");
-                        int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
-                        long lastlastWordEndTime = marks.get(i - line + paragraph - 1);
+                        // What this will do is to reset the changed 2nd last line back to the end line - 1.
+                        reset2ndLastLineBack(line);
 
                         // After a certain period, we want the lines to disappear.
                         // When the time is after the specified period, the text should not show.
@@ -195,26 +187,107 @@ public class Viewport extends JPanel {
                                 time > lastWordEndTime - readyDotsPeriod;
 
                         // When the ready dots should show, the renderingLines should set to the new paragraph's lines.
-                        if (time > lastWordEndTime - readyDotsPeriod) {
-                            if (renderingLines[0] == line) {
-                                // If the last line is the upper line:
-                                renderingLines[0] += 2;
-                                renderingLines[1] += 4;
-                            }
-                            else {
-                                // If the last line is the lower line:
-                                renderingLines[0] += 4;
-                                renderingLines[1] += 2;
-                            }
-                        }
-                    }
+                        if (time > lastWordEndTime - readyDotsPeriod)
+                            setToNewParagraphLines(line);
+                    } else if (time < lastWordEndTime) shouldShowText = true;
 
-                    return; // We've found the correct rendering lines, no need to keep running the loop.
+                    return; // We've found the correct rendering lines, no need to keep running in the loop.
                 }
 
                 line++;
+            } else if (isTextEnd(i)) {
+                // We need a special process for the end line of the text, or else the disappearance won't work properly.
+                int disappearPeriod = saveLoadManager.getPropInt("textDisappearTime");
+                long thisWordEndTime = getThisWordEndTime(i, line, paragraph);
+                shouldShowText = time < thisWordEndTime + disappearPeriod;
+
+                // What this will do is to reset the changed 2nd last line back to the end line - 1.
+                reset2ndLastLineBack(line);
             }
         }
+    }
+
+    private boolean isTextEnd(int textIdx) {
+        var textList = saveLoadManager.getTextList();
+        return textIdx == textList.size() - 1;
+    }
+
+    private boolean isLineEnd(int textIdx) {
+        var textList = saveLoadManager.getTextList();
+        String s = textList.get(textIdx);
+        return s.equals("\n"); // Note: If the text is the end text, I don't consider it as the end of a line.
+    }
+
+    /**
+     * You can only call this when you have made sure the word of the text index is "\n"
+     */
+    private boolean isParagraphEnd(int textIdx) {
+        var textList = saveLoadManager.getTextList();
+
+        boolean isEnd;
+        if (textIdx + 1 < textList.size())
+            isEnd = textList.get(textIdx + 1).equals("\n");
+        else
+            isEnd = false; // Note: If the text is the end text, I don't consider it as the end of a paragraph.
+
+        return isEnd;
+    }
+
+    private void addLine(int line) {
+        if (renderingLines[0] == line)
+            // If the paragraph line is the upper line(index 0), set the upper line(index 0) to line + 2.
+            renderingLines[0] = line + 2;
+        else
+            // If the paragraph line is the lower line(index 1), set the lower line(index 1) to line + 2.
+            renderingLines[1] = line + 2;
+    }
+
+    private void reset2ndLastLineBack(int paragraphEndLineIdx) {
+        if (renderingLines[0] == paragraphEndLineIdx)
+            // If the paragraph end line is the upper line(index 0), set the lower line(index 1) to line - 1.
+            renderingLines[1] = paragraphEndLineIdx - 1;
+        else
+            // If the paragraph end line is the lower line(index 1), set the upper line(index 0) to line - 1.
+            renderingLines[0] = paragraphEndLineIdx - 1;
+    }
+
+    private void setToNewParagraphLines(int paragraphEndLineIdx) {
+        if (renderingLines[0] == paragraphEndLineIdx) {
+            // If the paragraph end line is the upper line:
+            renderingLines[0] += 2;
+            renderingLines[1] += 4;
+        } else {
+            // If the paragraph end line is the lower line:
+            renderingLines[0] += 4;
+            renderingLines[1] += 2;
+        }
+    }
+
+    private long getThisWordEndTime(int thisWordIdx, int line, int paragraph) {
+        var marks = saveLoadManager.getMarks();
+        int markIdx = thisWordIdx - line + paragraph + 1;
+
+        if (markIdx < marks.size())
+            return marks.get(markIdx);
+        else return Long.MAX_VALUE;
+    }
+
+    private long getLastWordEndTime(int thisWordIdx, int line, int paragraph) {
+        var marks = saveLoadManager.getMarks();
+        int markIdx = thisWordIdx - line + paragraph;
+        
+        if (markIdx < marks.size())
+            return marks.get(markIdx);
+        else return Long.MAX_VALUE;
+    }
+
+    private long getLastLastWordEndTime(int thisWordIdx, int line, int paragraph) {
+        var marks = saveLoadManager.getMarks();
+        int markIdx = thisWordIdx - line + paragraph - 1;
+
+        if (markIdx < marks.size())
+            return marks.get(markIdx);
+        else return Long.MAX_VALUE;
     }
 
     private Rectangle getRectangle(int i, long time, boolean linkedWord) {
@@ -243,9 +316,6 @@ public class Viewport extends JPanel {
 
         // If in the period, draw.
         if (time > dotsStartTime && time < wordStartTime) {
-            // When the ready dots should draw, the text should also appear.
-            shouldShowText = true;
-
             final int startX =
                     saveLoadManager.getPropInt("dotsPosX") - saveLoadManager.getPropInt("textPosX");
             final int startY =

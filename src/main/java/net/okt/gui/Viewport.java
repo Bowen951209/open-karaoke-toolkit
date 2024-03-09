@@ -1,6 +1,6 @@
-package net.bowen.gui;
+package net.okt.gui;
 
-import net.bowen.system.SaveLoadManager;
+import net.okt.system.SaveLoadManager;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,4 +1,4 @@
-package net.bowen.system.command;
+package net.okt.system.command;
 
 public interface Command {
     void execute();

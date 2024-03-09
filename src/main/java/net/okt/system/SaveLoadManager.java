@@ -1,9 +1,9 @@
-package net.bowen.system;
+package net.okt.system;
 
-import net.bowen.Main;
-import net.bowen.audioUtils.Audio;
-import net.bowen.audioUtils.BoxWaveform;
-import net.bowen.gui.Timeline;
+import net.okt.Main;
+import net.okt.audioUtils.Audio;
+import net.okt.audioUtils.BoxWaveform;
+import net.okt.gui.Timeline;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static net.bowen.gui.Timeline.PIXEL_TIME_RATIO;
+import static net.okt.gui.Timeline.PIXEL_TIME_RATIO;
 
 /**
  * This class store the state the user is at. For example, loaded audio, text, etc.

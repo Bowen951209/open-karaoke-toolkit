@@ -1,4 +1,4 @@
-package net.bowen.system.command;
+package net.okt.system.command;
 
 import java.util.ArrayList;
 import java.util.List;

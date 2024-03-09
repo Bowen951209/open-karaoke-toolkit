@@ -1,4 +1,4 @@
-package net.bowen.gui;
+package net.okt.gui;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;

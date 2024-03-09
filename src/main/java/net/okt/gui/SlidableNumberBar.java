@@ -1,6 +1,6 @@
-package net.bowen.gui;
+package net.okt.gui;
 
-import net.bowen.system.SimpleDocumentListener;
+import net.okt.system.SimpleDocumentListener;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,7 +1,7 @@
-package net.bowen;
+package net.okt;
 
-import net.bowen.gui.*;
-import net.bowen.system.SaveLoadManager;
+import net.okt.gui.*;
+import net.okt.system.SaveLoadManager;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;

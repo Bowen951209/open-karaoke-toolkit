@@ -1,4 +1,4 @@
-package net.bowen.audioUtils;
+package net.okt.audioUtils;
 
 
 import javax.sound.sampled.AudioFormat;

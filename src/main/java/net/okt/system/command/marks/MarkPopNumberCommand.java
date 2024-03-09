@@ -1,6 +1,6 @@
-package net.bowen.system.command.marks;
+package net.okt.system.command.marks;
 
-import net.bowen.system.command.Command;
+import net.okt.system.command.Command;
 
 import java.util.List;
 

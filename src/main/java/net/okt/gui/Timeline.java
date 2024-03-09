@@ -1,12 +1,12 @@
-package net.bowen.gui;
+package net.okt.gui;
 
-import net.bowen.audioUtils.Audio;
-import net.bowen.system.SaveLoadManager;
-import net.bowen.system.command.CommandManager;
-import net.bowen.system.command.marks.MarkAddCommand;
-import net.bowen.system.command.marks.MarkPopNumberCommand;
-import net.bowen.system.command.marks.MarkRemoveCommand;
-import net.bowen.system.command.marks.MarkSetCommand;
+import net.okt.audioUtils.Audio;
+import net.okt.system.SaveLoadManager;
+import net.okt.system.command.CommandManager;
+import net.okt.system.command.marks.MarkAddCommand;
+import net.okt.system.command.marks.MarkPopNumberCommand;
+import net.okt.system.command.marks.MarkRemoveCommand;
+import net.okt.system.command.marks.MarkSetCommand;
 
 import javax.swing.*;
 import javax.swing.plaf.SliderUI;

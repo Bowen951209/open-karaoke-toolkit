@@ -104,10 +104,6 @@ finally become a good-enough karaoke software!
 Most of the essential parts are not fully implemented yet, but the outline of the software has a bit come out. I hope
 the program can be kept working on for a while, at least it should have the full functions for making a karaoke video.
 
-I want to add that, since I am a Taiwanese, you can probably find many mistakes in my English. And I am still a senior
-high school student, there should be many issues with my code style and design. If anyone wants to point out a problem,
-I am willing to learn and improve.
-
 # Acknowledgement
 
 Thanks to Sayatoo company for providing the design idea.

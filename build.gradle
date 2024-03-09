@@ -1,3 +1,4 @@
+//file:noinspection ConfigurationAvoidance
 plugins {
     id 'java'
     id 'application'
@@ -5,6 +6,10 @@ plugins {
 
 group = 'net.bowen'
 version = '1.0-SNAPSHOT'
+
+application {
+    mainClassName = 'net.bowen.Main'
+}
 
 repositories {
     mavenCentral()
@@ -23,6 +28,6 @@ application {
     mainClassName = 'net.bowen.Main'
 }
 
-tasks.withType(JavaCompile) {  
-    options.encoding = "UTF-8"  
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }

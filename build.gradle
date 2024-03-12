@@ -7,10 +7,6 @@ plugins {
 group = 'net.bowen'
 version = '1.0-SNAPSHOT'
 
-application {
-    mainClassName = 'net.bowen.Main'
-}
-
 repositories {
     mavenCentral()
 }
@@ -25,7 +21,7 @@ test {
 }
 
 application {
-    mainClassName = 'net.bowen.Main'
+    mainClassName = 'net.okt.Main'
 }
 
 tasks.withType(JavaCompile) {

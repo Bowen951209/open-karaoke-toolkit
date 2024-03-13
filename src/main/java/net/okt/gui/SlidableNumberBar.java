@@ -33,10 +33,6 @@ public class SlidableNumberBar extends JPanel {
 
     public void addDocumentListener(DocListener e) {
         textField.getDocument().addDocumentListener(new SimpleDocumentListener(() -> {
-            // If the text is not empty, convert the string to int value.
-            if (!textField.getText().isEmpty())
-                val = Integer.parseInt(textField.getText());
-
             // The passed in listener.
             e.run(this);
         }));
@@ -83,6 +79,12 @@ public class SlidableNumberBar extends JPanel {
                 mouseLastX = e.getX();
             }
         });
+
+        textField.getDocument().addDocumentListener(new SimpleDocumentListener(()->{
+            // Convert text to value
+            if (!textField.getText().isEmpty())
+                val = Integer.parseInt(textField.getText());
+        }));
 
         JLabel label = new JLabel(text);
         add(label);

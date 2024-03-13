@@ -14,6 +14,10 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.10'
+
+    // The GPL dependency enable us to use H.265/HEVC codec(libx265 GPL license problem).
+    implementation group: 'org.bytedeco', name: 'ffmpeg-platform-gpl', version: '6.1.1-1.5.10'
 }
 
 test {

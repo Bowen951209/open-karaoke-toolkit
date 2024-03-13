@@ -249,8 +249,20 @@ public class Main extends JFrame {
         JMenuItem saveProject = getSaveProject(fileChooser);
         fileMenu.add(saveProject);
 
+        // export
+        JMenuItem export = getExportMenuItem(fileChooser);
+        fileMenu.add(export);
+
         menuBar.add(fileMenu);
         setJMenuBar(menuBar);
+    }
+
+    private JMenuItem getExportMenuItem(JFileChooser fileChooser) {
+        VideoExportDialog videoExportDialog = new VideoExportDialog(viewport, fileChooser);
+        JMenuItem item = new JMenuItem("Export");
+        item.addActionListener(e -> videoExportDialog.show());
+
+        return item;
     }
 
     private JMenuItem getLoadProject(JFileChooser fileChooser) {

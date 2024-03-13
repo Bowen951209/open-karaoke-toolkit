@@ -58,9 +58,9 @@ If you want to type a linked word in OKT, just add an apostrophe(') before the w
 
 Since this project is coded with ***Java***, it should be able to run on Windows, Linux, and macOS.
 
-| Platform | Can run            | Tested             |
+| Platform | Can run            | Tested Environment |
 |----------|--------------------|--------------------|
-| Window   | :heavy_check_mark: | :heavy_check_mark: |
+| Window   | :heavy_check_mark: | JDK18              |
 | Linux    | :heavy_check_mark: | :x:                |
 | macOS    | :heavy_check_mark: | :x:                |
 

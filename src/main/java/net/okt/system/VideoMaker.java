@@ -22,8 +22,7 @@ public class VideoMaker {
         float frameLength = 1000f / fps;
 
         FFmpegFrameRecorder frameRecorder = new FFmpegFrameRecorder(filename, width, height);
-        frameRecorder.setVideoCodec(173);
-//        frameRecorder.setVideoCodec(CODEC_MAP.get(codec));
+        frameRecorder.setVideoCodec(CODEC_MAP.get(codec));
         frameRecorder.setFormat("mp4");
         frameRecorder.setFrameRate(fps);
         frameRecorder.setVideoBitrate(bitrate);

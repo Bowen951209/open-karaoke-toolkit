@@ -10,7 +10,7 @@ import java.awt.event.MouseMotionAdapter;
 
 public class SlidableNumberBar extends JPanel {
     private final int maxValue;
-    private final JTextFieldLimit textField;
+    private final TextFieldLimit textField;
 
 
     private int dragStep = 1;
@@ -43,7 +43,7 @@ public class SlidableNumberBar extends JPanel {
      */
     public SlidableNumberBar(int defaultVal, int limitDigit, String text) {
         super(new FlowLayout(FlowLayout.LEFT));
-        textField = new JTextFieldLimit(true, limitDigit, String.valueOf(defaultVal));
+        textField = new TextFieldLimit(true, limitDigit, String.valueOf(defaultVal));
         this.val = defaultVal;
         this.maxValue = (int) (Math.pow(10, limitDigit) - 1);
 

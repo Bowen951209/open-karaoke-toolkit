@@ -173,32 +173,19 @@ public class Main extends JFrame {
         BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
         panel.setLayout(layout);
 
-        // The title font.
-        Font titleFont = new Font(Font.SANS_SERIF, Font.BOLD | Font.ITALIC, 13);
-
         // The components.
-        JLabel textSettingsLabel = new JLabel("Text Settings");
-        textSettingsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        textSettingsLabel.setFont(titleFont);
-        JPanel textPosPanel = new JPanel();
-        textPosPanel.setMaximumSize(new Dimension(500, 10));
-        textPosPanel.add(new JLabel("Position"));
-        textPosPanel.add(textPosXConfigBar);
-        textPosPanel.add(textPosYConfigBar);
-        JPanel dotsPosPanel = new JPanel();
-        dotsPosPanel.setMaximumSize(new Dimension(500, 10));
-        dotsPosPanel.add(new JLabel("Position"));
-        dotsPosPanel.add(dotsPosXConfigBar);
-        dotsPosPanel.add(dotsPosYConfigBar);
-        JLabel readyDotsSettingsLabel = new JLabel("Ready Dots Settings");
-        readyDotsSettingsLabel.setBackground(Color.BLACK);
-        readyDotsSettingsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        readyDotsSettingsLabel.setFont(titleFont);
+        JLabel textSettingsLabel = new TitleLabel("Text Settings");
+        DoubleTextBarPanel textPosPanel = new DoubleTextBarPanel("Position", textPosXConfigBar, textPosYConfigBar);
+
+        JLabel readyDotsSettingsLabel = new TitleLabel("Ready Dots Settings");
+        DoubleTextBarPanel dotsPosPanel = new DoubleTextBarPanel("Position", dotsPosXConfigBar, dotsPosYConfigBar);
+
         readyDotsNumComboBox.addActionListener(() -> {
             saveLoadManager.setProp("dotsNum", (int) readyDotsNumComboBox.getSelectedElement());
             timeline.getCanvas().repaint();
             viewport.repaint();
         });
+
         readyDotsTimeConfigBar.addDocumentListener((b) -> {
             saveLoadManager.setProp("dotsPeriod", b.getVal());
             timeline.getCanvas().repaint();

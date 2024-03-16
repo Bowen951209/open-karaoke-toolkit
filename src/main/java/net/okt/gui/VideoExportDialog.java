@@ -24,7 +24,7 @@ public class VideoExportDialog {
         this.codecComboBox = new JComboBox<>(codecOptions);
         this.fpsComboBox = new JComboBox<>(fpsOptions);
         this.bitrateComboBox = new JComboBox<>(bitrateOptions);
-        this.timeBar = new SlidableNumberBar(45000, 7, null);
+        this.timeBar = new SlidableNumberBar(null, 7, 45000);
         this.textFieldFileChooser = new TextFieldFileChooser(fileChooser.getCurrentDirectory() + "\\output.mp4");
 
         this.inputs = new JComponent[]{

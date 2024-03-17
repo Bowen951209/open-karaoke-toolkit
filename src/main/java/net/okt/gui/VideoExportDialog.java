@@ -61,8 +61,6 @@ public class VideoExportDialog {
 
             String filePath = textFieldFileChooser.getSelectedFile().getAbsolutePath();
 
-            System.out.println(time);
-            VideoMaker.genVideo(filePath, codecSelection, fps, bitrate, time, 1500, 1000, viewport);
             int videoWidth = viewport.getBufferedImage().getWidth();
             int videoHeight = viewport.getBufferedImage().getHeight();
             VideoMaker.genVideo(filePath, codecSelection, fps, bitrate, time,

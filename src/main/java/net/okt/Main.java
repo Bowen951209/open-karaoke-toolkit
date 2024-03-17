@@ -210,7 +210,7 @@ public class Main extends JFrame {
     }
 
     private JMenuItem getExportMenuItem(JFileChooser fileChooser) {
-        VideoExportDialog videoExportDialog = new VideoExportDialog(viewport, fileChooser);
+        VideoExportDialog videoExportDialog = new VideoExportDialog(saveLoadManager, viewport, fileChooser);
         JMenuItem item = new JMenuItem("Export");
         item.addActionListener(e -> videoExportDialog.show());
 

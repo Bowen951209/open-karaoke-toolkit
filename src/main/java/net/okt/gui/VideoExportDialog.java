@@ -1,11 +1,12 @@
 package net.okt.gui;
 
+import net.okt.system.SaveLoadManager;
 import net.okt.system.VideoMaker;
 
 import javax.swing.*;
 
 public class VideoExportDialog {
-
+    private final SaveLoadManager saveLoadManager;
     private final Viewport viewport;
     private final JComboBox<String> codecComboBox;
     private final JComboBox<Integer> fpsComboBox;
@@ -14,7 +15,8 @@ public class VideoExportDialog {
     private final TextFieldFileChooser textFieldFileChooser;
     private final JComponent[] inputs;
 
-    public VideoExportDialog(Viewport viewport, JFileChooser fileChooser) {
+    public VideoExportDialog(SaveLoadManager saveLoadManager, Viewport viewport, JFileChooser fileChooser) {
+        this.saveLoadManager = saveLoadManager;
         this.viewport = viewport;
 
         String[] codecOptions = VideoMaker.CODEC_MAP.keySet().toArray(new String[0]);
@@ -63,7 +65,8 @@ public class VideoExportDialog {
             VideoMaker.genVideo(filePath, codecSelection, fps, bitrate, time, 1500, 1000, viewport);
             int videoWidth = viewport.getBufferedImage().getWidth();
             int videoHeight = viewport.getBufferedImage().getHeight();
-            VideoMaker.genVideo(filePath, codecSelection, fps, bitrate, time, videoWidth, videoHeight, viewport);
+            VideoMaker.genVideo(filePath, codecSelection, fps, bitrate, time,
+                    videoWidth, videoHeight, viewport, saveLoadManager);
         }
     }
 }

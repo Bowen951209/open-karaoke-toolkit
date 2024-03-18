@@ -63,8 +63,16 @@ public class VideoExportDialog {
 
             int videoWidth = viewport.getBufferedImage().getWidth();
             int videoHeight = viewport.getBufferedImage().getHeight();
-            VideoMaker.genVideo(filePath, codecSelection, fps, bitrate, time,
-                    videoWidth, videoHeight, viewport, saveLoadManager);
+
+            ProgressBarDialog dialog =
+                    new ProgressBarDialog("Progress", "Are you sure you want to cancel the output?");
+
+            VideoMaker videoMaker = new VideoMaker(filePath, codecSelection, fps, bitrate, time,
+                    videoWidth, videoHeight, viewport, saveLoadManager, dialog);
+            videoMaker.start();
+
+            dialog.setManualCloseOperation(videoMaker::stopProccessing);
+            dialog.setVisible(true);
         }
     }
 }

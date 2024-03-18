@@ -1,23 +1,64 @@
 package net.okt.system;
 
+import net.okt.gui.ProgressBarDialog;
 import net.okt.gui.Viewport;
 import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.javacv.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_ARGB;
 
-public class VideoMaker {
+public class VideoMaker extends Thread {
     public static final Map<String, Integer> CODEC_MAP = getCodecMap();
 
-    public static void genVideo(String filename, String codec, int fps, int bitrate, long timeLength, int width,
-                                int height, Viewport viewport, SaveLoadManager saveLoadManager) {
+    private final AtomicBoolean shouldRun = new AtomicBoolean(true);
+    private final String filename, codec;
+    private final int fps, bitrate, width, height;
+    private final long timeLength;
+    private final Viewport viewport;
+    private final SaveLoadManager saveLoadManager;
+    private final ProgressBarDialog progressBarDialog;
 
+    public VideoMaker(String filename, String codec, int fps, int bitrate, long timeLength, int width, int height,
+                         Viewport viewport, SaveLoadManager saveLoadManager, ProgressBarDialog progressBarDialog) {
+        this.filename = filename;
+        this.codec = codec;
+        this.fps = fps;
+        this.bitrate = bitrate;
+        this.timeLength = timeLength;
+        this.width = width;
+        this.height = height;
+        this.viewport = viewport;
+        this.saveLoadManager = saveLoadManager;
+        this.progressBarDialog = progressBarDialog;
+    }
+
+    private static Map<String, Integer> getCodecMap() {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("H.264/AVC", avcodec.AV_CODEC_ID_H264);
+        map.put("H.265/HEVC", avcodec.AV_CODEC_ID_HEVC);
+        map.put("AV1", avcodec.AV_CODEC_ID_AV1);
+        map.put("VP9", avcodec.AV_CODEC_ID_VP9);
+
+        return map;
+    }
+
+    public void stopProccessing() {
+        shouldRun.set(false);
+        System.out.println("Output is stopped.");
+    }
+
+    @Override
+    public void run() {
         Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
         int totalFrames = (int) (fps * timeLength * 0.001f);
         float frameLength = 1000f / fps;
+
+       progressBarDialog.progressBar.setMinimum(0);
+       progressBarDialog.progressBar.setMaximum(totalFrames);
 
         FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(saveLoadManager.getProp("audio"));
         try {
@@ -45,13 +86,16 @@ public class VideoMaker {
 
             // Record video.
             for (long i = 0; i < totalFrames; i++) {
+                if (!shouldRun.get()) return; // if stop proccessing, return.
+
                 long time = (long) (i * frameLength);
                 viewport.drawToBufImg(time);
 
                 Frame frame = java2DFrameConverter.getFrame(viewport.getBufferedImage());
                 frameRecorder.record(frame, AV_PIX_FMT_ARGB);  // video
 
-                System.out.print("\rframes: " + i + "/" + totalFrames);
+                progressBarDialog.progressBar.setValue((int)i);
+                progressBarDialog.progressBar.setString("frames: " + i + "/" + totalFrames);
             }
 
             // Record audio.
@@ -69,19 +113,10 @@ public class VideoMaker {
 
             audioGrabber.close();
             frameRecorder.close();
-            System.out.println("\nVideo Outputed To: " + filename + ".");
+
+            progressBarDialog.showFinish("Video outputed to: " + filename);
         } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static Map<String, Integer> getCodecMap() {
-        Map<String, Integer> map = new HashMap<>();
-        map.put("H.264/AVC", avcodec.AV_CODEC_ID_H264);
-        map.put("H.265/HEVC", avcodec.AV_CODEC_ID_HEVC);
-        map.put("AV1", avcodec.AV_CODEC_ID_AV1);
-        map.put("VP9", avcodec.AV_CODEC_ID_VP9);
-
-        return map;
     }
 }

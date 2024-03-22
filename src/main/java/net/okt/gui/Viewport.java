@@ -15,9 +15,9 @@ public class Viewport extends JPanel {
     private final SaveLoadManager saveLoadManager;
     private final int[] renderingLines = {0, 1};
 
-    private Font defaultFont = new Font(Font.SANS_SERIF, Font.BOLD, 50);
-    private Font samllFont = new Font(Font.SANS_SERIF, Font.BOLD, 40);
-    private Point linkedWordTrans = new Point(defaultFont.getSize(), 0);
+    private Font defaultFont;
+    private Font samllFont;
+    private Point linkedWordTrans;
     private BufferedImage bufferedImage;
     private boolean shouldShowText = true;
 

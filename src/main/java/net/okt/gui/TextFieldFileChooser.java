@@ -11,7 +11,7 @@ public class TextFieldFileChooser extends JPanel {
     private final JFileChooser fileChooser;
 
     public TextFieldFileChooser(String defaultFile) {
-        FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(".mp4", "mp4");
+        FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(".mov", "mov");
 
         this.textField = new JTextField(defaultFile);
         this.textField.addFocusListener(new FocusAdapter() {

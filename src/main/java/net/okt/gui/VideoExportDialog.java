@@ -27,7 +27,7 @@ public class VideoExportDialog {
         this.fpsComboBox = new JComboBox<>(fpsOptions);
         this.bitrateComboBox = new JComboBox<>(bitrateOptions);
         this.timeBar = new SlidableNumberBar(null, 7, 45000);
-        this.textFieldFileChooser = new TextFieldFileChooser(fileChooser.getCurrentDirectory() + "\\output.mp4");
+        this.textFieldFileChooser = new TextFieldFileChooser(fileChooser.getCurrentDirectory() + "\\output.mov");
 
         this.inputs = new JComponent[]{
                 new JLabel("Codec:"),
@@ -56,8 +56,8 @@ public class VideoExportDialog {
                 throw new NullPointerException("One of the combo boxes selected value is null");
             bitrate *= 1000;
 
-            boolean isMP4Extension = textFieldFileChooser.getSelectedFile().getName().endsWith(".mp4");
-            if (!isMP4Extension) throw new IllegalArgumentException("Format is not mp4.");
+            boolean isMOVExtension = textFieldFileChooser.getSelectedFile().getName().endsWith(".mov");
+            if (!isMOVExtension) throw new IllegalArgumentException("Format is not mov.");
 
             String filePath = textFieldFileChooser.getSelectedFile().getAbsolutePath();
 

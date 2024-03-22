@@ -3,13 +3,12 @@ package net.okt.system;
 import net.okt.gui.ProgressBarDialog;
 import net.okt.gui.Viewport;
 import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_ARGB;
 
 public class VideoMaker extends Thread {
     public static final Map<String, Integer> CODEC_MAP = getCodecMap();
@@ -42,6 +41,7 @@ public class VideoMaker extends Thread {
         map.put("H.265/HEVC", avcodec.AV_CODEC_ID_HEVC);
         map.put("AV1", avcodec.AV_CODEC_ID_AV1);
         map.put("VP9", avcodec.AV_CODEC_ID_VP9);
+        map.put("PNG(transparent background)", avcodec.AV_CODEC_ID_PNG);
 
         return map;
     }
@@ -69,11 +69,16 @@ public class VideoMaker extends Thread {
         int audioChannels = audioGrabber.getAudioChannels();
 
         FFmpegFrameRecorder frameRecorder = new FFmpegFrameRecorder(filename, width, height, audioChannels);
+        FFmpegLogCallback.set();
+
         // Video
-        frameRecorder.setVideoCodec(CODEC_MAP.get(codec));
-        frameRecorder.setFormat("mp4");
+        int codecID = CODEC_MAP.get(codec);
+        frameRecorder.setVideoCodec(codecID);
+        frameRecorder.setFormat("mov");
         frameRecorder.setFrameRate(fps);
         frameRecorder.setVideoBitrate(bitrate);
+        if (codecID == avcodec.AV_CODEC_ID_PNG)
+            frameRecorder.setPixelFormat(avutil.AV_PIX_FMT_RGBA);
 
         // Audio
         frameRecorder.setAudioCodec(audioGrabber.getAudioCodec());
@@ -92,7 +97,7 @@ public class VideoMaker extends Thread {
                 viewport.drawToBufImg(time);
 
                 Frame frame = java2DFrameConverter.getFrame(viewport.getBufferedImage());
-                frameRecorder.record(frame, AV_PIX_FMT_ARGB);  // video
+                frameRecorder.record(frame, avutil.AV_PIX_FMT_ARGB);  // video
 
                 progressBarDialog.progressBar.setValue((int)i);
                 progressBarDialog.progressBar.setString("frames: " + i + "/" + totalFrames);
@@ -101,7 +106,7 @@ public class VideoMaker extends Thread {
             // Record audio.
             Frame audioFrame;
             while ((audioFrame = audioGrabber.grabFrame()) != null) {
-                // Because audio and recorder has a different frame rate, we need to correct the time stamp.
+                // Because audio and recorder have a different frame rate, we need to correct the time stamp.
                 frameRecorder.setTimestamp(audioFrame.timestamp);
                 frameRecorder.record(audioFrame);
 

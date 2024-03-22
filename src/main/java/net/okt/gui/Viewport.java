@@ -68,7 +68,7 @@ public class Viewport extends JPanel {
         Graphics2D imgG2d = (Graphics2D) bufferedImage.getGraphics();
 
         // Clear the buffered image.
-        imgG2d.setBackground(Color.WHITE);
+        imgG2d.setBackground(new Color(0, 0, 0, 0));
         imgG2d.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
 
         final int x = saveLoadManager.getPropInt("textPosX");

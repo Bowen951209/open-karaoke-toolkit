@@ -7,18 +7,29 @@ import java.awt.*;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Viewport extends JPanel {
-    private Font defaultFont = new Font(Font.SANS_SERIF, Font.BOLD, 50);
-    private Font samllFont = new Font(Font.SANS_SERIF, Font.BOLD, 40);
-    private Point linkedWordTrans = new Point(defaultFont.getSize(), 0);
-
     private final SaveLoadManager saveLoadManager;
     private final int[] renderingLines = {0, 1};
 
+    private Font defaultFont = new Font(Font.SANS_SERIF, Font.BOLD, 50);
+    private Font samllFont = new Font(Font.SANS_SERIF, Font.BOLD, 40);
+    private Point linkedWordTrans = new Point(defaultFont.getSize(), 0);
+    private BufferedImage bufferedImage;
     private boolean shouldShowText = true;
+
+    public BufferedImage getBufferedImage() {
+        return bufferedImage;
+    }
+
+    public void resetBufferedImage() {
+        int w = saveLoadManager.getPropInt("resolutionX");
+        int h = saveLoadManager.getPropInt("resolutionY");
+        bufferedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    }
 
     public void setDefaultFont(Font defaultFont) {
         this.defaultFont = defaultFont;
@@ -35,26 +46,42 @@ public class Viewport extends JPanel {
         this.saveLoadManager = saveLoadManager;
 
         setBorder(BorderFactory.createLineBorder(Color.black));
+        setBackground(Color.LIGHT_GRAY);
     }
 
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+        if (bufferedImage == null) return;
+        drawToBufImg(saveLoadManager.getLoadedAudio().getTimePosition());
+
         Graphics2D g2d = (Graphics2D) g;
+
+        // After rendering on the buffered image, display it on this panel.
+        float aspectRatio = (float) bufferedImage.getWidth() / bufferedImage.getHeight();
+        int drawWidth = getWidth(); // width should fit the panel.
+        int drawHeight = (int) ((float) drawWidth / aspectRatio);
+        g2d.drawImage(bufferedImage, 0, 0, drawWidth, drawHeight, null);
+    }
+
+    public void drawToBufImg(long time) {
+        Graphics2D imgG2d = (Graphics2D) bufferedImage.getGraphics();
+
+        // Clear the buffered image.
+        imgG2d.setBackground(new Color(0, 0, 0, 0));
+        imgG2d.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
 
         final int x = saveLoadManager.getPropInt("textPosX");
         final int y = saveLoadManager.getPropInt("textPosY");
-        g2d.translate(x, y + defaultFont.getSize()); // translate to initial position.
+        imgG2d.translate(x, y + defaultFont.getSize()); // translate to initial position.
 
         // Draw the string.
         if (saveLoadManager.getProp("text") != null) {
-            drawText(g2d);
+            drawText(imgG2d, time);
         }
     }
 
-
-    private void drawText(Graphics2D g2d) {
-        long time = saveLoadManager.getLoadedAudio().getTimePosition();
+    private void drawText(Graphics2D g2d, long time) {
         refreshRenderingLines(time);
         if (!shouldShowText) return;
 
@@ -135,7 +162,7 @@ public class Viewport extends JPanel {
             g2d.fill(intersectArea);
 
             // Border
-            g2d.setStroke(new BasicStroke(1));
+            g2d.setStroke(new BasicStroke(8));
             g2d.setColor(Color.BLACK);
             g2d.draw(fontArea);
 
@@ -275,7 +302,7 @@ public class Viewport extends JPanel {
     private long getLastWordEndTime(int thisWordIdx, int line, int paragraph) {
         var marks = saveLoadManager.getMarks();
         int markIdx = thisWordIdx - line + paragraph;
-        
+
         if (markIdx < marks.size())
             return marks.get(markIdx);
         else return Long.MAX_VALUE;
@@ -302,7 +329,7 @@ public class Viewport extends JPanel {
         int rectMaxSize = linkedWord ? dFontSize + sFontSize : dFontSize;
         int w = (int) (ratio * rectMaxSize);
 
-        return new Rectangle(0, -dFontSize, w, dFontSize + 20); // 20 is the needed adjustment.
+        return new Rectangle(0, -dFontSize, w, dFontSize + 30); // 30 is the needed adjustment.
     }
 
     private void drawReadyDots(Graphics2D g2d, long time, int wordStartMarkIdx) {
@@ -312,7 +339,7 @@ public class Viewport extends JPanel {
         final int period = saveLoadManager.getPropInt("dotsPeriod");
         final long dotsStartTime = wordStartTime - period;
         final int dotsNum = saveLoadManager.getPropInt("dotsNum");
-        final int dotSize = 50;
+        final int dotSize = 200;
 
         // If in the period, draw.
         if (time > dotsStartTime && time < wordStartTime) {
@@ -329,7 +356,8 @@ public class Viewport extends JPanel {
                 Shape arcShape = new Arc2D.Float(x, startY, dotSize, dotSize, 0, 360, Arc2D.OPEN);
 
                 // Draw arc bounds.
-                g2d.setStroke(new BasicStroke(5));
+                g2d.setColor(Color.BLACK);
+                g2d.setStroke(new BasicStroke(12));
                 g2d.draw(arcShape);
 
                 // Add to area.

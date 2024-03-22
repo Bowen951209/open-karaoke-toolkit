@@ -6,13 +6,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
-public class JTextFieldLimit extends JTextField {
+public class TextFieldLimit extends JTextField {
 
     /**
      * @param acceptOnlyNumbers Accept all char or only numbers.
      * @param limit limit number of char of the text field.
      */
-    public JTextFieldLimit(boolean acceptOnlyNumbers, int limit, String defaultText) {
+    public TextFieldLimit(boolean acceptOnlyNumbers, int limit, String defaultText) {
         Document document;
         if (acceptOnlyNumbers) {
             // Not number is not allowed.

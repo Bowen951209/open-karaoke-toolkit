@@ -21,22 +21,6 @@ public class Main extends JFrame {
     private final Timeline timeline = new Timeline(saveLoadManager, viewport);
     private final LineNumberedScrollableTextArea textArea = getTextArea();
 
-    public final SlidableNumberBar textPosXConfigBar;
-    public final SlidableNumberBar textPosYConfigBar;
-    public final SlidableNumberBar dotsPosXConfigBar;
-    public final SlidableNumberBar dotsPosYConfigBar;
-    public final SlidableNumberBar defaultFontSizeBar;
-    public final SlidableNumberBar linkedFontSizeBar;
-    public final SlidableNumberBar lineIndentSizeBar;
-    public final SlidableNumberBar lineSpaceSizeConfigBar;
-    /**
-     * The slider bar that configs how long to wait after a paragraph's last mark finished should the text animation
-     * disappear.
-     */
-    public final SlidableNumberBar textDisappearTimeConfigBar;
-    public final SlidableNumberBar readyDotsTimeConfigBar = new SlidableNumberBar(4, "Time (ms)");
-    public final TitledComboBox<Integer> readyDotsNumComboBox = new TitledComboBox<>("Number of Dots", new Integer[]{3, 4, 5});
-
     public Timeline getTimeline() {
         return timeline;
     }
@@ -67,68 +51,8 @@ public class Main extends JFrame {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
 
-        // Init the components.
-        this.textPosXConfigBar = new SlidableNumberBar(3, "x:");
-        textPosXConfigBar.fixSize(60);
-        this.textPosXConfigBar.addDocumentListener((b) -> {
-            saveLoadManager.setProp("textPosX", b.getVal());
-            viewport.repaint();
-        });
-
-        this.textPosYConfigBar = new SlidableNumberBar(3, "y:");
-        textPosYConfigBar.fixSize(60);
-        this.textPosYConfigBar.addDocumentListener((b) -> {
-            saveLoadManager.setProp("textPosY", b.getVal());
-            viewport.repaint();
-        });
-
-        this.dotsPosXConfigBar = new SlidableNumberBar(3, "x:");
-        dotsPosXConfigBar.fixSize(60);
-        this.dotsPosXConfigBar.addDocumentListener((b) -> {
-            saveLoadManager.setProp("dotsPosX", b.getVal());
-            viewport.repaint();
-        });
-
-        this.dotsPosYConfigBar = new SlidableNumberBar(3, "y:");
-        dotsPosYConfigBar.fixSize(60);
-        this.dotsPosYConfigBar.addDocumentListener((b) -> {
-            saveLoadManager.setProp("dotsPosY", b.getVal());
-            viewport.repaint();
-        });
-
-        this.defaultFontSizeBar = new SlidableNumberBar(3, "Default Font Size");
-        this.defaultFontSizeBar.addDocumentListener((b) -> {
-            saveLoadManager.setProp("defaultFontSize", b.getVal());
-            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
-            viewport.repaint();
-        });
-
-        this.linkedFontSizeBar = new SlidableNumberBar(3, "Linked Font Size");
-        this.linkedFontSizeBar.addDocumentListener((b) -> {
-            saveLoadManager.setProp("linkedFontSize", b.getVal());
-            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
-            viewport.repaint();
-        });
-
-        this.lineIndentSizeBar = new SlidableNumberBar(3, "2nd Line Indent");
-        this.lineIndentSizeBar.addDocumentListener((b) -> {
-            saveLoadManager.setProp("indentSize", b.getVal());
-            viewport.repaint();
-        });
-
-        this.lineSpaceSizeConfigBar = new SlidableNumberBar(3, "Line Space");
-        this.lineSpaceSizeConfigBar.addDocumentListener((b) -> {
-            saveLoadManager.setProp("lineSpace", b.getVal());
-            viewport.repaint();
-        });
-
-        this.textDisappearTimeConfigBar = new SlidableNumberBar(4, "Disappear Time (ms)");
-        textDisappearTimeConfigBar.fixSize(200);
-        this.textDisappearTimeConfigBar.addDocumentListener((b -> {
-            saveLoadManager.setProp("textDisappearTime", b.getVal());
-            getTimeline().getCanvas().repaint();
-            viewport.repaint();
-        }));
+        // Load the sample save file.
+        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.properties")));
     }
 
     private void addComponents() {
@@ -159,9 +83,6 @@ public class Main extends JFrame {
         // Add main split pane to frame.
         add(mainSplitPane);
 
-        // Load the sample save file.
-        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.properties")));
-
         setVisible(true);
     }
 
@@ -173,41 +94,72 @@ public class Main extends JFrame {
         BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
         panel.setLayout(layout);
 
-        // The title font.
-        Font titleFont = new Font(Font.SANS_SERIF, Font.BOLD | Font.ITALIC, 13);
 
-        // The components.
-        JLabel textSettingsLabel = new JLabel("Text Settings");
-        textSettingsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        textSettingsLabel.setFont(titleFont);
-        JPanel textPosPanel = new JPanel();
-        textPosPanel.setMaximumSize(new Dimension(500, 10));
-        textPosPanel.add(new JLabel("Position"));
-        textPosPanel.add(textPosXConfigBar);
-        textPosPanel.add(textPosYConfigBar);
-        JPanel dotsPosPanel = new JPanel();
-        dotsPosPanel.setMaximumSize(new Dimension(500, 10));
-        dotsPosPanel.add(new JLabel("Position"));
-        dotsPosPanel.add(dotsPosXConfigBar);
-        dotsPosPanel.add(dotsPosYConfigBar);
-        JLabel readyDotsSettingsLabel = new JLabel("Ready Dots Settings");
-        readyDotsSettingsLabel.setBackground(Color.BLACK);
-        readyDotsSettingsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        readyDotsSettingsLabel.setFont(titleFont);
-        readyDotsNumComboBox.addActionListener(() -> {
-            saveLoadManager.setProp("dotsNum", (int) readyDotsNumComboBox.getSelectedElement());
-            timeline.getCanvas().repaint();
+        var defaultFontSizeBar =
+                new SlidableNumberBar("Default Font Size", 3, "defaultFontSize", saveLoadManager);
+        defaultFontSizeBar.addDocumentListener(() -> {
+            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
             viewport.repaint();
         });
-        readyDotsTimeConfigBar.addDocumentListener((b) -> {
-            saveLoadManager.setProp("dotsPeriod", b.getVal());
+        viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
+
+        var linkedFontSizeBar =
+                new SlidableNumberBar("Linked Font Size", 3, "linkedFontSize", saveLoadManager);
+        linkedFontSizeBar.addDocumentListener(() -> {
+            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
+            viewport.repaint();
+        });
+        viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
+
+        var lineIndentSizeBar =
+                new SlidableNumberBar("2nd Line Indent", 3, "indentSize", saveLoadManager);
+        lineIndentSizeBar.addDocumentListener(viewport::repaint);
+
+        var lineSpaceSizeConfigBar =
+                new SlidableNumberBar("Line Space", 3, "lineSpace", saveLoadManager);
+        lineSpaceSizeConfigBar.addDocumentListener(viewport::repaint);
+
+        var textDisappearTimeConfigBar =
+                new SlidableNumberBar("Disappear Time (ms)", 4, "textDisappearTime", saveLoadManager);
+        textDisappearTimeConfigBar.fixSize(200);
+        textDisappearTimeConfigBar.addDocumentListener((() -> {
+            getTimeline().getCanvas().repaint();
+            viewport.repaint();
+        }));
+
+        var readyDotsTimeConfigBar = new SlidableNumberBar("Time (ms)", 4, "dotsPeriod", saveLoadManager);
+        readyDotsTimeConfigBar.addDocumentListener(() -> {
             timeline.getCanvas().repaint();
             viewport.repaint();
         });
         readyDotsTimeConfigBar.setDragStep(5);
 
+        var resolutionPanel = new DoubleTextBarPanel("Resolution", 4, "w:", "h:",
+                "resolutionX", "resolutionY", saveLoadManager, viewport);
+        resolutionPanel.addDocumentListenr(viewport::resetBufferedImage);
+        viewport.resetBufferedImage(); // init the buffered image, or else it will be null.
+
+        var textPosPanel = new DoubleTextBarPanel("Position", 3, "x:", "y:",
+                "textPosX", "textPosY", saveLoadManager, viewport);
+
+        var dotsPosPanel = new DoubleTextBarPanel("Position", 3, "x:", "y:",
+                "dotsPosX", "dotsPosY", saveLoadManager, viewport);
+
+        var readyDotsNumComboBox = new TitledComboBox<>("Number of Dots", new Integer[]{3, 4, 5});
+        readyDotsNumComboBox.setSelectedItem(saveLoadManager.getPropInt("dotsNum"));
+        readyDotsNumComboBox.addActionListener(() -> {
+            saveLoadManager.setProp("dotsNum", (int) readyDotsNumComboBox.getSelectedElement());
+            timeline.getCanvas().repaint();
+            viewport.repaint();
+        });
+
+        // Viewport settings.
+        panel.add(new TitleLabel("Viewport Settings"));
+        panel.add(resolutionPanel);
+        panel.add(new JSeparator(SwingConstants.HORIZONTAL));
+
         // Text settings.
-        panel.add(textSettingsLabel);
+        panel.add(new TitleLabel("Text Settings"));
         panel.add(textPosPanel);
         panel.add(defaultFontSizeBar);
         panel.add(linkedFontSizeBar);
@@ -217,14 +169,14 @@ public class Main extends JFrame {
         panel.add(new JSeparator(SwingConstants.HORIZONTAL));
 
         // Ready dots settings.
-        panel.add(readyDotsSettingsLabel);
+        panel.add(new TitleLabel("Ready Dots Settings"));
         panel.add(dotsPosPanel);
         panel.add(readyDotsNumComboBox);
         panel.add(readyDotsTimeConfigBar);
 
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setMinimumSize(new Dimension(200, 150));
+        scrollPane.setMinimumSize(new Dimension(240, 150));
         return scrollPane;
     }
 
@@ -249,8 +201,20 @@ public class Main extends JFrame {
         JMenuItem saveProject = getSaveProject(fileChooser);
         fileMenu.add(saveProject);
 
+        // export
+        JMenuItem export = getExportMenuItem(fileChooser);
+        fileMenu.add(export);
+
         menuBar.add(fileMenu);
         setJMenuBar(menuBar);
+    }
+
+    private JMenuItem getExportMenuItem(JFileChooser fileChooser) {
+        VideoExportDialog videoExportDialog = new VideoExportDialog(saveLoadManager, viewport, fileChooser);
+        JMenuItem item = new JMenuItem("Export");
+        item.addActionListener(e -> videoExportDialog.show());
+
+        return item;
     }
 
     private JMenuItem getLoadProject(JFileChooser fileChooser) {

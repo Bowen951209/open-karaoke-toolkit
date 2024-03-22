@@ -163,19 +163,6 @@ public class SaveLoadManager {
             setText(props.getProperty("text")); // Update the text list.
             mainFrame.getTextArea().setText(getProp("text")); // Update to text area.
 
-            // Update the values to the bars.
-            mainFrame.textPosXConfigBar.setValue(getPropInt("textPosX"));
-            mainFrame.textPosYConfigBar.setValue(getPropInt("textPosY"));
-            mainFrame.dotsPosXConfigBar.setValue(getPropInt("dotsPosX"));
-            mainFrame.dotsPosYConfigBar.setValue(getPropInt("dotsPosY"));
-            mainFrame.readyDotsNumComboBox.setSelectedItem(getPropInt("dotsNum"));
-            mainFrame.readyDotsTimeConfigBar.setValue(getPropInt("dotsPeriod"));
-            mainFrame.defaultFontSizeBar.setValue(getPropInt("defaultFontSize"));
-            mainFrame.linkedFontSizeBar.setValue(getPropInt("linkedFontSize"));
-            mainFrame.lineIndentSizeBar.setValue(getPropInt("indentSize"));
-            mainFrame.lineSpaceSizeConfigBar.setValue(getPropInt("lineSpace"));
-            mainFrame.textDisappearTimeConfigBar.setValue(getPropInt("textDisappearTime"));
-
             // Marks.
             String[] marksStrings = props.getProperty("marks").split(",");
             marks.clear();

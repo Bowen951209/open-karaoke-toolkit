@@ -66,6 +66,8 @@ public class Viewport extends JPanel {
 
     public void drawToBufImg(long time) {
         Graphics2D imgG2d = (Graphics2D) bufferedImage.getGraphics();
+        // This setting can prvent the thick stroke artifacts.
+        imgG2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         // Clear the buffered image.
         imgG2d.setBackground(new Color(0, 0, 0, 0));

@@ -164,7 +164,8 @@ public class Viewport extends JPanel {
             g2d.fill(intersectArea);
 
             // Border
-            g2d.setStroke(new BasicStroke(8));
+            // Remember to set the join mode to avoid spiky artifacts.
+            g2d.setStroke(new BasicStroke(5, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
             g2d.setColor(Color.BLACK);
             g2d.draw(fontArea);
 

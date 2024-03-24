@@ -159,13 +159,17 @@ public class Viewport extends JPanel {
             Area intersectArea = new Area(fontArea);
             intersectArea.intersect(new Area(colorRect));
 
-            // Fill
+            // Base fill.
+            g2d.setColor(Color.WHITE);
+            g2d.fill(fontArea);
+
+            // Fill intersects.
             g2d.setColor(Color.BLUE);
             g2d.fill(intersectArea);
 
-            // Border
+            // Base border.(Draw this last to make the border clear, or else it would be overlayed by above)
             // Remember to set the join mode to avoid spiky artifacts.
-            g2d.setStroke(new BasicStroke(5, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
+            g2d.setStroke(new BasicStroke(10, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
             g2d.setColor(Color.BLACK);
             g2d.draw(fontArea);
 
@@ -332,7 +336,7 @@ public class Viewport extends JPanel {
         int rectMaxSize = linkedWord ? dFontSize + sFontSize : dFontSize;
         int w = (int) (ratio * rectMaxSize);
 
-        return new Rectangle(0, -dFontSize, w, dFontSize + 30); // 30 is the needed adjustment.
+        return new Rectangle(0, -dFontSize, w, dFontSize * 2); // * 2 is the needed adjustment.
     }
 
     private void drawReadyDots(Graphics2D g2d, long time, int wordStartMarkIdx) {

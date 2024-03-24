@@ -22,7 +22,7 @@ public class VideoMaker extends Thread {
     private final ProgressBarDialog progressBarDialog;
 
     public VideoMaker(String filename, String codec, int fps, int bitrate, long timeLength, int width, int height,
-                         Viewport viewport, SaveLoadManager saveLoadManager, ProgressBarDialog progressBarDialog) {
+                      Viewport viewport, SaveLoadManager saveLoadManager, ProgressBarDialog progressBarDialog) {
         this.filename = filename;
         this.codec = codec;
         this.fps = fps;
@@ -57,8 +57,8 @@ public class VideoMaker extends Thread {
         int totalFrames = (int) (fps * timeLength * 0.001f);
         float frameLength = 1000f / fps;
 
-       progressBarDialog.progressBar.setMinimum(0);
-       progressBarDialog.progressBar.setMaximum(totalFrames);
+        progressBarDialog.progressBar.setMinimum(0);
+        progressBarDialog.progressBar.setMaximum(totalFrames);
 
         FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(saveLoadManager.getProp("audio"));
         try {
@@ -99,7 +99,7 @@ public class VideoMaker extends Thread {
                 Frame frame = java2DFrameConverter.getFrame(viewport.getBufferedImage());
                 frameRecorder.record(frame, avutil.AV_PIX_FMT_ARGB);  // video
 
-                progressBarDialog.progressBar.setValue((int)i);
+                progressBarDialog.progressBar.setValue((int) i);
                 progressBarDialog.progressBar.setString("frames: " + i + "/" + totalFrames);
             }
 

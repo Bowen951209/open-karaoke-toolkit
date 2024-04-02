@@ -14,16 +14,17 @@ public class VideoMaker extends Thread {
     public static final Map<String, Integer> CODEC_MAP = getCodecMap();
 
     private final AtomicBoolean shouldRun = new AtomicBoolean(true);
-    private final String filename, codec;
+    private final String filename, format, codec;
     private final int fps, bitrate, width, height;
     private final long timeLength;
     private final Viewport viewport;
     private final SaveLoadManager saveLoadManager;
     private final ProgressBarDialog progressBarDialog;
 
-    public VideoMaker(String filename, String codec, int fps, int bitrate, long timeLength, int width, int height,
-                      Viewport viewport, SaveLoadManager saveLoadManager, ProgressBarDialog progressBarDialog) {
+    public VideoMaker(String filename, String format, String codec, int fps, int bitrate, long timeLength, int width,
+                      int height, Viewport viewport, SaveLoadManager saveLoadManager, ProgressBarDialog progressBarDialog) {
         this.filename = filename;
+        this.format = format;
         this.codec = codec;
         this.fps = fps;
         this.bitrate = bitrate;
@@ -74,7 +75,7 @@ public class VideoMaker extends Thread {
         // Video
         int codecID = CODEC_MAP.get(codec);
         frameRecorder.setVideoCodec(codecID);
-        frameRecorder.setFormat("mov");
+        frameRecorder.setFormat(format);
         frameRecorder.setFrameRate(fps);
         frameRecorder.setVideoBitrate(bitrate);
         if (codecID == avcodec.AV_CODEC_ID_PNG)

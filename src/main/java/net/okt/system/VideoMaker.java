@@ -47,7 +47,7 @@ public class VideoMaker extends Thread {
         return map;
     }
 
-    public void stopProccessing() {
+    public void stopProcessing() {
         shouldRun.set(false);
         System.out.println("Output is stopped.");
     }
@@ -92,7 +92,7 @@ public class VideoMaker extends Thread {
 
             // Record video.
             for (long i = 0; i < totalFrames; i++) {
-                if (!shouldRun.get()) return; // if stop proccessing, return.
+                if (!shouldRun.get()) return; // if stop processing, return.
 
                 long time = (long) (i * frameLength);
                 viewport.drawToBufImg(time);
@@ -120,7 +120,7 @@ public class VideoMaker extends Thread {
             audioGrabber.close();
             frameRecorder.close();
 
-            progressBarDialog.showFinish("Video outputed to: " + filename);
+            progressBarDialog.showFinish("Video outputted to: " + filename);
         } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
             throw new RuntimeException(e);
         }

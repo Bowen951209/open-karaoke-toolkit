@@ -89,7 +89,7 @@ public class VideoExportDialog {
                     videoWidth, videoHeight, viewport, saveLoadManager, progressBarDialog);
             videoMaker.start();
 
-            progressBarDialog.setManualCloseOperation(videoMaker::stopProccessing);
+            progressBarDialog.setManualCloseOperation(videoMaker::stopProcessing);
             progressBarDialog.setVisible(true);
         }
     }

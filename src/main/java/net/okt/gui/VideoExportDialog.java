@@ -30,7 +30,6 @@ public class VideoExportDialog {
         this.fpsComboBox = new JComboBox<>(fpsOptions);
         this.bitrateComboBox = new JComboBox<>(bitrateOptions);
         this.timeBar = new SlidableNumberBar(null, 7, 45000);
-        this.textFieldFileChooser = new TextFieldFileChooser(fileChooser.getCurrentDirectory() + "\\output.mov");
         this.textFieldFileChooser = new TextFieldFileChooser(fileChooser.getCurrentDirectory() + "\\output");
 
         this.inputs = new JComponent[]{

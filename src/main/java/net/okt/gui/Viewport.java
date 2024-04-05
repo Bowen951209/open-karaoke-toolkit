@@ -5,6 +5,7 @@ import net.okt.system.SaveLoadManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
@@ -73,8 +74,9 @@ public class Viewport extends JPanel {
         imgG2d.setBackground(new Color(0, 0, 0, 0));
         imgG2d.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
 
-        final int x = saveLoadManager.getPropInt("textPosX");
-        final int y = saveLoadManager.getPropInt("textPosY");
+        // Decide the text position by the percentage values.
+        int x = toRelativeSize(saveLoadManager.getPropInt("textPosX"));
+        int y = toRelativeSize(saveLoadManager.getPropInt("textPosY"));
         imgG2d.translate(x, y + defaultFont.getSize()); // translate to initial position.
 
         // Draw the string.
@@ -87,8 +89,8 @@ public class Viewport extends JPanel {
         refreshRenderingLines(time);
         if (!shouldShowText) return;
 
-        final int secondLineIndent = saveLoadManager.getPropInt("indentSize");
-        final int lineSpace = saveLoadManager.getPropInt("lineSpace");
+        int secondLineIndent = toRelativeSize(saveLoadManager.getPropInt("indentSize"));
+        int lineSpace = toRelativeSize(saveLoadManager.getPropInt("lineSpace"));
         int lineIndex = 0;
         int translatedX = 0;
         List<String> textList = saveLoadManager.getTextList();
@@ -142,13 +144,20 @@ public class Viewport extends JPanel {
                 String c = String.valueOf(s.charAt(j));
                 // Get the glyph vector.
                 GlyphVector glyphVector;
+                float scale;
                 if (j == 0) {
                     glyphVector = defaultFont.createGlyphVector(g2d.getFontRenderContext(), c);
+                    scale = (float) toRelativeSize(defaultFont.getSize()) / defaultFont.getSize();
                 } else {
                     glyphVector = samllFont.createGlyphVector(g2d.getFontRenderContext(), c);
                     glyphVector.setGlyphPosition(0, linkedWordTrans);
+                    scale = (float) toRelativeSize(samllFont.getSize()) / samllFont.getSize();
                 }
 
+                // Transform the vector to the relative size.
+                AffineTransform scaleTransform = new AffineTransform();
+                scaleTransform.scale(scale, scale);
+                glyphVector.setGlyphTransform(0, scaleTransform);
                 fontArea.add(new Area(glyphVector.getGlyphOutline(0)));
             }
 
@@ -175,6 +184,7 @@ public class Viewport extends JPanel {
 
             // Set word space interval.
             int space = s.length() == 2 ? samllFont.getSize() + defaultFont.getSize() : defaultFont.getSize();
+            space = toRelativeSize(space);
             g2d.translate(space, 0);
             translatedX += space;
         }
@@ -327,8 +337,8 @@ public class Viewport extends JPanel {
     private Rectangle getRectangle(int i, long time, boolean linkedWord) {
         ArrayList<Long> marks = saveLoadManager.getMarks();
 
-        final int dFontSize = defaultFont.getSize();
-        final int sFontSize = samllFont.getSize();
+        int dFontSize = toRelativeSize(defaultFont.getSize());
+        int sFontSize = toRelativeSize(samllFont.getSize());
         long wordStartTime = marks.get(i - 1);
         long wordEndTime = marks.get(i);
         long wordPeriod = wordEndTime - wordStartTime;
@@ -350,10 +360,12 @@ public class Viewport extends JPanel {
 
         // If in the period, draw.
         if (time > dotsStartTime && time < wordStartTime) {
-            final int startX =
-                    saveLoadManager.getPropInt("dotsPosX") - saveLoadManager.getPropInt("textPosX");
-            final int startY =
-                    saveLoadManager.getPropInt("dotsPosY") - saveLoadManager.getPropInt("textPosY") - defaultFont.getSize();
+            int textPosX = toRelativeSize(saveLoadManager.getPropInt("textPosX"));
+            int textPosY = toRelativeSize(saveLoadManager.getPropInt("textPosY"));
+            int dotsPosX = saveLoadManager.getPropInt("dotsPosX");
+            int dotsPosY = saveLoadManager.getPropInt("dotsPosY");
+            int startX = dotsPosX - textPosX;
+            int startY = dotsPosY - textPosY - defaultFont.getSize();
 
             Area area = new Area();
 
@@ -379,5 +391,12 @@ public class Viewport extends JPanel {
             g2d.setColor(Color.CYAN);
             g2d.fill(area);
         }
+    }
+
+    /**
+     * @return the relative value to the width of the {@link #bufferedImage}
+     * */
+    private int toRelativeSize(int val) {
+        return (int) (val * bufferedImage.getWidth() * 0.01);
     }
 }

@@ -66,7 +66,7 @@ public class Viewport extends JPanel {
 
     public void drawToBufImg(long time) {
         Graphics2D imgG2d = (Graphics2D) bufferedImage.getGraphics();
-        // This setting can prvent the thick stroke artifacts.
+        // This setting can prevent the thick stroke artifacts.
         imgG2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         // Clear the buffered image.
@@ -167,7 +167,7 @@ public class Viewport extends JPanel {
             g2d.setColor(Color.BLUE);
             g2d.fill(intersectArea);
 
-            // Base border.(Draw this last to make the border clear, or else it would be overlayed by above)
+            // Base border.(Draw this last to make the border clear, or else it would be overlapped by above)
             // Remember to set the join mode to avoid spiky artifacts.
             g2d.setStroke(new BasicStroke(10, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
             g2d.setColor(Color.BLACK);

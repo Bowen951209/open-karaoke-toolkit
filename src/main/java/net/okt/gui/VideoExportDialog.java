@@ -72,8 +72,6 @@ public class VideoExportDialog {
                 throw new NullPointerException("One of the combo boxes selected value is null");
             bitrate *= 1000;
 
-            boolean isMOVExtension = textFieldFileChooser.getSelectedFile().getName().endsWith(".mov");
-            if (!isMOVExtension) throw new IllegalArgumentException("Format is not mov.");
             boolean isCorrectExtension = textFieldFileChooser.getSelectedFile().getName().endsWith("." + formatSelection);
             if (!isCorrectExtension) throw new IllegalArgumentException("Format is not right.");
 

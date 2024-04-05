@@ -66,13 +66,13 @@ public class VideoExportDialog {
             Integer fps = (Integer) fpsComboBox.getSelectedItem();
             Integer bitrate = (Integer) (bitrateComboBox.getSelectedItem());
 
-            String formatSelection = (String) formatComboBox.getSelectedItem();
-            String codecSelection = (String) codecComboBox.getSelectedItem();
-            if (fps == null || bitrate == null || codecSelection == null)
+            String selectedFormat = (String) formatComboBox.getSelectedItem();
+            String selectedCodec = (String) codecComboBox.getSelectedItem();
+            if (fps == null || bitrate == null || selectedCodec == null)
                 throw new NullPointerException("One of the combo boxes selected value is null");
             bitrate *= 1000;
 
-            boolean isCorrectExtension = textFieldFileChooser.getSelectedFile().getName().endsWith("." + formatSelection);
+            boolean isCorrectExtension = textFieldFileChooser.getSelectedFile().getName().endsWith("." + selectedFormat);
             if (!isCorrectExtension) throw new IllegalArgumentException("Format is not right.");
 
             String filePath = textFieldFileChooser.getSelectedFile().getAbsolutePath();
@@ -83,7 +83,7 @@ public class VideoExportDialog {
             ProgressBarDialog progressBarDialog =
                     new ProgressBarDialog("Progress", "Are you sure you want to cancel the output?");
 
-            VideoMaker videoMaker = new VideoMaker(filePath, formatSelection, codecSelection, fps, bitrate, time,
+            VideoMaker videoMaker = new VideoMaker(filePath, selectedFormat, selectedCodec, fps, bitrate, time,
                     videoWidth, videoHeight, viewport, saveLoadManager, progressBarDialog);
             videoMaker.start();
 

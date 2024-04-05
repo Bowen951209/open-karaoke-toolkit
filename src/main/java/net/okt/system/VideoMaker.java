@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class VideoMaker extends Thread {
     public static final Map<String, Integer> CODEC_MAP = getCodecMap();
+    private static final Java2DFrameConverter FRAME_CONVERTER = new Java2DFrameConverter();
 
     private final AtomicBoolean shouldRun = new AtomicBoolean(true);
     private final String filename, format, codec;
@@ -54,7 +55,6 @@ public class VideoMaker extends Thread {
 
     @Override
     public void run() {
-        Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
         int totalFrames = (int) (fps * timeLength * 0.001f);
         float frameLength = 1000f / fps;
 
@@ -97,7 +97,7 @@ public class VideoMaker extends Thread {
                 long time = (long) (i * frameLength);
                 viewport.drawToBufImg(time);
 
-                Frame frame = java2DFrameConverter.getFrame(viewport.getBufferedImage());
+                Frame frame = FRAME_CONVERTER.getFrame(viewport.getBufferedImage());
                 frameRecorder.record(frame, avutil.AV_PIX_FMT_ARGB);  // video
 
                 progressBarDialog.progressBar.setValue((int) i);

@@ -120,7 +120,9 @@ public class VideoMaker extends Thread {
             audioGrabber.close();
             frameRecorder.close();
 
-            progressBarDialog.showFinish("Video outputted to: " + filename);
+            String finishMsg = "Video outputted to: " + filename;
+            System.out.println(finishMsg);
+            progressBarDialog.showFinish(finishMsg);
         } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
             throw new RuntimeException(e);
         }

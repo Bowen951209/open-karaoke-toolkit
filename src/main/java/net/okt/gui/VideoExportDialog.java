@@ -51,7 +51,6 @@ public class VideoExportDialog {
         // If the selected format is changed, also change to the file chooser.
         this.formatComboBox.addActionListener(e -> {
             String selectedFormat = (String) formatComboBox.getSelectedItem();
-            System.out.println(selectedFormat);
             textFieldFileChooser.setExtensionFilter("." + selectedFormat, selectedFormat);
         });
         this.formatComboBox.setSelectedIndex(0); // activate the action listener to init the extension filter.

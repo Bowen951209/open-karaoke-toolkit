@@ -71,8 +71,16 @@ public class VideoExportDialog {
                 throw new NullPointerException("One of the combo boxes selected value is null");
             bitrate *= 1000;
 
+            // If the extension doesn't match the selected format, go to the start again.
             boolean isCorrectExtension = textFieldFileChooser.getSelectedFile().getName().endsWith("." + selectedFormat);
-            if (!isCorrectExtension) throw new IllegalArgumentException("Format is not right.");
+            if (!isCorrectExtension) {
+                JOptionPane.showMessageDialog(
+                        null, "Extension doesn't match the selected format!",
+                        "WARNING", JOptionPane.WARNING_MESSAGE
+                );
+                show();
+                return; // return to quit this call of the method.
+            }
 
             String filePath = textFieldFileChooser.getSelectedFile().getAbsolutePath();
 

@@ -140,6 +140,13 @@ public class Main extends JFrame {
         });
         readyDotsTimeConfigBar.setDragStep(5);
 
+        var readyDotsColorChooserBtn = new ColorChooserButton(saveLoadManager.getPropInt("dotsColor"));
+        readyDotsColorChooserBtn.addColorChangedListener(newColor -> {
+            saveLoadManager.setProp("dotsColor", newColor.getRGB());
+            viewport.repaint();
+        });
+        readyDotsColorChooserBtn.callListeners();// update to the saveLoadManager for init.
+
         var resolutionPanel = new DoubleTextBarPanel("Resolution", 4, "w:", "h:",
                 "resolutionX", "resolutionY", saveLoadManager, viewport);
         resolutionPanel.addDocumentListenr(viewport::resetBufferedImage);
@@ -180,6 +187,7 @@ public class Main extends JFrame {
         panel.add(dotsPosPanel);
         panel.add(readyDotsNumComboBox);
         panel.add(readyDotsTimeConfigBar);
+        panel.add(readyDotsColorChooserBtn);
 
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);

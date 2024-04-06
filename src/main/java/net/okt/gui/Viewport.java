@@ -353,20 +353,20 @@ public class Viewport extends JPanel {
     private void drawReadyDots(Graphics2D g2d, long time, int wordStartMarkIdx) {
         ArrayList<Long> marks = saveLoadManager.getMarks();
         long wordStartTime = marks.get(wordStartMarkIdx);
-
         final int period = saveLoadManager.getPropInt("dotsPeriod");
         final long dotsStartTime = wordStartTime - period;
-        final int dotsNum = saveLoadManager.getPropInt("dotsNum");
-        final int dotSize = 200;
 
         // If in the period, draw.
         if (time > dotsStartTime && time < wordStartTime) {
+            int dotSize = 200;
+            int dotsNum = saveLoadManager.getPropInt("dotsNum");
             int textPosX = toRelativeSize(saveLoadManager.getPropInt("textPosX"));
             int textPosY = toRelativeSize(saveLoadManager.getPropInt("textPosY"));
             int dotsPosX = saveLoadManager.getPropInt("dotsPosX");
             int dotsPosY = saveLoadManager.getPropInt("dotsPosY");
             int startX = dotsPosX - textPosX;
             int startY = dotsPosY - textPosY - defaultFont.getSize();
+            Color dotsColor = new Color(saveLoadManager.getPropInt("dotsColor"));
 
             Area area = new Area();
 
@@ -389,7 +389,7 @@ public class Viewport extends JPanel {
             Rectangle rect = new Rectangle(startX, startY, width, dotSize);
             area.intersect(new Area(rect));
 
-            g2d.setColor(Color.CYAN);
+            g2d.setColor(dotsColor);
             g2d.fill(area);
         }
     }

@@ -126,6 +126,13 @@ public class Main extends JFrame {
             viewport.repaint();
         }));
 
+        var textColorChooserBtn = new ColorChooserButton(saveLoadManager.getPropInt("textColor"));
+        textColorChooserBtn.addColorChangedListener(newColor -> {
+            saveLoadManager.setProp("textColor", newColor.getRGB());
+            viewport.repaint();
+        });
+        textColorChooserBtn.callListeners();// update to the saveLoadManager for init.
+
         var readyDotsTimeConfigBar = new SlidableNumberBar("Time (ms)", 4, "dotsPeriod", saveLoadManager);
         readyDotsTimeConfigBar.addDocumentListener(() -> {
             timeline.getCanvas().repaint();
@@ -165,6 +172,7 @@ public class Main extends JFrame {
         panel.add(lineIndentSizeBar);
         panel.add(lineSpaceSizeConfigBar);
         panel.add(textDisappearTimeConfigBar);
+        panel.add(textColorChooserBtn);
         panel.add(new JSeparator(SwingConstants.HORIZONTAL));
 
         // Ready dots settings.

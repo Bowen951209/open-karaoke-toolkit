@@ -173,7 +173,8 @@ public class Viewport extends JPanel {
             g2d.fill(fontArea);
 
             // Fill intersects.
-            g2d.setColor(Color.BLUE);
+            Color textColor = new Color(saveLoadManager.getPropInt("textColor"));
+            g2d.setColor(textColor);
             g2d.fill(intersectArea);
 
             // Base border.(Draw this last to make the border clear, or else it would be overlapped by above)

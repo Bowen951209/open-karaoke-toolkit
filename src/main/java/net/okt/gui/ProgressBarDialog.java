@@ -27,7 +27,7 @@ public class ProgressBarDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (JOptionPane.showConfirmDialog(ProgressBarDialog.this, closingMessage, "Warnning",
+                if (JOptionPane.showConfirmDialog(ProgressBarDialog.this, closingMessage, "Warning",
                         JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
                     ProgressBarDialog.this.dispose();
 

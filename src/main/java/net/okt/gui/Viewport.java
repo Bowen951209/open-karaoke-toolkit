@@ -34,7 +34,7 @@ public class Viewport extends JPanel {
 
     public void setDefaultFont(Font defaultFont) {
         this.defaultFont = defaultFont;
-        linkedWordTrans = new Point(defaultFont.getSize(), 0);
+        linkedWordTrans = new Point(toRelativeSize(defaultFont.getSize()), 0);
     }
 
     public void setLinkedFont(Font linkedFont) {
@@ -394,9 +394,9 @@ public class Viewport extends JPanel {
     }
 
     /**
-     * @return the relative value to the width of the {@link #bufferedImage}
-     * */
+     * @return the relative value to the width of the resolutionX.
+     */
     private int toRelativeSize(int val) {
-        return (int) (val * bufferedImage.getWidth() * 0.01);
+        return (int) (val * saveLoadManager.getPropInt("resolutionX") * 0.01);
     }
 }

@@ -18,7 +18,6 @@ public class Viewport extends JPanel {
 
     private Font defaultFont;
     private Font samllFont;
-    private Point linkedWordTrans;
     private BufferedImage bufferedImage;
     private boolean shouldShowText = true;
 
@@ -34,7 +33,6 @@ public class Viewport extends JPanel {
 
     public void setDefaultFont(Font defaultFont) {
         this.defaultFont = defaultFont;
-        linkedWordTrans = new Point(toRelativeSize(defaultFont.getSize()), 0);
     }
 
     public void setLinkedFont(Font linkedFont) {
@@ -144,20 +142,20 @@ public class Viewport extends JPanel {
                 String c = String.valueOf(s.charAt(j));
                 // Get the glyph vector.
                 GlyphVector glyphVector;
+                AffineTransform transform = new AffineTransform();
                 float scale;
                 if (j == 0) {
                     glyphVector = defaultFont.createGlyphVector(g2d.getFontRenderContext(), c);
                     scale = (float) toRelativeSize(defaultFont.getSize()) / defaultFont.getSize();
                 } else {
                     glyphVector = samllFont.createGlyphVector(g2d.getFontRenderContext(), c);
-                    glyphVector.setGlyphPosition(0, linkedWordTrans);
                     scale = (float) toRelativeSize(samllFont.getSize()) / samllFont.getSize();
+                    transform.translate(toRelativeSize(defaultFont.getSize()), 0);
                 }
 
                 // Transform the vector to the relative size.
-                AffineTransform scaleTransform = new AffineTransform();
-                scaleTransform.scale(scale, scale);
-                glyphVector.setGlyphTransform(0, scaleTransform);
+                transform.scale(scale, scale);
+                glyphVector.setGlyphTransform(0, transform);
                 fontArea.add(new Area(glyphVector.getGlyphOutline(0)));
             }
 

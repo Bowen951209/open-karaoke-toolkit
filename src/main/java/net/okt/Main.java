@@ -121,7 +121,6 @@ public class Main extends JFrame {
 
         var textDisappearTimeConfigBar =
                 new SlidableNumberBar("Disappear Time (ms)", 4, "textDisappearTime", saveLoadManager);
-        textDisappearTimeConfigBar.fixSize(200);
         textDisappearTimeConfigBar.addDocumentListener((() -> {
             getTimeline().getCanvas().repaint();
             viewport.repaint();

@@ -6,6 +6,7 @@ import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.*;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -92,7 +93,13 @@ public class VideoMaker extends Thread {
 
             // Record video.
             for (long i = 0; i < totalFrames; i++) {
-                if (!shouldRun.get()) return; // if stop processing, return.
+                // if stop processing, deleted the file and return.
+                if (!shouldRun.get()) {
+                    audioGrabber.close();
+                    frameRecorder.close();
+                    deleteFile();
+                    return;
+                }
 
                 long time = (long) (i * frameLength);
                 viewport.drawToBufImg(time);
@@ -126,5 +133,14 @@ public class VideoMaker extends Thread {
         } catch (FrameRecorder.Exception | FrameGrabber.Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void deleteFile() {
+        File file = new File(filename);
+
+        if (file.delete())
+            System.out.println("Deleted file: " + file.getAbsolutePath());
+        else
+            System.err.println("Failed to delete file: " + file.getAbsolutePath());
     }
 }

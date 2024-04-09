@@ -10,19 +10,20 @@ public class TextFieldFileChooser extends JPanel {
     private final JTextField textField;
     private final JFileChooser fileChooser;
 
-    private File file;
     private FileNameExtensionFilter extensionFilter;
 
     public void setExtensionFilter(String description, String extension) {
+        String previousFilePath = fileChooser.getSelectedFile().getPath();
+        // Modify the file path with the new extension.
+        File newFile = new File(previousFilePath.split("\\.")[0] + "." + extension);
+        this.fileChooser.setSelectedFile(newFile);
+        this.textField.setText(newFile.getAbsolutePath());
+
         this.extensionFilter = new FileNameExtensionFilter(description, extension);
         this.fileChooser.setFileFilter(this.extensionFilter);
-        this.file = new File(this.file.getPath().split("\\.")[0] + "." + extension);
-        this.fileChooser.setSelectedFile(this.file);
-        this.textField.setText(this.file.getAbsolutePath());
     }
 
     public TextFieldFileChooser(String defaultFile) {
-        this.file = new File(defaultFile);
         this.textField = new JTextField(defaultFile);
         this.textField.addFocusListener(new FocusAdapter() {
             @Override
@@ -33,6 +34,7 @@ public class TextFieldFileChooser extends JPanel {
 
         this.fileChooser = new JFileChooser();
         this.fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        this.fileChooser.setSelectedFile(new File(defaultFile));
 
         JButton button = new JButton(UIManager.getIcon("FileView.directoryIcon"));
         button.addActionListener(e -> {

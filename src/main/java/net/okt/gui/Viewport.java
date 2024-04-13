@@ -73,8 +73,8 @@ public class Viewport extends JPanel {
         imgG2d.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
 
         // Decide the text position by the percentage values.
-        int x = toRelativeSize(saveLoadManager.getPropInt("textPosX"));
-        int y = toRelativeSize(saveLoadManager.getPropInt("textPosY"));
+        int x = toDrawSize(saveLoadManager.getPropInt("textPosX"));
+        int y = toDrawSize(saveLoadManager.getPropInt("textPosY"));
         imgG2d.translate(x, y + defaultFont.getSize()); // translate to initial position.
 
         // Draw the string.
@@ -87,8 +87,8 @@ public class Viewport extends JPanel {
         refreshRenderingLines(time);
         if (!shouldShowText) return;
 
-        int secondLineIndent = toRelativeSize(saveLoadManager.getPropInt("indentSize"));
-        int lineSpace = toRelativeSize(saveLoadManager.getPropInt("lineSpace"));
+        int secondLineIndent = toDrawSize(saveLoadManager.getPropInt("indentSize"));
+        int lineSpace = toDrawSize(saveLoadManager.getPropInt("lineSpace"));
         int lineIndex = 0;
         int translatedX = 0;
         List<String> textList = saveLoadManager.getTextList();
@@ -146,11 +146,11 @@ public class Viewport extends JPanel {
                 float scale;
                 if (j == 0) {
                     glyphVector = defaultFont.createGlyphVector(g2d.getFontRenderContext(), c);
-                    scale = (float) toRelativeSize(defaultFont.getSize()) / defaultFont.getSize();
+                    scale = (float) toDrawSize(defaultFont.getSize()) / defaultFont.getSize();
                 } else {
                     glyphVector = samllFont.createGlyphVector(g2d.getFontRenderContext(), c);
-                    scale = (float) toRelativeSize(samllFont.getSize()) / samllFont.getSize();
-                    transform.translate(toRelativeSize(defaultFont.getSize()), 0);
+                    scale = (float) toDrawSize(samllFont.getSize()) / samllFont.getSize();
+                    transform.translate(toDrawSize(defaultFont.getSize()), 0);
                 }
 
                 // Transform the vector to the relative size.
@@ -183,7 +183,7 @@ public class Viewport extends JPanel {
 
             // Set word space interval.
             int space = s.length() == 2 ? samllFont.getSize() + defaultFont.getSize() : defaultFont.getSize();
-            space = toRelativeSize(space);
+            space = toDrawSize(space);
             g2d.translate(space, 0);
             translatedX += space;
         }
@@ -336,8 +336,8 @@ public class Viewport extends JPanel {
     private Rectangle getRectangle(int i, long time, boolean linkedWord) {
         ArrayList<Long> marks = saveLoadManager.getMarks();
 
-        int dFontSize = toRelativeSize(defaultFont.getSize());
-        int sFontSize = toRelativeSize(samllFont.getSize());
+        int dFontSize = toDrawSize(defaultFont.getSize());
+        int sFontSize = toDrawSize(samllFont.getSize());
         long wordStartTime = marks.get(i - 1);
         long wordEndTime = marks.get(i);
         long wordPeriod = wordEndTime - wordStartTime;
@@ -358,8 +358,8 @@ public class Viewport extends JPanel {
         if (time > dotsStartTime && time < wordStartTime) {
             int dotSize = 200;
             int dotsNum = saveLoadManager.getPropInt("dotsNum");
-            int textPosX = toRelativeSize(saveLoadManager.getPropInt("textPosX"));
-            int textPosY = toRelativeSize(saveLoadManager.getPropInt("textPosY"));
+            int textPosX = toDrawSize(saveLoadManager.getPropInt("textPosX"));
+            int textPosY = toDrawSize(saveLoadManager.getPropInt("textPosY"));
             int dotsPosX = saveLoadManager.getPropInt("dotsPosX");
             int dotsPosY = saveLoadManager.getPropInt("dotsPosY");
             int startX = dotsPosX - textPosX;
@@ -393,9 +393,9 @@ public class Viewport extends JPanel {
     }
 
     /**
-     * @return the relative value to the width of the resolutionX.
+     * @return 0.01 * resolutionX * val
      */
-    private int toRelativeSize(int val) {
+    private int toDrawSize(int val) {
         return (int) (val * saveLoadManager.getPropInt("resolutionX") * 0.01);
     }
 }

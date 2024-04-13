@@ -94,12 +94,6 @@ public class SlidableNumberBar extends JPanel {
         this.saveLoadManager = saveLoadManager;
     }
 
-    public void fixSize(int width) {
-        setPreferredSize(new Dimension(width, 30));
-        setMaximumSize(getPreferredSize());
-        setMinimumSize(getPreferredSize());
-    }
-
     public void addDocumentListener(Runnable e) {
         docListeners.add(e);
     }

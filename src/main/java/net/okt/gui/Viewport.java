@@ -367,30 +367,34 @@ public class Viewport extends JPanel {
             int startY = dotsPosY - textPosY - defaultFont.getSize();
             Color dotsColor = new Color(saveLoadManager.getPropInt("dotsColor"));
 
-            Area area = new Area();
+            Area arcsArea = new Area();
 
             // Dot shapes.
             for (int i = 0, x = startX; i < dotsNum; i++, x += dotSize) {
                 // Get the shape.
                 Shape arcShape = new Arc2D.Float(x, startY, dotSize, dotSize, 0, 360, Arc2D.OPEN);
 
-                // Draw arc bounds.
-                g2d.setColor(Color.BLACK);
-                int strokeWidth = (int) (toDrawSize(saveLoadManager.getPropInt("dotsStroke")) * 0.01);
-                g2d.setStroke(new BasicStroke(strokeWidth));
-                g2d.draw(arcShape);
-
-                // Add to area.
-                area.add(new Area(arcShape));
+                // Add to arcsArea.
+                arcsArea.add(new Area(arcShape));
             }
 
             // Scrolling rect.
             int width = (int) ((float) (time - dotsStartTime) / period * dotSize * dotsNum);
             Rectangle rect = new Rectangle(startX, startY, width, dotSize);
-            area.intersect(new Area(rect));
 
+            // Intersect area.
+            Area intersectArea = new Area(arcsArea);
+            intersectArea.intersect(new Area(rect));
+
+            // Draw intersect area.
             g2d.setColor(dotsColor);
-            g2d.fill(area);
+            g2d.fill(intersectArea);
+
+            // Draw arc bounds.
+            g2d.setColor(Color.BLACK);
+            int strokeWidth = (int) (toDrawSize(saveLoadManager.getPropInt("dotsStroke")) * 0.01);
+            g2d.setStroke(new BasicStroke(strokeWidth));
+            g2d.draw(arcsArea);
         }
     }
 

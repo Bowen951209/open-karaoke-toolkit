@@ -177,7 +177,8 @@ public class Viewport extends JPanel {
 
             // Base border.(Draw this last to make the border clear, or else it would be overlapped by above)
             // Remember to set the join mode to avoid spiky artifacts.
-            g2d.setStroke(new BasicStroke(10, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
+            int strokeWidth = (int) (toDrawSize(saveLoadManager.getPropInt("textStroke")) * 0.01);
+            g2d.setStroke(new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
             g2d.setColor(Color.BLACK);
             g2d.draw(fontArea);
 

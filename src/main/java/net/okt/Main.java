@@ -121,10 +121,14 @@ public class Main extends JFrame {
 
         var textDisappearTimeConfigBar =
                 new SlidableNumberBar("Disappear Time (ms)", 4, "textDisappearTime", saveLoadManager);
-        textDisappearTimeConfigBar.addDocumentListener((() -> {
+        textDisappearTimeConfigBar.addDocumentListener(() -> {
             getTimeline().getCanvas().repaint();
             viewport.repaint();
-        }));
+        });
+
+        var textStrokeSizeConfigBar =
+                new SlidableNumberBar("Stroke", 2, "textStroke", saveLoadManager);
+        textStrokeSizeConfigBar.addDocumentListener(viewport::repaint);
 
         var textColorChooserBtn = new ColorChooserButton(saveLoadManager.getPropInt("textColor"));
         textColorChooserBtn.addColorChangedListener(newColor -> {
@@ -179,6 +183,7 @@ public class Main extends JFrame {
         panel.add(lineIndentSizeBar);
         panel.add(lineSpaceSizeConfigBar);
         panel.add(textDisappearTimeConfigBar);
+        panel.add(textStrokeSizeConfigBar);
         panel.add(textColorChooserBtn);
         panel.add(new JSeparator(SwingConstants.HORIZONTAL));
 

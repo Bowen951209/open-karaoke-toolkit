@@ -376,7 +376,8 @@ public class Viewport extends JPanel {
 
                 // Draw arc bounds.
                 g2d.setColor(Color.BLACK);
-                g2d.setStroke(new BasicStroke(12));
+                int strokeWidth = (int) (toDrawSize(saveLoadManager.getPropInt("dotsStroke")) * 0.01);
+                g2d.setStroke(new BasicStroke(strokeWidth));
                 g2d.draw(arcShape);
 
                 // Add to area.

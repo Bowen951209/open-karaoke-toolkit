@@ -144,6 +144,10 @@ public class Main extends JFrame {
         });
         readyDotsTimeConfigBar.setDragStep(5);
 
+        var readyDotsStrokeSizeConfigBar =
+                new SlidableNumberBar("Stroke", 2, "dotsStroke", saveLoadManager);
+        readyDotsStrokeSizeConfigBar.addDocumentListener(viewport::repaint);
+
         var readyDotsColorChooserBtn = new ColorChooserButton(saveLoadManager.getPropInt("dotsColor"));
         readyDotsColorChooserBtn.addColorChangedListener(newColor -> {
             saveLoadManager.setProp("dotsColor", newColor.getRGB());
@@ -192,6 +196,7 @@ public class Main extends JFrame {
         panel.add(dotsPosPanel);
         panel.add(readyDotsNumComboBox);
         panel.add(readyDotsTimeConfigBar);
+        panel.add(readyDotsStrokeSizeConfigBar);
         panel.add(readyDotsColorChooserBtn);
 
         JScrollPane scrollPane = new JScrollPane(panel);

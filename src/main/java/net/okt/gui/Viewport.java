@@ -357,7 +357,7 @@ public class Viewport extends JPanel {
 
         // If in the period, draw.
         if (time > dotsStartTime && time < wordStartTime) {
-            int dotSize = 200;
+            int dotSize = toDrawSize(saveLoadManager.getPropInt("dotsSize"));
             int dotsNum = saveLoadManager.getPropInt("dotsNum");
             int textPosX = toDrawSize(saveLoadManager.getPropInt("textPosX"));
             int textPosY = toDrawSize(saveLoadManager.getPropInt("textPosY"));

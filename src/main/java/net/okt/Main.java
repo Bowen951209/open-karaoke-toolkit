@@ -166,6 +166,9 @@ public class Main extends JFrame {
         var dotsPosPanel = new DoubleTextBarPanel("Position", 3, "x:", "y:",
                 "dotsPosX", "dotsPosY", saveLoadManager, viewport);
 
+        var readyDotsSizeConfigBar = new SlidableNumberBar("Size", 3, "dotsSize", saveLoadManager);
+        readyDotsSizeConfigBar.addDocumentListener(viewport::repaint);
+
         var readyDotsNumComboBox = new TitledComboBox<>("Number of Dots", new Integer[]{3, 4, 5});
         readyDotsNumComboBox.setSelectedItem(saveLoadManager.getPropInt("dotsNum"));
         readyDotsNumComboBox.addActionListener(() -> {
@@ -194,6 +197,7 @@ public class Main extends JFrame {
         // Ready dots settings.
         panel.add(new TitleLabel("Ready Dots Settings"));
         panel.add(dotsPosPanel);
+        panel.add(readyDotsSizeConfigBar);
         panel.add(readyDotsNumComboBox);
         panel.add(readyDotsTimeConfigBar);
         panel.add(readyDotsStrokeSizeConfigBar);

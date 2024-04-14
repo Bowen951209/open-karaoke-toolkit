@@ -472,8 +472,9 @@ public class Timeline extends JPanel {
 
             canvas.scale = (float) controlPanel.slider.getValue() * 0.01f;
             long audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
-            // I don't know why it's ICON_SIZE.height * 2, but it works.
-            canvas.setPreferredSize(new Dimension(toX(audioTime), getCanvasScrollPane().getHeight() - ICON_SIZE.height * 2));
+
+            int height = (int) canvas.getPreferredSize().getHeight();
+            canvas.setPreferredSize(new Dimension(toX(audioTime), height));
             canvas.revalidate();
             scrollPane.requestFocus();
         }

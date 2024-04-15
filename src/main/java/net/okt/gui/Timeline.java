@@ -91,9 +91,8 @@ public class Timeline extends JPanel {
         Audio audio = saveLoadManager.getLoadedAudio();
         String totalTime = toMinutesAndSecond((int) audio.getTotalTime(), 0);
         name += "(" + totalTime + ")";
-        controlPanel.displayFileName = name;
+        controlPanel.filenameLabel.setText(name);
 
-        controlPanel.textPanel.setPreferredSize(new Dimension(6 * name.length(), ICON_SIZE.height));
         controlPanel.revalidate();
     }
 
@@ -292,11 +291,9 @@ public class Timeline extends JPanel {
 
     private class ControlPanel extends JPanel {
         private final JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
-        private final JPanel textPanel;
         private final JSlider slider = getSlider();
+        private final JLabel filenameLabel = new JLabel();
         private final JLabel timeLabel = new JLabel();
-
-        private String displayFileName = "";
 
         public ControlPanel() {
             super(new BorderLayout(0, 0));
@@ -304,19 +301,6 @@ public class Timeline extends JPanel {
             setMaximumSize(size);
 
             JPanel componentsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-
-            // I need a separate panel to stand on east to display playing audio.
-            // Simply adding a JLabel would have border problems, and thus the font size should be very tiny.
-            // I got a solution by drawing the string on ourselves, and it can be full space.
-            textPanel = new JPanel() {
-                @Override
-                public void paint(Graphics g) {
-                    super.paint(g); // This is necessary.(To clear)
-
-                    Graphics2D g2d = (Graphics2D) g;
-                    g2d.drawString(displayFileName, 0, 10);
-                }
-            };
 
             playPauseButton.addActionListener(e -> {
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
@@ -335,7 +319,7 @@ public class Timeline extends JPanel {
             componentsPanel.add(slider);
             componentsPanel.add(timeLabel);
             add(componentsPanel, BorderLayout.WEST);
-            add(textPanel, BorderLayout.EAST);
+            add(filenameLabel, BorderLayout.EAST);
         }
 
         private JButton getStopButton() {

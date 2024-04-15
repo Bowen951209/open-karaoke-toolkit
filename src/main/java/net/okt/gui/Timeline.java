@@ -149,7 +149,7 @@ public class Timeline extends JPanel {
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    controlPanel.timeLabel.setText("");
+                    controlPanel.timeLabel.setText(null);
                 }
             });
             scrollPane.addMouseMotionListener(new MouseMotionAdapter() {

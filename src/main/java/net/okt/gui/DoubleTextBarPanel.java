@@ -3,7 +3,6 @@ package net.okt.gui;
 import net.okt.system.SaveLoadManager;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class DoubleTextBarPanel extends JPanel {
     private final SlidableNumberBar bar1;
@@ -11,7 +10,6 @@ public class DoubleTextBarPanel extends JPanel {
 
     public DoubleTextBarPanel(String title, int limitDigit, String name1, String name2, String propKey1,
                               String propKey2, SaveLoadManager saveLoadManager, Viewport viewport) {
-        setMaximumSize(new Dimension(500, 10));
         add(new JLabel(title));
 
         this.bar1 = new SlidableNumberBar(name1, limitDigit, propKey1, saveLoadManager);

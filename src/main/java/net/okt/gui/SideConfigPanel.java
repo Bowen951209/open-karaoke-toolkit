@@ -1,0 +1,159 @@
+package net.okt.gui;
+
+import net.okt.system.SaveLoadManager;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class SideConfigPanel extends JScrollPane {
+    private final SaveLoadManager saveLoadManager;
+    private final Viewport viewport;
+    private final Timeline timeline;
+    private final JPanel panel;
+
+    public SideConfigPanel(Dimension minSize, SaveLoadManager saveLoadManager, Viewport viewport, Timeline timeline) {
+        this.saveLoadManager = saveLoadManager;
+        this.viewport = viewport;
+        this.timeline = timeline;
+        this.panel = new JPanel();
+        BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
+        panel.setLayout(layout);
+        setViewportView(panel);
+
+        setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        setMinimumSize(minSize);
+
+        panel.add(getViewportConfigPanel());
+        addSeparator();
+
+        panel.add(getTextConfigPanel());
+        addSeparator();
+
+        panel.add(getReadyDotsConfigPanel());
+    }
+
+    private void addSeparator() {
+        panel.add(new JSeparator(SwingConstants.HORIZONTAL));
+    }
+
+    private JPanel getViewportConfigPanel() {
+        JPanel panel = new BoxLayoutYAxisPanel();
+
+        var resolutionPanel = new DoubleTextBarPanel("Resolution", 4, "w:", "h:",
+                "resolutionX", "resolutionY", saveLoadManager, viewport);
+        resolutionPanel.addDocumentListenr(viewport::resetBufferedImage);
+        viewport.resetBufferedImage(); // init the buffered image, or else it will be null.
+
+        panel.add(new TitleLabel("Viewport Settings"));
+        panel.add(resolutionPanel);
+
+        return panel;
+    }
+
+    private JPanel getTextConfigPanel() {
+        JPanel panel = new BoxLayoutYAxisPanel();
+
+        var textPosPanel = new DoubleTextBarPanel("Position", 3, "x:", "y:",
+                "textPosX", "textPosY", saveLoadManager, viewport);
+
+        var defaultFontSizeBar =
+                new SlidableNumberBar("Default Font Size", 3, "defaultFontSize", saveLoadManager);
+        defaultFontSizeBar.addDocumentListener(() -> {
+            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
+            viewport.repaint();
+        });
+        viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
+
+        var linkedFontSizeBar =
+                new SlidableNumberBar("Linked Font Size", 3, "linkedFontSize", saveLoadManager);
+        linkedFontSizeBar.addDocumentListener(() -> {
+            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
+            viewport.repaint();
+        });
+        viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
+
+        var lineIndentSizeBar =
+                new SlidableNumberBar("2nd Line Indent", 3, "indentSize", saveLoadManager);
+        lineIndentSizeBar.addDocumentListener(viewport::repaint);
+
+        var lineSpaceSizeConfigBar =
+                new SlidableNumberBar("Line Space", 3, "lineSpace", saveLoadManager);
+        lineSpaceSizeConfigBar.addDocumentListener(viewport::repaint);
+
+        var textDisappearTimeConfigBar =
+                new SlidableNumberBar("Disappear Time (ms)", 4, "textDisappearTime", saveLoadManager);
+        textDisappearTimeConfigBar.addDocumentListener(() -> {
+            timeline.getCanvas().repaint();
+            viewport.repaint();
+        });
+
+        var textStrokeSizeConfigBar =
+                new SlidableNumberBar("Stroke", 2, "textStroke", saveLoadManager);
+        textStrokeSizeConfigBar.addDocumentListener(viewport::repaint);
+
+        var textColorChooserBtn = new ColorChooserButton(saveLoadManager.getPropInt("textColor"));
+        textColorChooserBtn.addColorChangedListener(newColor -> {
+            saveLoadManager.setProp("textColor", newColor.getRGB());
+            viewport.repaint();
+        });
+        textColorChooserBtn.callListeners();// update to the saveLoadManager for init.
+
+        panel.add(new TitleLabel("Text Settings"));
+        panel.add(textPosPanel);
+        panel.add(defaultFontSizeBar);
+        panel.add(linkedFontSizeBar);
+        panel.add(lineIndentSizeBar);
+        panel.add(lineSpaceSizeConfigBar);
+        panel.add(textDisappearTimeConfigBar);
+        panel.add(textStrokeSizeConfigBar);
+        panel.add(textColorChooserBtn);
+
+        return panel;
+    }
+
+    private JPanel getReadyDotsConfigPanel() {
+        JPanel panel = new BoxLayoutYAxisPanel();
+
+        var dotsPosPanel = new DoubleTextBarPanel("Position", 3, "x:", "y:",
+                "dotsPosX", "dotsPosY", saveLoadManager, viewport);
+
+        var readyDotsSizeConfigBar = new SlidableNumberBar("Size", 3, "dotsSize", saveLoadManager);
+        readyDotsSizeConfigBar.addDocumentListener(viewport::repaint);
+
+        var readyDotsNumComboBox = new TitledComboBox<>("Number of Dots", new Integer[]{3, 4, 5});
+        readyDotsNumComboBox.setSelectedItem(saveLoadManager.getPropInt("dotsNum"));
+        readyDotsNumComboBox.addActionListener(() -> {
+            saveLoadManager.setProp("dotsNum", (int) readyDotsNumComboBox.getSelectedElement());
+            timeline.getCanvas().repaint();
+            viewport.repaint();
+        });
+
+        var readyDotsTimeConfigBar = new SlidableNumberBar("Time (ms)", 4, "dotsPeriod", saveLoadManager);
+        readyDotsTimeConfigBar.addDocumentListener(() -> {
+            timeline.getCanvas().repaint();
+            viewport.repaint();
+        });
+        readyDotsTimeConfigBar.setDragStep(5);
+
+        var readyDotsStrokeSizeConfigBar =
+                new SlidableNumberBar("Stroke", 2, "dotsStroke", saveLoadManager);
+        readyDotsStrokeSizeConfigBar.addDocumentListener(viewport::repaint);
+
+        var readyDotsColorChooserBtn = new ColorChooserButton(saveLoadManager.getPropInt("dotsColor"));
+        readyDotsColorChooserBtn.addColorChangedListener(newColor -> {
+            saveLoadManager.setProp("dotsColor", newColor.getRGB());
+            viewport.repaint();
+        });
+        readyDotsColorChooserBtn.callListeners();// update to the saveLoadManager for init.
+
+        panel.add(new TitleLabel("Ready Dots Settings"));
+        panel.add(dotsPosPanel);
+        panel.add(readyDotsSizeConfigBar);
+        panel.add(readyDotsNumComboBox);
+        panel.add(readyDotsTimeConfigBar);
+        panel.add(readyDotsStrokeSizeConfigBar);
+        panel.add(readyDotsColorChooserBtn);
+
+        return panel;
+    }
+}

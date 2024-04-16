@@ -28,7 +28,7 @@ public class DoubleTextBarPanel extends JPanel {
         add(bar2);
     }
 
-    public void addDocumentListenr(Runnable e){
+    public void addDocumentListener(Runnable e){
         bar1.addDocumentListener(e);
         bar2.addDocumentListener(e);
     }

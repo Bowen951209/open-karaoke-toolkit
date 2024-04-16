@@ -41,7 +41,7 @@ public class SideConfigPanel extends JScrollPane {
 
         var resolutionPanel = new DoubleTextBarPanel("Resolution", 4, "w:", "h:",
                 "resolutionX", "resolutionY", saveLoadManager, viewport);
-        resolutionPanel.addDocumentListenr(viewport::resetBufferedImage);
+        resolutionPanel.addDocumentListener(viewport::resetBufferedImage);
         viewport.resetBufferedImage(); // init the buffered image, or else it will be null.
 
         panel.add(new TitleLabel("Viewport Settings"));

@@ -1,5 +1,6 @@
 package net.okt.gui;
 
+import net.okt.system.ColorUtils;
 import net.okt.system.SaveLoadManager;
 
 import javax.swing.*;
@@ -44,8 +45,17 @@ public class SideConfigPanel extends JScrollPane {
         resolutionPanel.addDocumentListener(viewport::resetBufferedImage);
         viewport.resetBufferedImage(); // init the buffered image, or else it will be null.
 
+        Color backgroundColor = new Color(saveLoadManager.getPropInt("backgroundColor"), true);
+        var backgroundColorChooserBtn = new ColorChooserButton(backgroundColor);
+        backgroundColorChooserBtn.addColorChangedListener(newColor -> {
+            saveLoadManager.setProp("backgroundColor", ColorUtils.rgbaToInt(newColor));
+            viewport.repaint();
+        });
+        backgroundColorChooserBtn.callListeners();// update to the saveLoadManager for init.
+
         panel.add(new TitleLabel("Viewport Settings"));
         panel.add(resolutionPanel);
+        panel.add(backgroundColorChooserBtn);
 
         return panel;
     }

@@ -69,7 +69,7 @@ public class Viewport extends JPanel {
         imgG2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         // Clear the buffered image.
-        imgG2d.setBackground(new Color(0, 0, 0, 0));
+        imgG2d.setBackground(new Color(saveLoadManager.getPropInt("backgroundColor"), true));
         imgG2d.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
 
         // Decide the text position by the percentage values.

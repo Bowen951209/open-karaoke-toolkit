@@ -1,6 +1,7 @@
 package net.okt.gui;
 
 import net.okt.audioUtils.Audio;
+import net.okt.system.LyricsProcessor;
 import net.okt.system.SaveLoadManager;
 import net.okt.system.command.CommandManager;
 import net.okt.system.command.marks.MarkAddCommand;
@@ -41,6 +42,7 @@ public class Timeline extends JPanel {
     private static final int TIMER_DELAY = 10;
     public static final int SLIDER_MAX_VAL = 500;
 
+    private final LyricsProcessor lyricsProcessor = new LyricsProcessor();
     private final CommandManager markCmdMgr = new CommandManager(15);
     private final Canvas canvas;
     private final ControlPanel controlPanel;
@@ -256,10 +258,10 @@ public class Timeline extends JPanel {
         int redundantMarks = saveLoadManager.getRedundantMarkQuantity();
 
         if (redundantMarks != 0) {
-            var textList = saveLoadManager.getTextList();
+            String text = saveLoadManager.getProp("text");
             var marks = saveLoadManager.getMarks();
 
-            int popNum = textList.isEmpty() ? saveLoadManager.getMarks().size() : redundantMarks;
+            int popNum = text.isEmpty() ? saveLoadManager.getMarks().size() : redundantMarks;
             markCmdMgr.execute(new MarkPopNumberCommand(marks, popNum));
             canvas.repaint();
         }
@@ -432,10 +434,13 @@ public class Timeline extends JPanel {
             g2d.drawImage(waveImg, 0, 0, getWidth(), getHeight(), null);
             drawSeparationLines(g2d);
 
-            handleMouseDrag();
+            handleMouseEvent();
+
+            // Draw the gaps.
+            drawGaps(g2d);
 
             // Draw the marks
-            drawMarksAndGaps(g2d);
+            drawMarks(g2d);
             drawDraggingMark(g2d);
 
             // The cursor pointer & update label
@@ -484,116 +489,60 @@ public class Timeline extends JPanel {
             g2d.drawLine(x, 0, x, getHeight());
         }
 
-        private void drawMarksAndGaps(Graphics2D g2d) {
+        private void drawMarks(Graphics2D g2d) {
             var marks = saveLoadManager.getMarks();
-            var textList = saveLoadManager.getTextList();
 
-            Point mousePos = getMousePosition();
-            for (int i = 0, wordIndex = -1; i < marks.size(); i++, wordIndex++) {
-                // If text list's size is not enough, break.
-                if (wordIndex >= textList.size()) break;
+            if (!isMouseDragging) {
+                selectedMark = -1;
+                Cursor dCursor = Cursor.getDefaultCursor();
+                setCursor(dCursor);
+            }
 
-                // Add wordIndex if meet \n.
-                if (i > 0) {
-                    String s = textList.get(wordIndex);
-                    if (s.equals("\n")) wordIndex++;
+            for (int i = 0; i < marks.size(); i++) {
+                // If icon is covered, draw the covered style icon.
+                int markX = toX(marks.get(i)) - MARK_ICON_SIZE / 2;
+                boolean isCovered = isMouseCoverMark(i);
+
+                if (isCovered || selectedMark == i) { // selectedMark == i for dragging control stability.
+                    selectedMark = i;
+
+                    // Set mouse appearance.
+                    Cursor hMoveCursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
+                    setCursor(hMoveCursor);
+
+                    g2d.drawImage(MARK_SELECTED_ICON.getImage(), markX, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
+                } else {
+                    // Draw the mark image. If the mark is the end mark, draw the special end icon.
+                    // p.s. End marks are the last one of all the marks or the last mark of the paragraph.
+                    drawMark(i, markX, lyricsProcessor.isParagraphEnd(i), g2d);
                 }
-
-                long time = marks.get(i);
-                int x = toX(time);
-                boolean isParagraphHead = isParagraphHead(wordIndex);
-                boolean isParagraphEnd = isParagraphEnd(wordIndex);
-
-                // Draw the gaps if it's not the paragraph head.
-                if (!isParagraphHead) {
-                    String s = textList.get(wordIndex);
-                    drawGap(i, x, s, g2d);
-                }
-
-                // Draw the rectangle that displays the period of the ready dots.
-                if (isParagraphHead)
-                    drawReadyDotsRect(x, g2d);
-
-                // Draw the rectangle that hints how long would it wait for the last lines of text to disappear.
-                if (isParagraphEnd)
-                    drawDisappearHintGap(x, g2d);
-
-                // Make sure the icon draw position is on the very middle.
-                x -= MARK_ICON_SIZE / 2;
-
-                // If icon selected, draw the selected icon.
-                if (mousePos != null) {
-                    // The cursor should cover on the icon.
-                    boolean isCovered =
-                            !isMouseDragging && mousePos.x >= x && mousePos.x <= x + MARK_ICON_SIZE && mousePos.y <= MARK_ICON_SIZE;
-
-                    if (isCovered || selectedMark == i) { // selectedMark == i for dragging control stability.
-                        selectedMark = i;
-
-                        // Set mouse appearance.
-                        Cursor hMoveCursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
-                        setCursor(hMoveCursor);
-
-                        // Handle dragging.
-                        if (isMouseDragging) {
-                            // Make sure user's not dragging out of available position.
-                            long t = toTime(mousePos.x);
-                            long lastT = i == 0 ? 0 : marks.get(i - 1);
-                            long nextT = i == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(i + 1);
-                            if (t > lastT && t < nextT) { // only in the range available.
-                                draggingMark = i;
-                            } else {
-                                draggingMark = -1;
-                            }
-                        }
-
-                        g2d.drawImage(MARK_SELECTED_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
-                        continue;
-                    }
-                }
-
-                // Draw the mark image. If the mark is the end mark, draw the special end icon.
-                // p.s. End marks are the last one of all the marks or the last mark of the paragraph.
-                drawMark(i, x, isParagraphEnd, g2d);
             }
         }
 
         /**
-         * If the mouse is not dragging, set selectedMark to -1. Rather than setting to -1 in every draw call, only when
-         * the mouse releases to set it will improve dragging control stability, which means it won't happen that when
-         * the mouse moves too fast, the selection drop.
+         * Draw the gaps between marks, including text gaps, ready dot gaps, and disappear time gaps.
          */
-        private void handleMouseDrag() {
-            if (!isMouseDragging) {
-                selectedMark = -1;
+        private void drawGaps(Graphics2D g2d) {
+            var marks = saveLoadManager.getMarks();
+            String text = saveLoadManager.getProp("text");
 
-                // Restore mouse appearance.
-                Cursor dCursor = Cursor.getDefaultCursor();
-                setCursor(dCursor);
-            }
-        }
+            // TODO: move this update to when text is updated
+            lyricsProcessor.setLyrics(text);
+            lyricsProcessor.regenTextToMarksList(marks.size());
+            for (int i = 0; i < marks.size(); i++) {
+                String gapText = lyricsProcessor.getTextBeforeMark(i);
+                int currentMarkX = toX(marks.get(i));
 
-        private boolean isParagraphHead(int wordIndex) {
-            if (wordIndex == -1) return true;
-            var textList = saveLoadManager.getTextList();
+                if (gapText == null) {
+                    // If it is the head of a paragraph draw ready dot rect.
+                    drawReadyDotsRect(currentMarkX, g2d);
+                } else {
+                    // If it is the body of a paragraph, draw gaps and strings between last mark and current mark.
+                    drawTextGap(i, gapText, g2d);
+                }
 
-            // If the word is "\n", it means we meet double "\n".
-            // Because when the program meet the 1st "\n" it'll skip to the next word idx, and if the next word is also
-            // "\n", we know it's double "\n".
-            return textList.get(wordIndex).equals("\n");
-        }
-
-        private boolean isParagraphEnd(int wordIndex) {
-            var textList = saveLoadManager.getTextList();
-
-            if (wordIndex + 2 < textList.size()) {
-                String nextS = textList.get(wordIndex + 1);
-                String nextnextS = textList.get(wordIndex + 2);
-                // If \n\n, it is the end of the paragraph.
-                return nextS.equals("\n") && nextnextS.equals("\n");
-            } else {
-                // If last word, it is the end of the paragraph.
-                return wordIndex == textList.size() - 1;
+                if (lyricsProcessor.isParagraphEnd(i))
+                    drawDisappearHintGap(currentMarkX, g2d);
             }
         }
 
@@ -624,12 +573,12 @@ public class Timeline extends JPanel {
             }
         }
 
-        private void drawGap(int markIdx, int x, String string, Graphics2D g2d) {
+        private void drawTextGap(int markIdx, String string, Graphics2D g2d) {
             var marks = saveLoadManager.getMarks();
-
+            int thisX = toX(marks.get(markIdx));
             // lastX and width variables are applied to some adjusts to avoid covering the marks.
             int lastX = toX(marks.get(markIdx - 1)) + MARK_ICON_SIZE / 2 - 1;
-            int width = x - lastX - MARK_ICON_SIZE / 2 + 1;
+            int width = thisX - lastX - MARK_ICON_SIZE / 2 + 1;
             int height = 15;
             Font f = new Font(Font.SANS_SERIF, Font.BOLD, Math.min(height - 2, width));
 
@@ -668,6 +617,37 @@ public class Timeline extends JPanel {
 
             g2d.setColor(Color.GREEN);
             g2d.fillRect(startX, 0, toX(period), 15);
+        }
+
+
+        private void handleMouseEvent() {
+            var marks = saveLoadManager.getMarks();
+            Point mousePos = getMousePosition();
+            if (mousePos == null) return;
+
+            // Handle if the mark is being dragged.
+            if (isMouseDragging && selectedMark != -1) {
+                // Make sure user's not dragging out of available position.
+                long t = toTime(mousePos.x);
+                long lastT = selectedMark == 0 ? 0 : marks.get(selectedMark - 1);
+                long nextT = selectedMark == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(selectedMark + 1);
+                if (t > lastT && t < nextT) { // only in the range available.
+                    draggingMark = selectedMark;
+                } else {
+                    draggingMark = -1;
+                }
+            }
+        }
+
+        private boolean isMouseCoverMark(int markIdx) {
+            Point mousePos = getMousePosition();
+            if (mousePos == null) return false;
+
+            var marks = saveLoadManager.getMarks();
+            int markX = toX(marks.get(markIdx)) - MARK_ICON_SIZE / 2;
+
+            return !isMouseDragging &&
+                    mousePos.x >= markX && mousePos.x <= markX + MARK_ICON_SIZE && mousePos.y <= MARK_ICON_SIZE;
         }
     }
 }

@@ -34,9 +34,6 @@ public class SaveLoadManager {
 
     private Audio loadedAudio;
 
-    public SaveLoadManager(Main mainFrame) {
-        this.mainFrame = mainFrame;
-    }
 
     public Audio getLoadedAudio() {
         return loadedAudio;
@@ -65,6 +62,8 @@ public class SaveLoadManager {
     }
 
     public void setText(String text) {
+        //TODO: delete all usages of textList and rewrite code in Viewport.
+
         setProp("text", text);
         textList.clear();
 
@@ -126,6 +125,10 @@ public class SaveLoadManager {
         canvas.revalidate();
 
         System.out.println("Loaded audio: " + audio);
+    }
+
+    public SaveLoadManager(Main mainFrame) {
+        this.mainFrame = mainFrame;
     }
 
     public int getRedundantMarkQuantity() {

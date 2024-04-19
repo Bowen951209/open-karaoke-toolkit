@@ -126,9 +126,9 @@ public class Timeline extends JPanel {
 
                         case MouseEvent.BUTTON2 -> {
                             // If you middle-click, delete selected mark.
-                            if (canvas.selectedMark != -1) {
+                            if (canvas.coveredMark != -1) {
                                 java.util.List<Long> marks = saveLoadManager.getMarks();
-                                markCmdMgr.execute(new MarkRemoveCommand(marks, canvas.selectedMark));
+                                markCmdMgr.execute(new MarkRemoveCommand(marks, canvas.coveredMark));
                             }
                         }
                     }
@@ -411,7 +411,7 @@ public class Timeline extends JPanel {
         private final int MARK_ICON_SIZE = 10;
 
         private float scale = 1;
-        private int selectedMark = -1;
+        private int coveredMark = -1;
         private int draggingMark = -1;
         private boolean isMouseDragging;
 
@@ -492,24 +492,15 @@ public class Timeline extends JPanel {
         private void drawMarks(Graphics2D g2d) {
             var marks = saveLoadManager.getMarks();
 
-            if (!isMouseDragging) {
-                selectedMark = -1;
-                Cursor dCursor = Cursor.getDefaultCursor();
-                setCursor(dCursor);
-            }
+            if (!isMouseDragging) coveredMark = -1;
 
             for (int i = 0; i < marks.size(); i++) {
                 // If icon is covered, draw the covered style icon.
                 int markX = toX(marks.get(i)) - MARK_ICON_SIZE / 2;
                 boolean isCovered = isMouseCoverMark(i);
 
-                if (isCovered || selectedMark == i) { // selectedMark == i for dragging control stability.
-                    selectedMark = i;
-
-                    // Set mouse appearance.
-                    Cursor hMoveCursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
-                    setCursor(hMoveCursor);
-
+                if (isCovered || coveredMark == i) { // selectedMark == i for dragging control stability.
+                    coveredMark = i;
                     g2d.drawImage(MARK_SELECTED_ICON.getImage(), markX, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
                 } else {
                     // Draw the mark image. If the mark is the end mark, draw the special end icon.
@@ -626,16 +617,25 @@ public class Timeline extends JPanel {
             if (mousePos == null) return;
 
             // Handle if the mark is being dragged.
-            if (isMouseDragging && selectedMark != -1) {
+            if (isMouseDragging && coveredMark != -1) {
                 // Make sure user's not dragging out of available position.
                 long t = toTime(mousePos.x);
-                long lastT = selectedMark == 0 ? 0 : marks.get(selectedMark - 1);
-                long nextT = selectedMark == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(selectedMark + 1);
+                long lastT = coveredMark == 0 ? 0 : marks.get(coveredMark - 1);
+                long nextT = coveredMark == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(coveredMark + 1);
                 if (t > lastT && t < nextT) { // only in the range available.
-                    draggingMark = selectedMark;
+                    draggingMark = coveredMark;
                 } else {
                     draggingMark = -1;
                 }
+            }
+
+            // Mouse appearance.
+            if (coveredMark == -1) {
+                Cursor dCursor = Cursor.getDefaultCursor();
+                setCursor(dCursor);
+            } else {
+                Cursor hMoveCursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
+                setCursor(hMoveCursor);
             }
         }
 

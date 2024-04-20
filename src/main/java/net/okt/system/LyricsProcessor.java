@@ -25,11 +25,10 @@ public class LyricsProcessor {
 
     // TODO: write a test
 
-    public void genTextToMarksList(int maxMarks) {
+    public void genTextToMarksList() {
         markTextList.clear();
         int charIdx = 0;
-
-        for (int i = 1; i < maxMarks; i++) {
+        for (int markIdx = 1; charIdx < lyrics.length(); markIdx++) {
             if (charIdx + 1 >= lyrics.length()) {
                 markTextList.add(String.valueOf(lyrics.charAt(charIdx)));
                 break;
@@ -42,7 +41,7 @@ public class LyricsProcessor {
             if (currentChar == '\n') {
                 if (nextChar == '\n') {
                     correctCharIdx = -1;
-                    paragraphEndMarks.add(i - 1);
+                    paragraphEndMarks.add(markIdx - 1);
                 } else {
                     correctCharIdx = charIdx + 1;
                 }

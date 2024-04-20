@@ -519,7 +519,7 @@ public class Timeline extends JPanel {
 
             // TODO: move this update to when text is updated
             lyricsProcessor.setLyrics(text);
-            lyricsProcessor.genTextToMarksList(marks.size());
+            lyricsProcessor.genTextToMarksList();
             for (int i = 0; i < marks.size(); i++) {
                 String gapText = lyricsProcessor.getTextBeforeMark(i);
                 int currentMarkX = toX(marks.get(i));

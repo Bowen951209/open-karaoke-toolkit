@@ -24,8 +24,8 @@ public class LyricsProcessor {
     }
 
     // TODO: write a test
-    // TODO: write a doc
-    public void regenTextToMarksList(int maxMarks) {
+
+    public void genTextToMarksList(int maxMarks) {
         markTextList.clear();
         int charIdx = 0;
 

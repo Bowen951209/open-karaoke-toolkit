@@ -20,6 +20,7 @@ public class LyricsProcessor {
 
     public String getTextBeforeMark(int markIdx) {
         if (markIdx == 0) return null;
+        else if (markIdx - 1 > markTextList.size()) return null;
         return markTextList.get(markIdx - 1);
     }
 

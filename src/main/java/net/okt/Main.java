@@ -1,6 +1,7 @@
 package net.okt;
 
 import net.okt.gui.*;
+import net.okt.system.LyricsProcessor;
 import net.okt.system.SaveLoadManager;
 
 import javax.swing.*;
@@ -17,9 +18,30 @@ public class Main extends JFrame {
     public static Main mainFrame;
 
     private final SaveLoadManager saveLoadManager = new SaveLoadManager(this);
-    private final Viewport viewport = new Viewport(saveLoadManager);
-    private final Timeline timeline = new Timeline(saveLoadManager, viewport);
+    private final LyricsProcessor lyricsProcessor = new LyricsProcessor(saveLoadManager);
+    private final Viewport viewport = new Viewport(saveLoadManager, lyricsProcessor);
+    private final Timeline timeline = new Timeline(saveLoadManager, lyricsProcessor, viewport);
     private final LineNumberedScrollableTextArea textArea = getTextArea();
+
+    public Main(String title) {
+        // Init settings.
+        super(title);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
+
+        // Load the sample save file.
+        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.properties")));
+    }
+
+    public static void main(String[] args) {
+        mainFrame = new Main(INIT_FRAME_TITLE);
+        mainFrame.addComponents();
+    }
+
+    public SaveLoadManager getSaveLoadManager() {
+        return saveLoadManager;
+    }
 
     public Timeline getTimeline() {
         return timeline;
@@ -34,7 +56,9 @@ public class Main extends JFrame {
         textArea.addRedoListener(timeline::markRedo);
 
         textArea.addDocumentUpdateCallback(() -> {
-            saveLoadManager.setText(textArea.getText());
+            saveLoadManager.setProp("text", textArea.getText());
+            lyricsProcessor.setLyrics(saveLoadManager.getProp("text"));
+            lyricsProcessor.process();
             timeline.resetMarksNum();
             viewport.repaint();
             timeline.getCanvas().repaint();
@@ -42,17 +66,6 @@ public class Main extends JFrame {
         textArea.setText(saveLoadManager.getProp("text")); // I use Chinese for just now, sorry to English speaker :)
 
         return textArea;
-    }
-
-    private Main(String title) {
-        // Init settings.
-        super(title);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
-
-        // Load the sample save file.
-        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.properties")));
     }
 
     private void addComponents() {
@@ -168,8 +181,5 @@ public class Main extends JFrame {
         return loadAudio;
     }
 
-    public static void main(String[] args) {
-        mainFrame = new Main(INIT_FRAME_TITLE);
-        mainFrame.addComponents();
-    }
+
 }

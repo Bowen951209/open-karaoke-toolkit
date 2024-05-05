@@ -5,14 +5,14 @@ import net.okt.system.command.Command;
 import java.util.List;
 
 public class MarkPopNumberCommand implements Command {
-    private final List<Long> markList;
+    private final List<Integer> markList;
     private final int q;
-    private final long[] times;
+    private final int[] times;
 
-    public MarkPopNumberCommand(List<Long> markList, int q) {
+    public MarkPopNumberCommand(List<Integer> markList, int q) {
         this.markList = markList;
         this.q = q;
-        this.times = new long[q];
+        this.times = new int[q];
     }
 
     @Override

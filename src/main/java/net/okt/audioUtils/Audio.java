@@ -6,9 +6,9 @@ import java.io.IOException;
 
 public class Audio {
     private final Clip clip;
-    private final long totalTime;
+    private final int totalTime;
 
-    public long getTotalTime() {
+    public int getTotalTime() {
         return totalTime;
     }
 
@@ -23,7 +23,7 @@ public class Audio {
             clip.open(audioInputStream);
             AudioFormat format = audioInputStream.getFormat();
             long frames = audioInputStream.getFrameLength();
-            totalTime = (long) ((float) frames / format.getFrameRate() * 1000);
+            totalTime = (int) ((float) frames / format.getFrameRate() * 1000);
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             throw new RuntimeException(e);
         }
@@ -49,8 +49,8 @@ public class Audio {
     /**
      * @return The current playing time.
      * */
-    public long getTimePosition() {
-        float timeScale = (float) clip.getLongFramePosition() / (float) clip.getFrameLength();
-        return (long) (timeScale * totalTime);
+    public int getTimePosition() {
+        float timeScale = (float) clip.getFramePosition() / clip.getFrameLength();
+        return (int) (timeScale * totalTime);
     }
 }

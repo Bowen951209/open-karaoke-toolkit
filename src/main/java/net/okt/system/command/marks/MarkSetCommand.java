@@ -5,12 +5,12 @@ import net.okt.system.command.Command;
 import java.util.List;
 
 public class MarkSetCommand implements Command {
-    private final List<Long> markList;
+    private final List<Integer> markList;
     private final int i;
-    private final long time;
-    private final long oTime;
+    private final int oTime;
+    private final int time;
 
-    public MarkSetCommand(List<Long> markList, int i, long time) {
+    public MarkSetCommand(List<Integer> markList, int i, int time) {
         this.markList = markList;
         this.i = i;
         this.time = time;

@@ -5,11 +5,11 @@ import net.okt.system.command.Command;
 import java.util.List;
 
 public class MarkRemoveCommand implements Command {
-    private final List<Long> markList;
+    private final List<Integer> markList;
     private final int i;
-    private final long time;
+    private final int time;
 
-    public MarkRemoveCommand(List<Long> markList, int index) {
+    public MarkRemoveCommand(List<Integer> markList, int index) {
         this.markList = markList;
         this.i = index;
         this.time = markList.get(i);

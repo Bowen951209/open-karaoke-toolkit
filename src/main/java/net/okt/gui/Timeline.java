@@ -15,7 +15,6 @@ import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Objects;
 
 public class Timeline extends JPanel {
@@ -42,7 +41,7 @@ public class Timeline extends JPanel {
     private static final int TIMER_DELAY = 10;
     public static final int SLIDER_MAX_VAL = 500;
 
-    private final LyricsProcessor lyricsProcessor = new LyricsProcessor();
+    private final LyricsProcessor lyricsProcessor;
     private final CommandManager markCmdMgr = new CommandManager(15);
     private final Canvas canvas;
     private final ControlPanel controlPanel;
@@ -56,9 +55,10 @@ public class Timeline extends JPanel {
     private boolean isPlaying;
     private int pointerX;
 
-    public Timeline(SaveLoadManager saveLoadManager, Viewport viewport) {
+    public Timeline(SaveLoadManager saveLoadManager, LyricsProcessor lyricsProcessor, Viewport viewport) {
         super();
         this.saveLoadManager = saveLoadManager;
+        this.lyricsProcessor = lyricsProcessor;
         this.viewport = viewport;
         this.canvas = new Canvas();
         this.controlPanel = new ControlPanel();
@@ -91,7 +91,7 @@ public class Timeline extends JPanel {
 
     public void setDisplayFileName(String name) {
         Audio audio = saveLoadManager.getLoadedAudio();
-        String totalTime = toMinutesAndSecond((int) audio.getTotalTime(), 0);
+        String totalTime = toMinutesAndSecond(audio.getTotalTime(), 0);
         name += "(" + totalTime + ")";
         controlPanel.filenameLabel.setText(name);
 
@@ -127,7 +127,7 @@ public class Timeline extends JPanel {
                         case MouseEvent.BUTTON2 -> {
                             // If you middle-click, delete selected mark.
                             if (canvas.coveredMark != -1) {
-                                java.util.List<Long> marks = saveLoadManager.getMarks();
+                                var marks = saveLoadManager.getMarks();
                                 markCmdMgr.execute(new MarkRemoveCommand(marks, canvas.coveredMark));
                             }
                         }
@@ -255,10 +255,10 @@ public class Timeline extends JPanel {
      * (This will happen if the user delete words in the text field and influenced the exist marks.)
      */
     public void resetMarksNum() {
-        int redundantMarks = saveLoadManager.getRedundantMarkQuantity();
+        int redundantMarks = lyricsProcessor.getRedundantMarkNumber();
 
-        if (redundantMarks != 0) {
-            String text = saveLoadManager.getProp("text");
+        if (redundantMarks > 0) {
+            String text = lyricsProcessor.getLyrics();
             var marks = saveLoadManager.getMarks();
 
             int popNum = text.isEmpty() ? saveLoadManager.getMarks().size() : redundantMarks;
@@ -267,7 +267,7 @@ public class Timeline extends JPanel {
         }
     }
 
-    private int toX(long time) {
+    private int toX(int time) {
         return (int) (time * PIXEL_TIME_RATIO * canvas.scale);
     }
 
@@ -340,12 +340,9 @@ public class Timeline extends JPanel {
             btn.addActionListener(e -> {
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
 
-                // don't know why when getting the audio play time would have precise error,
-                // so use another method to replace.
-                // long time = saveLoadManager.getLoadedAudio().getTimePosition();
-                ArrayList<Long> marks = saveLoadManager.getMarks();
-                long pointerTime = toTime(pointerX);
-                long lastMarkTime = marks.size() - 1 > 0 ? marks.get(marks.size() - 1) : 0;
+                var marks = saveLoadManager.getMarks();
+                int pointerTime = saveLoadManager.getLoadedAudio().getTimePosition();
+                int lastMarkTime = marks.size() - 1 > 0 ? marks.get(marks.size() - 1) : 0;
                 if (lastMarkTime < pointerTime) // It is only available to put a mark after the last one.
                     markCmdMgr.execute(new MarkAddCommand(marks, pointerTime));
             });
@@ -460,7 +457,7 @@ public class Timeline extends JPanel {
             if (saveLoadManager.getLoadedAudio() == null) return;
 
             canvas.scale = (float) controlPanel.slider.getValue() * 0.01f;
-            long audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
+            int audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
 
             int height = (int) canvas.getPreferredSize().getHeight();
             canvas.setPreferredSize(new Dimension(toX(audioTime), height));
@@ -505,7 +502,7 @@ public class Timeline extends JPanel {
                 } else {
                     // Draw the mark image. If the mark is the end mark, draw the special end icon.
                     // p.s. End marks are the last one of all the marks or the last mark of the paragraph.
-                    drawMark(i, markX, lyricsProcessor.isParagraphEnd(i), g2d);
+                    drawMark(i, markX, lyricsProcessor.isParagraphEndMark(i), g2d);
                 }
             }
         }
@@ -515,11 +512,7 @@ public class Timeline extends JPanel {
          */
         private void drawGaps(Graphics2D g2d) {
             var marks = saveLoadManager.getMarks();
-            String text = saveLoadManager.getProp("text");
 
-            // TODO: move this update to when text is updated
-            lyricsProcessor.setLyrics(text);
-            lyricsProcessor.genTextToMarksList();
             for (int i = 0; i < marks.size(); i++) {
                 String gapText = lyricsProcessor.getTextBeforeMark(i);
                 int currentMarkX = toX(marks.get(i));
@@ -532,7 +525,7 @@ public class Timeline extends JPanel {
                     drawTextGap(i, gapText, g2d);
                 }
 
-                if (lyricsProcessor.isParagraphEnd(i))
+                if (lyricsProcessor.isParagraphEndMark(i))
                     drawDisappearHintGap(currentMarkX, g2d);
             }
         }
@@ -619,9 +612,9 @@ public class Timeline extends JPanel {
             // Handle if the mark is being dragged.
             if (isMouseDragging && coveredMark != -1) {
                 // Make sure user's not dragging out of available position.
-                long t = toTime(mousePos.x);
-                long lastT = coveredMark == 0 ? 0 : marks.get(coveredMark - 1);
-                long nextT = coveredMark == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(coveredMark + 1);
+                int t = toTime(mousePos.x);
+                int lastT = coveredMark == 0 ? 0 : marks.get(coveredMark - 1);
+                int nextT = coveredMark == marks.size() - 1 ? Integer.MAX_VALUE : marks.get(coveredMark + 1);
                 if (t > lastT && t < nextT) { // only in the range available.
                     draggingMark = coveredMark;
                 } else {

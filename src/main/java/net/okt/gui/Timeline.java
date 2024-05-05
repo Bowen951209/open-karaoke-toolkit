@@ -491,10 +491,11 @@ public class Timeline extends JPanel {
 
             if (!isMouseDragging) coveredMark = -1;
 
+            Point mousePos = getMousePosition();
             for (int i = 0; i < marks.size(); i++) {
                 // If icon is covered, draw the covered style icon.
                 int markX = toX(marks.get(i)) - MARK_ICON_SIZE / 2;
-                boolean isCovered = isMouseCoverMark(i);
+                boolean isCovered = isMouseCoverMark(markX, mousePos);
 
                 if (isCovered || coveredMark == i) { // selectedMark == i for dragging control stability.
                     coveredMark = i;
@@ -632,12 +633,8 @@ public class Timeline extends JPanel {
             }
         }
 
-        private boolean isMouseCoverMark(int markIdx) {
-            Point mousePos = getMousePosition();
+        private boolean isMouseCoverMark(int markX, Point mousePos) {
             if (mousePos == null) return false;
-
-            var marks = saveLoadManager.getMarks();
-            int markX = toX(marks.get(markIdx)) - MARK_ICON_SIZE / 2;
 
             return !isMouseDragging &&
                     mousePos.x >= markX && mousePos.x <= markX + MARK_ICON_SIZE && mousePos.y <= MARK_ICON_SIZE;

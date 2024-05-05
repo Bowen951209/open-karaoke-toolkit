@@ -431,22 +431,22 @@ public class Timeline extends JPanel {
             g2d.drawImage(waveImg, 0, 0, getWidth(), getHeight(), null);
             drawSeparationLines(g2d);
 
-            handleMouseEvent();
+            Point mousePos = getMousePosition();
+            handleMouseEvent(mousePos);
 
             // Draw the gaps.
             drawGaps(g2d);
 
             // Draw the marks
-            drawMarks(g2d);
-            drawDraggingMark(g2d);
+            drawMarks(g2d, mousePos);
+            drawDraggingMark(g2d, mousePos);
 
             // The cursor pointer & update label
-            Point mousePosition = getMousePosition();
-            if (mousePosition != null) {
-                int time = toTime(mousePosition.x);
+            if (mousePos != null) {
+                int time = toTime(mousePos.x);
                 controlPanel.timeLabel.setText(toMinutesAndSecond(time, 2));
 
-                drawPointer(g2d, Color.DARK_GRAY, mousePosition.x);
+                drawPointer(g2d, Color.DARK_GRAY, mousePos.x);
             }
 
             // The current playing time pointer
@@ -486,12 +486,11 @@ public class Timeline extends JPanel {
             g2d.drawLine(x, 0, x, getHeight());
         }
 
-        private void drawMarks(Graphics2D g2d) {
+        private void drawMarks(Graphics2D g2d, Point mousePos) {
             var marks = saveLoadManager.getMarks();
 
             if (!isMouseDragging) coveredMark = -1;
 
-            Point mousePos = getMousePosition();
             for (int i = 0; i < marks.size(); i++) {
                 // If icon is covered, draw the covered style icon.
                 int markX = toX(marks.get(i)) - MARK_ICON_SIZE / 2;
@@ -547,9 +546,7 @@ public class Timeline extends JPanel {
         /**
          * Draw the float mark that appears under the cursor if a mark is dragged.
          */
-        private void drawDraggingMark(Graphics2D g2d) {
-            Point mousePos = getMousePosition();
-
+        private void drawDraggingMark(Graphics2D g2d, Point mousePos) {
             if (draggingMark != -1 && mousePos != null) {
                 g2d.drawImage(
                         MARK_FLOAT_ICON.getImage()
@@ -605,9 +602,8 @@ public class Timeline extends JPanel {
         }
 
 
-        private void handleMouseEvent() {
+        private void handleMouseEvent(Point mousePos) {
             var marks = saveLoadManager.getMarks();
-            Point mousePos = getMousePosition();
             if (mousePos == null) return;
 
             // Handle if the mark is being dragged.

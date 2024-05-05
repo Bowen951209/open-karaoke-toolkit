@@ -124,6 +124,10 @@ public class Viewport extends JPanel {
 
         Color textColor = new Color(saveLoadManager.getPropInt("textColor"));
 
+        // base
+        g2d.setColor(Color.WHITE);
+        g2d.fill(topFontArea);
+
         // intersect area
         g2d.setColor(textColor);
         g2d.fill(topIntersectArea);
@@ -134,6 +138,10 @@ public class Viewport extends JPanel {
 
         // Translate position to the bottom line.
         g2d.translate(secondLineIndent, lineSpace);
+
+        // base
+        g2d.setColor(Color.WHITE);
+        g2d.fill(bottomFontArea);
 
         // intersect area
         g2d.setColor(textColor);

@@ -104,8 +104,6 @@ public class Viewport extends JPanel {
     }
 
     private void drawText(Graphics2D g2d, int time) {
-        // FIXME: fix if the line is not coincidentally even or odd numbers.
-
         int secondLineIndent = toDrawSize(saveLoadManager.getPropInt("indentSize"));
         int lineSpace = toDrawSize(saveLoadManager.getPropInt("lineSpace"));
 

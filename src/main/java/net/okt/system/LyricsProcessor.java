@@ -114,13 +114,17 @@ public class LyricsProcessor {
      * @param time The time the player is currently at.
      */
     public void setTime(int time) {
+        // Find the paragraph it's at and find the start line of it.
+        int paragraph = getParagraphAtTime(time);
+        int paragraphStartLine = getParagraphStartLine(paragraph);
+
         // Find the line it's at.
-        int line = getLine(time);
+        int line = getLine(time, paragraph);
         int nextLine = line + 1;
 
         // Set the displayingLines.
         // If nextLine is blank, switch it back because we don't want to display blank lines.
-        if (line % 2 == 0) {
+        if ((line - paragraphStartLine) % 2 == 0) {
             displayingLines[0] = line;
             if (isBlankLine(nextLine))
                 displayingLines[1] = line - 1;
@@ -281,10 +285,16 @@ public class LyricsProcessor {
         return Collections.frequency(lyricsLines.subList(0, line), "");
     }
 
+    private int getParagraphStartLine(int paragraph) {
+        if (paragraph == 0) return 0;
+        int paragraphStartMark = paragraphEndMarks.get(paragraph - 1) + 1;
+        return lineStartMarks.indexOf(paragraphStartMark) + 2;
+    }
+
     /**
      * @return The line that should be sung at the given time.
      */
-    private int getLine(int time) {
+    private int getLine(int time, int paragraph) {
         int index = Math.abs(Collections.binarySearch(lineStartMarks, time, (lineStartMark, t) -> {
             int lineStartTime = Math.toIntExact(marks.get(lineStartMark));
             if (isParagraphStartMark(lineStartMark)) {
@@ -295,7 +305,7 @@ public class LyricsProcessor {
             }
         }));
 
-        return index - 1 + getParagraphAtTime(time);
+        return index - 1 + paragraph;
     }
 
     /**

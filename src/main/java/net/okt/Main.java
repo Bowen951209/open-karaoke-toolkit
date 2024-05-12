@@ -39,10 +39,6 @@ public class Main extends JFrame {
         mainFrame.addComponents();
     }
 
-    public SaveLoadManager getSaveLoadManager() {
-        return saveLoadManager;
-    }
-
     public Timeline getTimeline() {
         return timeline;
     }

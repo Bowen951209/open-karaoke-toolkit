@@ -202,7 +202,7 @@ public class Viewport extends JPanel {
             if (textBeforeMark != null && textBeforeMark.length() == 2)
                 linkWordCount++;
 
-            if (markTime > time) {
+            if (percentage > 0 && percentage < 1) {
                 rectWidth = (int) ((i - lineStartMark - 1 + percentage) * defaultFontSize + linkWordCount * linkedFontSize);
                 break;
             }

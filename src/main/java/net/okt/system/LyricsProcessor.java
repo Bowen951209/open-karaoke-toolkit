@@ -115,6 +115,12 @@ public class LyricsProcessor {
      * @param time The time the player is currently at.
      */
     public void setTime(int time) {
+        if (marks.isEmpty()) {
+            shouldDisplayText = false;
+            readyDotsPercentage = 0;
+            return;
+        }
+
         // Find the paragraph it's at and find the start line of it.
         int paragraph = getParagraphAtTime(time);
         int paragraphStartLine = getParagraphStartLine(paragraph);
@@ -289,7 +295,8 @@ public class LyricsProcessor {
     private int getParagraphStartLine(int paragraph) {
         if (paragraph == 0) return 0;
         int paragraphStartMark = paragraphEndMarks.get(paragraph - 1) + 1;
-        return lineStartMarks.indexOf(paragraphStartMark) + 2;
+        // +1 because lineStartMarks doesn't include mark 0.
+        return lineStartMarks.indexOf(paragraphStartMark) + paragraph + 1;
     }
 
     /**

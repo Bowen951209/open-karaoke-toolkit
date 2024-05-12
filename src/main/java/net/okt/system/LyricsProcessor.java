@@ -24,6 +24,7 @@ public class LyricsProcessor {
     }
 
     public int getStartMarkAtLine(int line) {
+        if (line < 0) return 0;
         int index = line - 1 - getParagraphAtLine(line);
         if (index < 0) return 0;
         return lineStartMarks.get(index);
@@ -142,7 +143,7 @@ public class LyricsProcessor {
         int lastMark = Math.max(nextMark - 1, 0); // If nextMark is 0, lastMark will be -1, just take 0 for the case.
 
         // Decide if to display text and the percentage of ready dots.
-        if (isParagraphEndMark(lastMark)) {
+        if (isParagraphEndMark(lastMark) || time < marks.get(0)) {
             int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
             int textDisappearTime = saveLoadManager.getPropInt("textDisappearTime");
             int disappearStart = marks.get(lastMark) + textDisappearTime;
@@ -296,6 +297,8 @@ public class LyricsProcessor {
      */
     private int getLine(int time, int paragraph) {
         int index = Math.abs(Collections.binarySearch(lineStartMarks, time, (lineStartMark, t) -> {
+            if (lineStartMark >= marks.size()) return 1;
+
             int lineStartTime = Math.toIntExact(marks.get(lineStartMark));
             if (isParagraphStartMark(lineStartMark)) {
                 int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");

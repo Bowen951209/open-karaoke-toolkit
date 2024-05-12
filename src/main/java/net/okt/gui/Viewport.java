@@ -151,6 +151,8 @@ public class Viewport extends JPanel {
     }
 
     private LyricsArea getAreaAtLine(int line) {
+        if (line < 0 || line >= lyricsProcessor.getLyricsLines().size()) return new LyricsArea(-1);
+
         int defaultFontSize = saveLoadManager.getPropInt("defaultFontSize");
         int linkedFontSize = saveLoadManager.getPropInt("linkedFontSize");
         float defaultScale = toDrawSize(defaultFontSize);
@@ -165,9 +167,11 @@ public class Viewport extends JPanel {
         GlyphVector glyphVector = font.createGlyphVector(frc, processedString);
 
         int idx = string.indexOf('\'');
+        int linkWordCount = 0;
         while (idx >= 0) {
-            glyphVector.setGlyphTransform(idx, linkScaleTransform);
+            glyphVector.setGlyphTransform(idx - linkWordCount, linkScaleTransform);
             idx = string.indexOf('\'', idx + 1);
+            linkWordCount++;
         }
 
         LyricsArea area = new LyricsArea(line);

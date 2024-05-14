@@ -8,9 +8,21 @@ import java.util.List;
 public class LyricsProcessor {
     private final SaveLoadManager saveLoadManager;
     private final List<Integer> marks;
+    /**
+     * The texts before each mark.
+     */
     private final List<String> markTextList = new ArrayList<>();
+    /**
+     * The marks that are the end of a paragraph.
+     */
     private final List<Integer> paragraphEndMarks = new ArrayList<>();
+    /**
+     * The marks that are the start of a line.
+     */
     private final List<Integer> lineStartMarks = new ArrayList<>();
+    /**
+     * The lines that should be currently displayed.
+     */
     private final int[] displayingLines = new int[2];
 
     private float readyDotsPercentage;
@@ -41,6 +53,8 @@ public class LyricsProcessor {
     public void setLyrics(String lyrics) {
         this.lyrics = lyrics;
         lyricsLines = Arrays.asList(lyrics.split("\n"));
+
+        updateMarkLists();
     }
 
     public String getTextBeforeMark(int markIdx) {
@@ -166,8 +180,13 @@ public class LyricsProcessor {
     }
 
     /**
-     * Process the set lyrics and updates the mark-text data to {@link #markTextList} according to the karaoke
-     * lyrics rules below:
+     * Process the set lyrics and updates 3 lists:
+     * <pre>
+     * 1. {@link #paragraphEndMarks}
+     * 2. {@link #lineStartMarks}
+     * 3. {@link #markTextList}
+     * </pre>
+     * The {@link #markTextList} is calculated based on the rules below:
      *
      * <pre>
      * 1. In general, 2 marks hold a word.
@@ -205,7 +224,7 @@ public class LyricsProcessor {
      * {a, b, c, null, d, e, fg}
      * <pre>
      */
-    public void process() {
+    private void updateMarkLists() {
         markTextList.clear();
         paragraphEndMarks.clear();
         lineStartMarks.clear();

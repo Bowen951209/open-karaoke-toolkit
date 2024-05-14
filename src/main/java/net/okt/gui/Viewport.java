@@ -57,6 +57,7 @@ public class Viewport extends JPanel {
         g2d.drawImage(bufferedImage, 0, 0, drawWidth, drawHeight, null);
     }
 
+    // TODO: If lyrics has changed, force update the displaying areas.
     /**
      * Update the displaying areas. It uses cache if not forceUpdate.
      * @param forceUpdate If you want to ignore the cache and force update.

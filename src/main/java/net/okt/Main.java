@@ -54,7 +54,6 @@ public class Main extends JFrame {
         textArea.addDocumentUpdateCallback(() -> {
             saveLoadManager.setProp("text", textArea.getText());
             lyricsProcessor.setLyrics(saveLoadManager.getProp("text"));
-            lyricsProcessor.process();
             timeline.resetMarksNum();
             viewport.repaint();
             timeline.getCanvas().repaint();

@@ -338,6 +338,7 @@ public class Timeline extends JPanel {
         private JButton getMarkButton() {
             JButton btn = new JButton(MARK_NORM_BUTTON_ICON);
             btn.addActionListener(e -> {
+                // TODO: disable button if too many marks.
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
 
                 var marks = saveLoadManager.getMarks();

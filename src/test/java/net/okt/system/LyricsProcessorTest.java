@@ -35,7 +35,6 @@ class LyricsProcessorTest {
     void lineStartMarkTest() {
         // sample 1
         lyricsProcessor.setLyrics(lyricsSample1);
-        lyricsProcessor.process();
 
         assertEquals(0, lyricsProcessor.getStartMarkAtLine(0));
         assertEquals(2, lyricsProcessor.getStartMarkAtLine(1));
@@ -44,7 +43,6 @@ class LyricsProcessorTest {
 
         // sample 2
         lyricsProcessor.setLyrics(lyricsSample2);
-        lyricsProcessor.process();
 
         assertEquals(0, lyricsProcessor.getStartMarkAtLine(0));
         assertEquals(1, lyricsProcessor.getStartMarkAtLine(1));
@@ -56,7 +54,6 @@ class LyricsProcessorTest {
     @Test
     void textBeforeMarkTestForLyrics1() {
         lyricsProcessor.setLyrics(lyricsSample1);
-        lyricsProcessor.process();
 
         assertNull(lyricsProcessor.getTextBeforeMark(0));
         assertEquals("a", lyricsProcessor.getTextBeforeMark(1));
@@ -71,7 +68,6 @@ class LyricsProcessorTest {
     @Test
     void textBeforeMarkTestForLyrics2() {
         lyricsProcessor.setLyrics(lyricsSample2);
-        lyricsProcessor.process();
 
         assertNull(lyricsProcessor.getTextBeforeMark(0));
         assertEquals("a", lyricsProcessor.getTextBeforeMark(1));
@@ -86,7 +82,6 @@ class LyricsProcessorTest {
     @Test
     void textBeforeMarkTestForLyrics3() {
         lyricsProcessor.setLyrics(lyricsSample3);
-        lyricsProcessor.process();
 
         assertNull(lyricsProcessor.getTextBeforeMark(0));
         assertEquals("a", lyricsProcessor.getTextBeforeMark(1));
@@ -114,7 +109,6 @@ class LyricsProcessorTest {
         marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800));
 
         lyricsProcessor.setLyrics(lyricsSample1);
-        lyricsProcessor.process();
 
         lyricsProcessor.setTime(50); // before mark 0
         assertArrayEquals(new int[] {0 , 1}, lyricsProcessor.getDisplayingLines());
@@ -144,7 +138,6 @@ class LyricsProcessorTest {
         marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800));
 
         lyricsProcessor.setLyrics(lyricsSample2);
-        lyricsProcessor.process();
 
         lyricsProcessor.setTime(50); // before mark 0
         assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
@@ -176,7 +169,6 @@ class LyricsProcessorTest {
         ));
 
         lyricsProcessor.setLyrics(lyricsSample3);
-        lyricsProcessor.process();
 
         lyricsProcessor.setTime(50); // before mark 0
         assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());

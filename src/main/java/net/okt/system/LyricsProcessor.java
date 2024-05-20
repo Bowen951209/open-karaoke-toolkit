@@ -87,6 +87,10 @@ public class LyricsProcessor {
         return readyDotsPercentage;
     }
 
+    public boolean isMaxMarkNumber() {
+        return marks.size() == markTextList.size() + 1;
+    }
+
     /**
      * Get the redundant marks number. The max mark number should be decided by the {@link #lyrics}. Any mark more than
      * that is considered a redundant mark.

@@ -338,7 +338,6 @@ public class Timeline extends JPanel {
         private JButton getMarkButton() {
             JButton btn = new JButton(MARK_NORM_BUTTON_ICON);
             btn.addActionListener(e -> {
-                // TODO: disable button if too many marks.
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
 
                 var marks = saveLoadManager.getMarks();
@@ -347,6 +346,21 @@ public class Timeline extends JPanel {
                 if (lastMarkTime < pointerTime) // It is only available to put a mark after the last one.
                     markCmdMgr.execute(new MarkAddCommand(marks, pointerTime));
             });
+
+            btn.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    // Prevent users from putting redundant marks.
+                    if (lyricsProcessor.isMaxMarkNumber()) {
+                        btn.setEnabled(false);
+                        btn.setToolTipText("Reached max mark number.");
+                    } else {
+                        btn.setEnabled(true);
+                        btn.setToolTipText(null);
+                    }
+                }
+            });
+
             btn.setPreferredSize(ICON_SIZE);
 
             return btn;

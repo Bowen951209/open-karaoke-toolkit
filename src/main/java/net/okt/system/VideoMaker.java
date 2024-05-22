@@ -18,12 +18,12 @@ public class VideoMaker extends Thread {
     private final AtomicBoolean shouldRun = new AtomicBoolean(true);
     private final String filename, format, codec;
     private final int fps, bitrate, width, height;
-    private final long timeLength;
+    private final int timeLength;
     private final Viewport viewport;
     private final SaveLoadManager saveLoadManager;
     private final ProgressBarDialog progressBarDialog;
 
-    public VideoMaker(String filename, String format, String codec, int fps, int bitrate, long timeLength, int width,
+    public VideoMaker(String filename, String format, String codec, int fps, int bitrate, int timeLength, int width,
                       int height, Viewport viewport, SaveLoadManager saveLoadManager, ProgressBarDialog progressBarDialog) {
         this.filename = filename;
         this.format = format;
@@ -92,7 +92,7 @@ public class VideoMaker extends Thread {
             frameRecorder.start();
 
             // Record video.
-            for (long i = 0; i < totalFrames; i++) {
+            for (int i = 0; i < totalFrames; i++) {
                 // if stop processing, deleted the file and return.
                 if (!shouldRun.get()) {
                     audioGrabber.close();
@@ -101,13 +101,13 @@ public class VideoMaker extends Thread {
                     return;
                 }
 
-                long time = (long) (i * frameLength);
+                int time = (int) (i * frameLength);
                 viewport.drawToBufImg(time);
 
                 Frame frame = FRAME_CONVERTER.getFrame(viewport.getBufferedImage());
                 frameRecorder.record(frame, avutil.AV_PIX_FMT_ARGB);  // video
 
-                progressBarDialog.progressBar.setValue((int) i);
+                progressBarDialog.progressBar.setValue(i);
                 progressBarDialog.progressBar.setString("frames: " + i + "/" + totalFrames);
             }
 

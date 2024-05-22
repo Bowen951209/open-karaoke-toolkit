@@ -69,18 +69,16 @@ public class SideConfigPanel extends JScrollPane {
         var defaultFontSizeBar =
                 new SlidableNumberBar("Default Font Size", 3, "defaultFontSize", saveLoadManager);
         defaultFontSizeBar.addDocumentListener(() -> {
-            viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
+            viewport.updateDisplayingAreas(true);
             viewport.repaint();
         });
-        viewport.setDefaultFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("defaultFontSize")));
 
         var linkedFontSizeBar =
                 new SlidableNumberBar("Linked Font Size", 3, "linkedFontSize", saveLoadManager);
         linkedFontSizeBar.addDocumentListener(() -> {
-            viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
+            viewport.updateDisplayingAreas(true);
             viewport.repaint();
         });
-        viewport.setLinkedFont(new Font(Font.SANS_SERIF, Font.BOLD, saveLoadManager.getPropInt("linkedFontSize")));
 
         var lineIndentSizeBar =
                 new SlidableNumberBar("2nd Line Indent", 3, "indentSize", saveLoadManager);

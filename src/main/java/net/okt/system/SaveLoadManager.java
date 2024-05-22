@@ -13,8 +13,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 import static net.okt.gui.Timeline.PIXEL_TIME_RATIO;
@@ -24,25 +22,16 @@ import static net.okt.gui.Timeline.PIXEL_TIME_RATIO;
  */
 public class SaveLoadManager {
     private final Main mainFrame;
-    /**
-     * This list stores the text(lyrics) string as an array, but with some modifications that the linked words would
-     * stay in the same elements. For example, the string "ab'c\ndef" would store as the list {a, bc, \n, d, e, f}.
-     */
-    private final List<String> textList = new ArrayList<>();
-    private final ArrayList<Long> marks = new ArrayList<>();
+    private final ArrayList<Integer> marks = new ArrayList<>();
     private final Properties props = new Properties();
-
     private Audio loadedAudio;
 
-    public SaveLoadManager(Main mainFrame) {
-        this.mainFrame = mainFrame;
-    }
 
     public Audio getLoadedAudio() {
         return loadedAudio;
     }
 
-    public ArrayList<Long> getMarks() {
+    public ArrayList<Integer> getMarks() {
         return marks;
     }
 
@@ -62,34 +51,6 @@ public class SaveLoadManager {
 
     public void setProp(String key, int val) {
         props.setProperty(key, String.valueOf(val));
-    }
-
-    public void setText(String text) {
-        setProp("text", text);
-        textList.clear();
-
-        // Set the textList.
-        for (int i = 0; i < text.length(); i++) {
-            String thisWord = String.valueOf(text.charAt(i));
-
-            if (i + 1 < text.length()) {// If not last word
-                char nextChar = text.charAt(i + 1);
-
-                if (nextChar == '\'') {// linked word case
-                    i += 2;
-                    String linkedWord = thisWord + text.charAt(i);
-                    textList.add(linkedWord);
-                } else { // single word case
-                    textList.add(thisWord);
-                }
-            } else {
-                textList.add(thisWord);
-            }
-        }
-    }
-
-    public List<String> getTextList() {
-        return textList;
     }
 
     public void setLoadedAudio(File audio) {
@@ -127,18 +88,15 @@ public class SaveLoadManager {
 
         System.out.println("Loaded audio: " + audio);
     }
-
-    public int getRedundantMarkQuantity() {
-        int numSlashN = Collections.frequency(textList, "\n");
-        int numDoubleSlashN = getNumDoubleSlashN();
-        int q = marks.size() - (textList.size() - numSlashN + numDoubleSlashN + 1);
-        return Math.max(0, q);
+    // TODO: The audio loading path should be relative to the properties file path.
+    public SaveLoadManager(Main mainFrame) {
+        this.mainFrame = mainFrame;
     }
 
     public void saveFileAs(File file) {
         // Marks.
         StringBuilder stringBuilder = new StringBuilder();
-        for (Long t : marks) {
+        for (Integer t : marks) {
             stringBuilder.append(t).append(",");
         }
         props.setProperty("marks", stringBuilder.toString());
@@ -160,14 +118,13 @@ public class SaveLoadManager {
             // Load the properties file.
             props.load(inputStreamReader);
 
-            setText(props.getProperty("text")); // Update the text list.
             mainFrame.getTextArea().setText(getProp("text")); // Update to text area.
 
             // Marks.
             String[] marksStrings = props.getProperty("marks").split(",");
             marks.clear();
             for (String string : marksStrings)
-                marks.add(Long.valueOf(string));
+                marks.add(Integer.valueOf(string));
 
             // Audio.
             File audioFile = new File(props.getProperty("audio"));
@@ -204,16 +161,5 @@ public class SaveLoadManager {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private int getNumDoubleSlashN() {
-        String text = getProp("text");
-        int frequency = 0;
-        for (int i = 0; i < text.length() - 1; i++) {
-            if (text.charAt(i) == '\n' && text.charAt(i + 1) == '\n')
-                frequency++;
-        }
-
-        return frequency;
     }
 }

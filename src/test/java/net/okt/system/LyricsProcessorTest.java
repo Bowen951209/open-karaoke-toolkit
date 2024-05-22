@@ -122,13 +122,13 @@ class LyricsProcessorTest {
         // skip mark 3 ~ 4 because we don't care the displaying lines of a blank line.
 
         lyricsProcessor.setTime(550); // mark 4 ~ 5
-        assertEquals(3, lyricsProcessor.getDisplayingLines()[0]);
+        assertArrayEquals(new int[] {3, 2}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(650); // mark 5 ~ 6
-        assertEquals(3, lyricsProcessor.getDisplayingLines()[0]);
+        assertArrayEquals(new int[] {3, 2}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(750); // mark 6 ~ 7
-        assertEquals(3, lyricsProcessor.getDisplayingLines()[0]);
+        assertArrayEquals(new int[] {3, 2}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(850); // after mark 7
-        assertEquals(3, lyricsProcessor.getDisplayingLines()[0]);
+        assertArrayEquals(new int[] {3, 2}, lyricsProcessor.getDisplayingLines());
     }
 
     @Test

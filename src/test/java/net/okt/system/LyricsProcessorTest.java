@@ -273,5 +273,23 @@ class LyricsProcessorTest {
         lyricsProcessor.setTime(99);
         assertEquals(0.98f, lyricsProcessor.getReadyDotsPercentage());
     }
+
+    @Test
+    void isMaxMarkNumberTest() {
+        lyricsProcessor.setLyrics("""
+                abc
+                def
+                
+                ghi
+                jkl""");
+
+        var marks = saveLoadManager.getMarks();
+        marks.clear();
+        assertFalse(lyricsProcessor.isMaxMarkNumber());
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300));
+        assertFalse(lyricsProcessor.isMaxMarkNumber());
+        marks.add(1400);
+        assertTrue(lyricsProcessor.isMaxMarkNumber());
+    }
     //TODO: write tests for the bunch of methods in LyricsProcessor.
 }

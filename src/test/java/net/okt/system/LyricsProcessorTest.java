@@ -309,5 +309,34 @@ class LyricsProcessorTest {
         marks.addAll(List.of(1500, 1600, 1700));
         assertEquals(3, lyricsProcessor.getRedundantMarkNumber());
     }
+
+    @Test
+    void isParagraphEndMarkTest() {
+        lyricsProcessor.setLyrics("""
+                abc
+                def
+                
+                ghi
+                jkl""");
+
+        var marks = saveLoadManager.getMarks();
+        marks.clear();
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400));
+        assertFalse(lyricsProcessor.isParagraphEndMark(0));
+        assertFalse(lyricsProcessor.isParagraphEndMark(1));
+        assertFalse(lyricsProcessor.isParagraphEndMark(2));
+        assertFalse(lyricsProcessor.isParagraphEndMark(3));
+        assertFalse(lyricsProcessor.isParagraphEndMark(4));
+        assertFalse(lyricsProcessor.isParagraphEndMark(5));
+        assertTrue(lyricsProcessor.isParagraphEndMark(6));
+
+        assertFalse(lyricsProcessor.isParagraphEndMark(7));
+        assertFalse(lyricsProcessor.isParagraphEndMark(8));
+        assertFalse(lyricsProcessor.isParagraphEndMark(9));
+        assertFalse(lyricsProcessor.isParagraphEndMark(10));
+        assertFalse(lyricsProcessor.isParagraphEndMark(11));
+        assertFalse(lyricsProcessor.isParagraphEndMark(12));
+        assertTrue(lyricsProcessor.isParagraphEndMark(13));
+    }
     //TODO: write tests for the bunch of methods in LyricsProcessor.
 }

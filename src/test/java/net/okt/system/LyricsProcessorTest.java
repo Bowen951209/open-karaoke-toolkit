@@ -32,16 +32,17 @@ class LyricsProcessorTest {
             """;
 
     @Test
-    void lineStartMarkTest() {
-        // sample 1
+    void lineStartMarkTestForLyrics1() {
         lyricsProcessor.setLyrics(lyricsSample1);
 
         assertEquals(0, lyricsProcessor.getStartMarkAtLine(0));
         assertEquals(2, lyricsProcessor.getStartMarkAtLine(1));
         // skip line 2 because we don't care the start mark of a blank line, which is undefined.
         assertEquals(4, lyricsProcessor.getStartMarkAtLine(3));
+    }
 
-        // sample 2
+    @Test
+    void lineStartMarkTestForLyrics2() {
         lyricsProcessor.setLyrics(lyricsSample2);
 
         assertEquals(0, lyricsProcessor.getStartMarkAtLine(0));
@@ -49,6 +50,18 @@ class LyricsProcessorTest {
         // skip line 2 because we don't care the start mark of a blank line, which is undefined.
         assertEquals(4, lyricsProcessor.getStartMarkAtLine(3));
         assertEquals(5, lyricsProcessor.getStartMarkAtLine(4));
+    }
+
+    @Test
+    void lineStartMarkTestForLyrics3() {
+        lyricsProcessor.setLyrics(lyricsSample3);
+
+        assertEquals(0, lyricsProcessor.getStartMarkAtLine(0));
+        assertEquals(3, lyricsProcessor.getStartMarkAtLine(1));
+        assertEquals(6, lyricsProcessor.getStartMarkAtLine(2));
+        // skip line 3 because we don't care the start mark of a blank line, which is undefined.
+        assertEquals(10, lyricsProcessor.getStartMarkAtLine(4));
+        assertEquals(13, lyricsProcessor.getStartMarkAtLine(5));
     }
 
     @Test

@@ -223,5 +223,30 @@ class LyricsProcessorTest {
         assertArrayEquals(new int[] {4, 5}, lyricsProcessor.getDisplayingLines());
     }
 
+    @Test
+    void shouldDisplayTextTest() {
+        lyricsProcessor.setLyrics("""
+                abc
+                def
+                
+                ghi
+                jkl""");
+
+        saveLoadManager.setProp("textDisappearTime", 50);
+
+        var marks = saveLoadManager.getMarks();
+        marks.clear();
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400));
+
+        lyricsProcessor.setTime(700);
+        assertTrue(lyricsProcessor.shouldDisplayText());
+        lyricsProcessor.setTime(760);
+        assertFalse(lyricsProcessor.shouldDisplayText());
+
+        lyricsProcessor.setTime(1400);
+        assertTrue(lyricsProcessor.shouldDisplayText());
+        lyricsProcessor.setTime(1460);
+        assertFalse(lyricsProcessor.shouldDisplayText());
+    }
     //TODO: write tests for the bunch of methods in LyricsProcessor.
 }

@@ -28,8 +28,7 @@ class LyricsProcessorTest {
             ghi
             
             jkl
-            mno
-            """;
+            mno""";
 
     @Test
     void lineStartMarkTestForLyrics1() {

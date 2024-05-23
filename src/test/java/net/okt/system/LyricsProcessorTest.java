@@ -123,24 +123,24 @@ class LyricsProcessorTest {
         lyricsProcessor.setLyrics(lyricsSample1);
 
         lyricsProcessor.setTime(50); // before mark 0
-        assertArrayEquals(new int[] {0 , 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(150); // mark 0 ~ 1
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(250); // mark 1 ~ 2
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(350); // mark 2 ~ 3
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
 
         // skip mark 3 ~ 4 because we don't care the displaying lines of a blank line.
 
         lyricsProcessor.setTime(550); // mark 4 ~ 5
-        assertArrayEquals(new int[] {3, 2}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{3, 2}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(650); // mark 5 ~ 6
-        assertArrayEquals(new int[] {3, 2}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{3, 2}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(750); // mark 6 ~ 7
-        assertArrayEquals(new int[] {3, 2}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{3, 2}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(850); // after mark 7
-        assertArrayEquals(new int[] {3, 2}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{3, 2}, lyricsProcessor.getDisplayingLines());
     }
 
     @Test
@@ -152,24 +152,24 @@ class LyricsProcessorTest {
         lyricsProcessor.setLyrics(lyricsSample2);
 
         lyricsProcessor.setTime(50); // before mark 0
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(150); // mark 0 ~ 1
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(250); // mark 1 ~ 2
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(350); // mark 2 ~ 3
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
 
         // skip mark 3 ~ 4 because we don't care the displaying lines of a blank line.
 
         lyricsProcessor.setTime(550); // mark 4 ~ 5
-        assertArrayEquals(new int[] {3, 4}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{3, 4}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(650); // mark 5 ~ 6
-        assertArrayEquals(new int[] {3, 4}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{3, 4}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(750); // mark 6 ~ 7
-        assertArrayEquals(new int[] {3, 4}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{3, 4}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(850); // after mark 7
-        assertArrayEquals(new int[] {3, 4}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{3, 4}, lyricsProcessor.getDisplayingLines());
     }
 
     @Test
@@ -183,44 +183,44 @@ class LyricsProcessorTest {
         lyricsProcessor.setLyrics(lyricsSample3);
 
         lyricsProcessor.setTime(50); // before mark 0
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(150); // mark 0 ~ 1
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(250); // mark 1 ~ 2
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(350); // mark 2 ~ 3
-        assertArrayEquals(new int[] {0, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
 
         lyricsProcessor.setTime(450); // mark 3 ~ 4
-        assertArrayEquals(new int[] {2, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{2, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(550); // mark 4 ~ 5
-        assertArrayEquals(new int[] {2, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{2, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(650); // mark 5 ~ 6
-        assertArrayEquals(new int[] {2, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{2, 1}, lyricsProcessor.getDisplayingLines());
 
         lyricsProcessor.setTime(750); // mark 6 ~ 7
-        assertArrayEquals(new int[] {2, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{2, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(850); // mark 7 ~ 8
-        assertArrayEquals(new int[] {2, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{2, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(950); // mark 8 ~ 9
-        assertArrayEquals(new int[] {2, 1}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{2, 1}, lyricsProcessor.getDisplayingLines());
 
         // skip mark 9 ~ 10 because we don't care the displaying lines of a blank line.
 
         lyricsProcessor.setTime(1150); // mark 10 ~ 11
-        assertArrayEquals(new int[] {4, 5}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{4, 5}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(1250); // mark 11 ~ 12
-        assertArrayEquals(new int[] {4, 5}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{4, 5}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(1350); // mark 12 ~ 13
-        assertArrayEquals(new int[] {4, 5}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{4, 5}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(1450); // mark 13 ~ 14
-        assertArrayEquals(new int[] {4, 5}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{4, 5}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(1550); // mark 14 ~ 15
-        assertArrayEquals(new int[] {4, 5}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{4, 5}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(1650); // mark 15 ~ 16
-        assertArrayEquals(new int[] {4, 5}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{4, 5}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(1750); // after mark 16
-        assertArrayEquals(new int[] {4, 5}, lyricsProcessor.getDisplayingLines());
+        assertArrayEquals(new int[]{4, 5}, lyricsProcessor.getDisplayingLines());
     }
 
     @Test
@@ -338,5 +338,4 @@ class LyricsProcessorTest {
         assertFalse(lyricsProcessor.isParagraphEndMark(12));
         assertTrue(lyricsProcessor.isParagraphEndMark(13));
     }
-    //TODO: write tests for the bunch of methods in LyricsProcessor.
 }

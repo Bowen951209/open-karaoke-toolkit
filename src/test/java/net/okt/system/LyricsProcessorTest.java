@@ -248,5 +248,30 @@ class LyricsProcessorTest {
         lyricsProcessor.setTime(1460);
         assertFalse(lyricsProcessor.shouldDisplayText());
     }
+
+    @Test
+    void readyDotsPercentageTest() {
+        lyricsProcessor.setLyrics("""
+                abc
+                def
+                
+                ghi
+                jkl""");
+
+        saveLoadManager.setProp("dotsPeriod", 50);
+
+        var marks = saveLoadManager.getMarks();
+        marks.clear();
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400));
+
+        lyricsProcessor.setTime(0);
+        assertTrue(lyricsProcessor.getReadyDotsPercentage() < 0);
+        lyricsProcessor.setTime(60);
+        assertEquals(0.2f, lyricsProcessor.getReadyDotsPercentage());
+        lyricsProcessor.setTime(80);
+        assertEquals(0.6f, lyricsProcessor.getReadyDotsPercentage());
+        lyricsProcessor.setTime(99);
+        assertEquals(0.98f, lyricsProcessor.getReadyDotsPercentage());
+    }
     //TODO: write tests for the bunch of methods in LyricsProcessor.
 }

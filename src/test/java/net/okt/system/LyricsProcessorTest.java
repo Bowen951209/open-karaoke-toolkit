@@ -291,5 +291,23 @@ class LyricsProcessorTest {
         marks.add(1400);
         assertTrue(lyricsProcessor.isMaxMarkNumber());
     }
+
+    @Test
+    void redundantMarkNumberTest() {
+        lyricsProcessor.setLyrics("""
+                abc
+                def
+                
+                ghi
+                jkl""");
+
+        var marks = saveLoadManager.getMarks();
+        marks.clear();
+        assertTrue(lyricsProcessor.getRedundantMarkNumber() < 0);
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400));
+        assertEquals(0, lyricsProcessor.getRedundantMarkNumber());
+        marks.addAll(List.of(1500, 1600, 1700));
+        assertEquals(3, lyricsProcessor.getRedundantMarkNumber());
+    }
     //TODO: write tests for the bunch of methods in LyricsProcessor.
 }

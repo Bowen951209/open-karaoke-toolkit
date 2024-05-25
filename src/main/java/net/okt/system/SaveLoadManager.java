@@ -8,10 +8,10 @@ import net.okt.gui.Timeline;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -64,11 +64,7 @@ public class SaveLoadManager {
 
         loadedAudio = new Audio(audio);
 
-        // Store the audio file relative path.
-        URI base = new File(System.getProperty("user.dir")).toURI();
-        URI audioURI = audio.toURI();
-        String audioRelativePath = String.valueOf(base.relativize(audioURI));
-        setProp("audio", audioRelativePath);
+        setProp("audio", audio.getPath());
 
         // Display the file name on the timeline.
         timeline.setDisplayFileName(audio.getName());
@@ -96,10 +92,15 @@ public class SaveLoadManager {
     public void saveFileAs(File file) {
         // Marks.
         StringBuilder stringBuilder = new StringBuilder();
-        for (Integer t : marks) {
+        for (Integer t : marks)
             stringBuilder.append(t).append(",");
-        }
-        props.setProperty("marks", stringBuilder.toString());
+        setProp("marks", stringBuilder.toString());
+
+        // Make the audio path relative to the properties file path.
+        Path audioPath = Path.of(getProp("audio"));
+        Path base = file.toPath().getParent();
+        String audioRelativePath = base.relativize(audioPath).toString().replace("\\", "/");
+        setProp("audio", audioRelativePath);
 
         // Save to file.
         try (Writer fileWriter = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
@@ -121,13 +122,13 @@ public class SaveLoadManager {
             mainFrame.getTextArea().setText(getProp("text")); // Update to text area.
 
             // Marks.
-            String[] marksStrings = props.getProperty("marks").split(",");
+            String[] marksStrings = getProp("marks").split(",");
             marks.clear();
             for (String string : marksStrings)
                 marks.add(Integer.valueOf(string));
 
             // Audio.
-            File audioFile = new File(props.getProperty("audio"));
+            File audioFile = new File(file.getParent(), getProp("audio"));
             if (!audioFile.exists()) {
                 // Pop up a message.
                 JOptionPane.showMessageDialog(

@@ -139,12 +139,15 @@ public class LyricsProcessor {
             return;
         }
 
+        int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
+        int textDisappearTime = saveLoadManager.getPropInt("textDisappearTime");
+
         // Find the paragraph it's at and find the start line of it.
-        int paragraph = getParagraphAtTime(time);
+        int paragraph = getParagraphAtTime(time, readyDotsPeriod);
         int paragraphStartLine = getParagraphStartLine(paragraph);
 
         // Find the line it's at.
-        int line = getLine(time, paragraph);
+        int line = getLine(time, paragraph, readyDotsPeriod);
         int nextLine = line + 1;
 
         // Set the displayingLines.
@@ -168,8 +171,6 @@ public class LyricsProcessor {
 
         // Decide if to display text and the percentage of ready dots.
         if (isParagraphEndMark(lastMark) || time < marks.get(0)) {
-            int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
-            int textDisappearTime = saveLoadManager.getPropInt("textDisappearTime");
             int disappearStart = marks.get(lastMark) + textDisappearTime;
             int disappearEnd = nextMark >= marks.size() ? Integer.MAX_VALUE : marks.get(nextMark) - readyDotsPeriod;
             boolean shouldDisappear = time > disappearStart && time < disappearEnd;
@@ -295,9 +296,7 @@ public class LyricsProcessor {
     /**
      * @return The paragraph it is at the given time.
      */
-    private int getParagraphAtTime(int time) {
-        int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
-
+    private int getParagraphAtTime(int time, int readyDotsPeriod) {
         int index =  Collections.binarySearch(paragraphEndMarks, time, (paragraphEndMark, t) -> {
             int nextMark = paragraphEndMark + 1;
             if (nextMark >= marks.size()) return 1;
@@ -325,13 +324,12 @@ public class LyricsProcessor {
     /**
      * @return The line that should be sung at the given time.
      */
-    private int getLine(int time, int paragraph) {
+    private int getLine(int time, int paragraph, int readyDotsPeriod) {
         int index = Math.abs(Collections.binarySearch(lineStartMarks, time, (lineStartMark, t) -> {
             if (lineStartMark >= marks.size()) return 1;
 
             int lineStartTime = Math.toIntExact(marks.get(lineStartMark));
             if (isParagraphStartMark(lineStartMark)) {
-                int readyDotsPeriod = saveLoadManager.getPropInt("dotsPeriod");
                 return Integer.compare(lineStartTime - readyDotsPeriod, t);
             } else {
                 return Integer.compare(lineStartTime, t);

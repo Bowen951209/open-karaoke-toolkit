@@ -84,7 +84,7 @@ public class SaveLoadManager {
 
         System.out.println("Loaded audio: " + audio);
     }
-    // TODO: The audio loading path should be relative to the properties file path.
+
     public SaveLoadManager(Main mainFrame) {
         this.mainFrame = mainFrame;
     }

@@ -8,8 +8,6 @@ import net.okt.gui.Timeline;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -154,13 +152,5 @@ public class SaveLoadManager {
         }
 
         System.out.println("Loaded project: " + file);
-    }
-
-    public void load(URL url) {
-        try {
-            load(new File(url.toURI()));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

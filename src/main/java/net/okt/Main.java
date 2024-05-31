@@ -8,7 +8,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.Objects;
 
 public class Main extends JFrame {
     public static final String INIT_FRAME_TITLE = "Open Karaoke Toolkit";
@@ -23,7 +22,7 @@ public class Main extends JFrame {
     private final Timeline timeline = new Timeline(saveLoadManager, lyricsProcessor, viewport);
     private final LineNumberedScrollableTextArea textArea = getTextArea();
 
-    public Main(String title) {
+    public Main(String title, String propsFile) {
         // Init settings.
         super(title);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -31,11 +30,12 @@ public class Main extends JFrame {
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
 
         // Load the sample save file.
-        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.properties")));
+        if (propsFile != null)
+            saveLoadManager.load(new File(propsFile));
     }
 
     public static void main(String[] args) {
-        mainFrame = new Main(INIT_FRAME_TITLE);
+        mainFrame = new Main(INIT_FRAME_TITLE, args.length == 0 ? null : args[0]);
         mainFrame.addComponents();
     }
 

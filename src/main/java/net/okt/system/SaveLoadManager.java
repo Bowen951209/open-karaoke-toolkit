@@ -25,30 +25,12 @@ public class SaveLoadManager {
     private Audio loadedAudio;
 
 
+    public SaveLoadManager(Main mainFrame) {
+        this.mainFrame = mainFrame;
+    }
+
     public Audio getLoadedAudio() {
         return loadedAudio;
-    }
-
-    public ArrayList<Integer> getMarks() {
-        return marks;
-    }
-
-    public String getProp(String key) {
-        return props.getProperty(key);
-    }
-
-    public int getPropInt(String key) {
-        String prop = getProp(key);
-        if (prop == null) return -1;
-        return Integer.parseInt(prop);
-    }
-
-    public void setProp(String key, String val) {
-        props.setProperty(key, val);
-    }
-
-    public void setProp(String key, int val) {
-        props.setProperty(key, String.valueOf(val));
     }
 
     public void setLoadedAudio(File audio) {
@@ -83,8 +65,26 @@ public class SaveLoadManager {
         System.out.println("Loaded audio: " + audio);
     }
 
-    public SaveLoadManager(Main mainFrame) {
-        this.mainFrame = mainFrame;
+    public ArrayList<Integer> getMarks() {
+        return marks;
+    }
+
+    public String getProp(String key) {
+        return props.getProperty(key);
+    }
+
+    public int getPropInt(String key) {
+        String prop = getProp(key);
+        if (prop == null) return -1;
+        return Integer.parseInt(prop);
+    }
+
+    public void setProp(String key, String val) {
+        props.setProperty(key, val);
+    }
+
+    public void setProp(String key, int val) {
+        props.setProperty(key, String.valueOf(val));
     }
 
     public void saveFileAs(File file) {

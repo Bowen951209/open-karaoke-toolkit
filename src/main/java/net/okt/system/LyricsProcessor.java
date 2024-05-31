@@ -35,6 +35,20 @@ public class LyricsProcessor {
         this.marks = saveLoadManager.getMarks();
     }
 
+    public static boolean isEasternChar(char c) {
+        Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
+        return ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS ||
+                ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A ||
+                ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B ||
+                ub == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION ||
+                ub == Character.UnicodeBlock.HIRAGANA ||
+                ub == Character.UnicodeBlock.KATAKANA ||
+                ub == Character.UnicodeBlock.KATAKANA_PHONETIC_EXTENSIONS ||
+                ub == Character.UnicodeBlock.HANGUL_SYLLABLES ||
+                ub == Character.UnicodeBlock.HANGUL_JAMO ||
+                ub == Character.UnicodeBlock.HANGUL_COMPATIBILITY_JAMO;
+    }
+
     public int getStartMarkAtLine(int line) {
         if (line < 0) return 0;
         int index = line - 1 - getParagraphAtLine(line);
@@ -64,6 +78,7 @@ public class LyricsProcessor {
 
     /**
      * Get the lines that should be displayed at the set time.
+     *
      * @see #setTime(int)
      */
     public int[] getDisplayingLines() {
@@ -72,6 +87,7 @@ public class LyricsProcessor {
 
     /**
      * Get if to display lyrics at the set time.
+     *
      * @see #setTime(int)
      */
     public boolean shouldDisplayText() {
@@ -80,6 +96,7 @@ public class LyricsProcessor {
 
     /**
      * Get the progress of the ready dots at the set time.
+     *
      * @return A percentage value in float.
      * @see #setTime(int)
      */
@@ -109,7 +126,7 @@ public class LyricsProcessor {
     /**
      * Change the values that is bond with time position.
      * <p></p>
-     *
+     * <p>
      * 1. Calculate which 2 lines should be displayed at the given time and update to {@link #displayingLines}.
      * With the rules below:
      * (* means the line is currently being sung)
@@ -123,11 +140,11 @@ public class LyricsProcessor {
      *     *01 -> 2*1 -> *21(paragraphEnd) -> *45(paragraphStart) -> 6*5 -> ...
      * </pre>
      * <p></p>
-     *
+     * <p>
      * 2. Calculate if the lyrics should be displayed at the given time and update to {@link #shouldDisplayText}.
      * Lyrics should only not be displayed between different paragraphs(after disappear time and before ready dots time).
      * <p></p>
-     *
+     * <p>
      * 3. Calculate the progress of the ready dots at the given time and update to {@link #readyDotsPercentage}.
      *
      * @param time The time the player is currently at.
@@ -184,6 +201,8 @@ public class LyricsProcessor {
         }
     }
 
+    // TODO: Update the docs with English/Chinese differences.
+
     /**
      * Process the set lyrics and updates 3 lists:
      * <pre>
@@ -235,11 +254,16 @@ public class LyricsProcessor {
         lineStartMarks.clear();
 
         int charIdx = 0;
-        for (int markIdx = 1; charIdx < lyrics.length(); markIdx++) {
+        for (int markIdx = 1; charIdx <= lyrics.length(); markIdx++) {
             if (charIdx + 1 >= lyrics.length()) {
-                // Add special conditions for the last lyrics line.
-                paragraphEndMarks.add(markIdx);
-                markTextList.add(String.valueOf(lyrics.charAt(charIdx)));
+                // If meet the end of the lyrics, add the last mark as the end of the last paragraph.
+                // And if there's still a char left, add it as the text before the last mark.
+                // p.s. Chinese and English characters will end up in below cases respectively.
+                if (charIdx == lyrics.length() - 1) {
+                    paragraphEndMarks.add(markIdx);
+                    markTextList.add(String.valueOf(lyrics.charAt(charIdx)));
+                } else paragraphEndMarks.add(markIdx - 1);
+
                 break;
             }
 
@@ -249,10 +273,15 @@ public class LyricsProcessor {
 
             if (currentChar == '\n') {
                 if (nextChar == '\n') {
-                    correctCharIdx = -1;
+                    // It's the end of a paragraph.
                     paragraphEndMarks.add(markIdx - 1);
                     lineStartMarks.add(markIdx);
+                    markTextList.add(null);// no correct char for this mark.
+
+                    charIdx += 2;
+                    continue;
                 } else {
+                    // It's the end of a line.
                     correctCharIdx = charIdx + 1;
                     lineStartMarks.add(markIdx - 1);
                 }
@@ -263,19 +292,52 @@ public class LyricsProcessor {
                 charIdx++;
             }
 
+            // The text before the mark.
+            char correctChar = lyrics.charAt(correctCharIdx);
             String textBeforeMark;
-            if (correctCharIdx + 1 < lyrics.length() && lyrics.charAt(correctCharIdx + 1) == '\'') {
-                char firstChar = lyrics.charAt(correctCharIdx);
-                char secondChar = lyrics.charAt(correctCharIdx + 2);
-                textBeforeMark = String.valueOf(new char[]{firstChar, secondChar});
 
-                charIdx += 2;
-            } else {
-                textBeforeMark = correctCharIdx == -1 ? null : String.valueOf(lyrics.charAt(correctCharIdx));
+            // Eastern chars and western chars are handled differently.
+            if (isEasternChar(correctChar)) {
+                // If the next char is ', handle the link word case.
+                if (correctCharIdx + 1 < lyrics.length() && lyrics.charAt(correctCharIdx + 1) == '\'') {
+                    char secondChar = lyrics.charAt(correctCharIdx + 2);
+                    textBeforeMark = String.valueOf(new char[]{correctChar, secondChar});
+
+                    charIdx += 2;
+                } else textBeforeMark = String.valueOf(correctChar); // normal case.
+            } else { // western chars.
+                int nextSpaceIdx = getNextSpaceIdx(charIdx);
+                int nextLineBreakIdx = getNextLineBreakIdx(charIdx);
+                int wordEndIdx = getWordEndIdx(nextSpaceIdx, nextLineBreakIdx);
+
+                textBeforeMark = lyrics.substring(correctCharIdx, wordEndIdx);
+                charIdx = wordEndIdx;
+
+                // If the word ends with a space, skip the space for next word.
+                if (wordEndIdx == nextSpaceIdx) charIdx++;
             }
 
             markTextList.add(textBeforeMark);
         }
+    }
+
+    private int getWordEndIdx(int nextSpaceIdx, int nextLineBreakIdx) {
+        int wordEndIdx;
+
+        if (nextSpaceIdx == -1 && nextLineBreakIdx == -1) {
+            // If there's no space or line break beyond, the word should end at the end of the lyrics.
+            wordEndIdx = lyrics.length();
+        } else if (nextSpaceIdx == -1) {
+            // if there's no space beyond, cut word at next line break.
+            wordEndIdx = nextLineBreakIdx;
+        } else if (nextLineBreakIdx == -1) {
+            // if there's no line break beyond, cut word at next space.
+            wordEndIdx = nextSpaceIdx;
+        } else {
+            // Cut word at the nearest space or line break.
+            wordEndIdx = Math.min(nextSpaceIdx, nextLineBreakIdx);
+        }
+        return wordEndIdx;
     }
 
     /**
@@ -293,14 +355,22 @@ public class LyricsProcessor {
         return Math.abs(Collections.binarySearch(marks, time)) - 1;
     }
 
+    private int getNextSpaceIdx(int fromIdx) {
+        return lyrics.indexOf(' ', fromIdx);
+    }
+
+    private int getNextLineBreakIdx(int fromIdx) {
+        return lyrics.indexOf('\n', fromIdx);
+    }
+
     /**
      * @return The paragraph it is at the given time.
      */
     private int getParagraphAtTime(int time, int readyDotsPeriod) {
-        int index =  Collections.binarySearch(paragraphEndMarks, time, (paragraphEndMark, t) -> {
+        int index = Collections.binarySearch(paragraphEndMarks, time, (paragraphEndMark, t) -> {
             int nextMark = paragraphEndMark + 1;
             if (nextMark >= marks.size()) return 1;
-            Integer paragraphStartTime = Math.toIntExact(marks.get(nextMark) - readyDotsPeriod);
+            Integer paragraphStartTime = marks.get(nextMark) - readyDotsPeriod;
             return paragraphStartTime.compareTo(t);
         });
 

@@ -28,6 +28,12 @@ application {
     mainClassName = 'net.okt.Main'
 }
 
+task runWithSampleFile(type: JavaExec) {
+    mainClass = 'net.okt.Main'
+    classpath = sourceSets.main.runtimeClasspath
+    args = ['src/main/resources/saves/sample.properties']
+}
+
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }

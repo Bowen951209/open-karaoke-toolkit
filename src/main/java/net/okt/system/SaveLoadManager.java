@@ -3,13 +3,12 @@ package net.okt.system;
 import net.okt.Main;
 import net.okt.audioUtils.Audio;
 import net.okt.audioUtils.BoxWaveform;
+import net.okt.gui.LineNumberedScrollableTextArea;
 import net.okt.gui.Timeline;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -26,31 +25,37 @@ public class SaveLoadManager {
     private final Properties props = new Properties();
     private Audio loadedAudio;
 
+    public SaveLoadManager(Main mainFrame) {
+        this.mainFrame = mainFrame;
+    }
+
+    public static SaveLoadManager createDefault(Main mainFrame) {
+        SaveLoadManager mgr = new SaveLoadManager(mainFrame);
+        mgr.setProp("backgroundColor", Color.WHITE.getRGB());
+        mgr.setProp("defaultFontSize", 10);
+        mgr.setProp("dotsColor", Color.BLUE.getRGB());
+        mgr.setProp("dotsNum", 4);
+        mgr.setProp("dotsPeriod", 2500);
+        mgr.setProp("dotsPosX", 0);
+        mgr.setProp("dotsPosY", 0);
+        mgr.setProp("dotsSize", 10);
+        mgr.setProp("dotsStroke", 45);
+        mgr.setProp("indentSize", 15);
+        mgr.setProp("lineSpace", 15);
+        mgr.setProp("linkedFontSize", 7);
+        mgr.setProp("resolutionX", 1920);
+        mgr.setProp("resolutionY", 1080);
+        mgr.setProp("textColor", Color.BLUE.getRGB());
+        mgr.setProp("textDisappearTime", 1500);
+        mgr.setProp("textPosX", 0);
+        mgr.setProp("textPosY", 20);
+        mgr.setProp("textStroke", 45);
+
+        return mgr;
+    }
 
     public Audio getLoadedAudio() {
         return loadedAudio;
-    }
-
-    public ArrayList<Integer> getMarks() {
-        return marks;
-    }
-
-    public String getProp(String key) {
-        return props.getProperty(key);
-    }
-
-    public int getPropInt(String key) {
-        String prop = getProp(key);
-        if (prop == null) return -1;
-        return Integer.parseInt(prop);
-    }
-
-    public void setProp(String key, String val) {
-        props.setProperty(key, val);
-    }
-
-    public void setProp(String key, int val) {
-        props.setProperty(key, String.valueOf(val));
     }
 
     public void setLoadedAudio(File audio) {
@@ -85,8 +90,26 @@ public class SaveLoadManager {
         System.out.println("Loaded audio: " + audio);
     }
 
-    public SaveLoadManager(Main mainFrame) {
-        this.mainFrame = mainFrame;
+    public ArrayList<Integer> getMarks() {
+        return marks;
+    }
+
+    public String getProp(String key) {
+        return props.getProperty(key);
+    }
+
+    public int getPropInt(String key) {
+        String prop = getProp(key);
+        if (prop == null) return -1;
+        return Integer.parseInt(prop);
+    }
+
+    public void setProp(String key, String val) {
+        props.setProperty(key, val);
+    }
+
+    public void setProp(String key, int val) {
+        props.setProperty(key, String.valueOf(val));
     }
 
     public void saveFileAs(File file) {
@@ -112,14 +135,14 @@ public class SaveLoadManager {
         System.out.println("Project saved to: " + file);
     }
 
-    public void load(File file) {
+    public void load(File file, LineNumberedScrollableTextArea textArea) {
         mainFrame.setTitle(Main.INIT_FRAME_TITLE + " - " + file.getName());
 
         try (InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             // Load the properties file.
             props.load(inputStreamReader);
 
-            mainFrame.getTextArea().setText(getProp("text")); // Update to text area.
+            textArea.setText(getProp("text")); // Update to text area.
 
             // Marks.
             String[] marksStrings = getProp("marks").split(",");
@@ -154,13 +177,5 @@ public class SaveLoadManager {
         }
 
         System.out.println("Loaded project: " + file);
-    }
-
-    public void load(URL url) {
-        try {
-            load(new File(url.toURI()));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

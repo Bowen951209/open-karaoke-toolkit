@@ -150,7 +150,7 @@ public class LyricsProcessor {
      * @param time The time the player is currently at.
      */
     public void setTime(int time) {
-        if (marks.isEmpty()) {
+        if (marks.isEmpty() || lyrics == null) {
             shouldDisplayText = false;
             readyDotsPercentage = 0;
             return;

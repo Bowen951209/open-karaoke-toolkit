@@ -8,7 +8,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.Objects;
 
 public class Main extends JFrame {
     public static final String INIT_FRAME_TITLE = "Open Karaoke Toolkit";
@@ -17,25 +16,34 @@ public class Main extends JFrame {
 
     public static Main mainFrame;
 
-    private final SaveLoadManager saveLoadManager = new SaveLoadManager(this);
-    private final LyricsProcessor lyricsProcessor = new LyricsProcessor(saveLoadManager);
-    private final Viewport viewport = new Viewport(saveLoadManager, lyricsProcessor);
-    private final Timeline timeline = new Timeline(saveLoadManager, lyricsProcessor, viewport);
-    private final LineNumberedScrollableTextArea textArea = getTextArea();
+    private final SaveLoadManager saveLoadManager;
+    private final LyricsProcessor lyricsProcessor;
+    private final Viewport viewport;
+    private final Timeline timeline;
+    private final LineNumberedScrollableTextArea textArea;
 
-    public Main(String title) {
+    public Main(String title, String propsFile) {
         // Init settings.
         super(title);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
 
-        // Load the sample save file.
-        saveLoadManager.load(Objects.requireNonNull(Main.class.getResource("/saves/sample.properties")));
+        if (propsFile == null)
+            saveLoadManager = SaveLoadManager.createDefault(this);
+        else
+            saveLoadManager = new SaveLoadManager(this);
+
+        lyricsProcessor = new LyricsProcessor(saveLoadManager);
+        viewport = new Viewport(saveLoadManager, lyricsProcessor);
+        timeline = new Timeline(saveLoadManager, lyricsProcessor, viewport);
+        textArea = getTextArea();
+
+        if (propsFile != null) saveLoadManager.load(new File(propsFile), textArea);
     }
 
     public static void main(String[] args) {
-        mainFrame = new Main(INIT_FRAME_TITLE);
+        mainFrame = new Main(INIT_FRAME_TITLE, args.length == 0 ? null : args[0]);
         mainFrame.addComponents();
     }
 
@@ -43,9 +51,7 @@ public class Main extends JFrame {
         return timeline;
     }
 
-    public LineNumberedScrollableTextArea getTextArea() {
-        if (textArea != null) return textArea;
-
+    private LineNumberedScrollableTextArea getTextArea() {
         LineNumberedScrollableTextArea textArea = new LineNumberedScrollableTextArea();
 
         textArea.addUndoListener(timeline::markUndo);
@@ -139,7 +145,7 @@ public class Main extends JFrame {
             fileChooser.setFileFilter(Main.PROPS_EXT_FILTER);
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
-                saveLoadManager.load(selectedFile);
+                saveLoadManager.load(selectedFile, textArea);
             }
         });
         return loadProject;

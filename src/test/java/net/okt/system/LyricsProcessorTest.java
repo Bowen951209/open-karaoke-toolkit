@@ -8,7 +8,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LyricsProcessorTest {
-    private final Main mainFrame = new Main("test");
+    private final Main mainFrame = new Main("test", null);
     private final SaveLoadManager saveLoadManager = new SaveLoadManager(mainFrame);
     private final LyricsProcessor lyricsProcessor = new LyricsProcessor(saveLoadManager);
     private final String lyricsSample1 = """

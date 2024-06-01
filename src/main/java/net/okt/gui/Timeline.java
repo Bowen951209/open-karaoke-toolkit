@@ -113,6 +113,8 @@ public class Timeline extends JPanel {
             scrollPane.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
+                    if (saveLoadManager.getLoadedAudio() == null) return;
+
                     scrollPane.requestFocus();
                     int x = (e.getX() + scrollPane.getHorizontalScrollBar().getValue());
                     int ms = toTime(x);
@@ -305,6 +307,8 @@ public class Timeline extends JPanel {
             JPanel componentsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 
             playPauseButton.addActionListener(e -> {
+                if (saveLoadManager.getLoadedAudio() == null) return;
+
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
 
                 isPlaying = !isPlaying;
@@ -327,8 +331,9 @@ public class Timeline extends JPanel {
         private JButton getStopButton() {
             JButton stopButton = new JButton(STOP_BUTTON_ICON);
             stopButton.addActionListener(e -> {
-                scrollPane.requestFocus(); // we want to keep the timeline focused.
+                if (saveLoadManager.getLoadedAudio() == null) return;
 
+                scrollPane.requestFocus(); // we want to keep the timeline focused.
                 timeStop();
             });
             stopButton.setPreferredSize(ICON_SIZE);
@@ -338,6 +343,8 @@ public class Timeline extends JPanel {
         private JButton getMarkButton() {
             JButton btn = new JButton(MARK_NORM_BUTTON_ICON);
             btn.addActionListener(e -> {
+                if (saveLoadManager.getLoadedAudio() == null) return;
+
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
 
                 var marks = saveLoadManager.getMarks();
@@ -380,6 +387,7 @@ public class Timeline extends JPanel {
             slider.setUI(sliderUI);
 
             slider.addChangeListener(e -> {
+                if (saveLoadManager.getLoadedAudio() == null) return;
                 canvas.setSize();
                 resetPointerX();
             });

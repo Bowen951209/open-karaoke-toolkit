@@ -45,7 +45,7 @@ public class Viewport extends JPanel {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        if (bufferedImage == null) return;
+        if (saveLoadManager.getLoadedAudio() == null) return;
         drawToBufImg(saveLoadManager.getLoadedAudio().getTimePosition());
 
         Graphics2D g2d = (Graphics2D) g;

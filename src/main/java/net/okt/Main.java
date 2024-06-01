@@ -16,11 +16,11 @@ public class Main extends JFrame {
 
     public static Main mainFrame;
 
-    private final SaveLoadManager saveLoadManager = new SaveLoadManager(this);
-    private final LyricsProcessor lyricsProcessor = new LyricsProcessor(saveLoadManager);
-    private final Viewport viewport = new Viewport(saveLoadManager, lyricsProcessor);
-    private final Timeline timeline = new Timeline(saveLoadManager, lyricsProcessor, viewport);
-    private final LineNumberedScrollableTextArea textArea = getTextArea();
+    private final SaveLoadManager saveLoadManager;
+    private final LyricsProcessor lyricsProcessor;
+    private final Viewport viewport;
+    private final Timeline timeline;
+    private final LineNumberedScrollableTextArea textArea;
 
     public Main(String title, String propsFile) {
         // Init settings.
@@ -29,9 +29,17 @@ public class Main extends JFrame {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
 
-        // Load the sample save file.
-        if (propsFile != null)
-            saveLoadManager.load(new File(propsFile));
+        if (propsFile == null)
+            saveLoadManager = SaveLoadManager.createDefault(this);
+        else
+            saveLoadManager = new SaveLoadManager(this);
+
+        lyricsProcessor = new LyricsProcessor(saveLoadManager);
+        viewport = new Viewport(saveLoadManager, lyricsProcessor);
+        timeline = new Timeline(saveLoadManager, lyricsProcessor, viewport);
+        textArea = getTextArea();
+
+        if (propsFile != null) saveLoadManager.load(new File(propsFile), textArea);
     }
 
     public static void main(String[] args) {
@@ -43,9 +51,7 @@ public class Main extends JFrame {
         return timeline;
     }
 
-    public LineNumberedScrollableTextArea getTextArea() {
-        if (textArea != null) return textArea;
-
+    private LineNumberedScrollableTextArea getTextArea() {
         LineNumberedScrollableTextArea textArea = new LineNumberedScrollableTextArea();
 
         textArea.addUndoListener(timeline::markUndo);
@@ -139,7 +145,7 @@ public class Main extends JFrame {
             fileChooser.setFileFilter(Main.PROPS_EXT_FILTER);
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
-                saveLoadManager.load(selectedFile);
+                saveLoadManager.load(selectedFile, textArea);
             }
         });
         return loadProject;

@@ -3,6 +3,7 @@ package net.okt.system;
 import net.okt.Main;
 import net.okt.audioUtils.Audio;
 import net.okt.audioUtils.BoxWaveform;
+import net.okt.gui.LineNumberedScrollableTextArea;
 import net.okt.gui.Timeline;
 
 import javax.swing.*;
@@ -24,9 +25,33 @@ public class SaveLoadManager {
     private final Properties props = new Properties();
     private Audio loadedAudio;
 
-
     public SaveLoadManager(Main mainFrame) {
         this.mainFrame = mainFrame;
+    }
+
+    public static SaveLoadManager createDefault(Main mainFrame) {
+        SaveLoadManager mgr = new SaveLoadManager(mainFrame);
+        mgr.setProp("backgroundColor", Color.WHITE.getRGB());
+        mgr.setProp("defaultFontSize", 10);
+        mgr.setProp("dotsColor", Color.BLUE.getRGB());
+        mgr.setProp("dotsNum", 4);
+        mgr.setProp("dotsPeriod", 2500);
+        mgr.setProp("dotsPosX", 0);
+        mgr.setProp("dotsPosY", 0);
+        mgr.setProp("dotsSize", 10);
+        mgr.setProp("dotsStroke", 45);
+        mgr.setProp("indentSize", 15);
+        mgr.setProp("lineSpace", 15);
+        mgr.setProp("linkedFontSize", 7);
+        mgr.setProp("resolutionX", 1920);
+        mgr.setProp("resolutionY", 1080);
+        mgr.setProp("textColor", Color.BLUE.getRGB());
+        mgr.setProp("textDisappearTime", 1500);
+        mgr.setProp("textPosX", 0);
+        mgr.setProp("textPosY", 20);
+        mgr.setProp("textStroke", 45);
+
+        return mgr;
     }
 
     public Audio getLoadedAudio() {
@@ -110,14 +135,14 @@ public class SaveLoadManager {
         System.out.println("Project saved to: " + file);
     }
 
-    public void load(File file) {
+    public void load(File file, LineNumberedScrollableTextArea textArea) {
         mainFrame.setTitle(Main.INIT_FRAME_TITLE + " - " + file.getName());
 
         try (InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             // Load the properties file.
             props.load(inputStreamReader);
 
-            mainFrame.getTextArea().setText(getProp("text")); // Update to text area.
+            textArea.setText(getProp("text")); // Update to text area.
 
             // Marks.
             String[] marksStrings = getProp("marks").split(",");

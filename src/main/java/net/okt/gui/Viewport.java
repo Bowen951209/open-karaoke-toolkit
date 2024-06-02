@@ -14,8 +14,9 @@ import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 
 public class Viewport extends JPanel {
-    private static final FontRenderContext frc = new FontRenderContext(null, true, true);
-    private static final Font font = new Font(Font.SANS_SERIF, Font.BOLD, 1);
+    private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
+    private static final Font FONT = new Font(Font.SANS_SERIF, Font.BOLD, 1);
+    private static final AffineTransform ZERO_TRANSFORM = AffineTransform.getScaleInstance(0, 0);
 
     private final SaveLoadManager saveLoadManager;
     private final LyricsProcessor lyricsProcessor;
@@ -30,6 +31,32 @@ public class Viewport extends JPanel {
 
         setBorder(BorderFactory.createLineBorder(Color.black));
         setBackground(Color.LIGHT_GRAY);
+    }
+
+    /**
+     * Get the glyph vector of the passed in string.
+     * If the string contains a link word, it'll be applied the linkTransform.
+     */
+    private static GlyphVector getGlyphVector(String s, AffineTransform linkTransform) {
+        GlyphVector glyphVector = FONT.createGlyphVector(FRC, s);
+        int length = s.length();
+
+        for (int i = 0; i < length; i++) {
+            char currentChar = s.charAt(i);
+            if (currentChar == '\'' && i > 0 && i < length - 1) {
+                // If the left or right are eastern chars, it is a link word. Apply transforms to it.
+                if (LyricsProcessor.isEasternChar(s.charAt(i - 1)) ||
+                        LyricsProcessor.isEasternChar(s.charAt(i + 1))) {
+                    // Scale the quote to zero to make it disappear.
+                    glyphVector.setGlyphTransform(i, ZERO_TRANSFORM);
+                    i++;
+                    // The next char is the link char, apply to linkTransform.
+                    glyphVector.setGlyphTransform(i, linkTransform);
+                }
+            }
+        }
+
+        return glyphVector;
     }
 
     public BufferedImage getBufferedImage() {
@@ -151,7 +178,7 @@ public class Viewport extends JPanel {
     }
 
     private LyricsArea getAreaAtLine(int line) {
-        if (line < 0 || line >= lyricsProcessor.getLyricsLines().size()) return new LyricsArea(-1);
+        if (line == -1) return new LyricsArea(new Area(), -1);
 
         int defaultFontSize = saveLoadManager.getPropInt("defaultFontSize");
         int linkedFontSize = saveLoadManager.getPropInt("linkedFontSize");
@@ -162,21 +189,8 @@ public class Viewport extends JPanel {
         AffineTransform linkScaleTransform = AffineTransform.getScaleInstance(linkScale, linkScale);
 
         String string = lyricsProcessor.getLyricsLines().get(line);
-
-        String processedString = string.replaceAll("'", "");
-        GlyphVector glyphVector = font.createGlyphVector(frc, processedString);
-
-        int idx = string.indexOf('\'');
-        int linkWordCount = 0;
-        while (idx >= 0) {
-            glyphVector.setGlyphTransform(idx - linkWordCount, linkScaleTransform);
-            idx = string.indexOf('\'', idx + 1);
-            linkWordCount++;
-        }
-
-        LyricsArea area = new LyricsArea(line);
-        for (int j = 0; j < processedString.length(); j++)
-            area.add(new Area(glyphVector.getGlyphOutline(j)));
+        GlyphVector glyphVector = getGlyphVector(string, linkScaleTransform);
+        LyricsArea area = new LyricsArea(glyphVector.getOutline(), line);
 
         area.transform(defaultScaleTransform);
 
@@ -188,24 +202,35 @@ public class Viewport extends JPanel {
         int defaultFontSize = toDrawSize(saveLoadManager.getPropInt("defaultFontSize"));
         int linkedFontSize = toDrawSize(saveLoadManager.getPropInt("linkedFontSize"));
         int lineStartMark = lyricsProcessor.getStartMarkAtLine(line);
+        double spaceWidth = FONT.getStringBounds(" ", FRC).getWidth();
 
         int rectWidth = 0;
-        int linkWordCount = 0;
-        for (int i = lineStartMark; i < marks.size(); i++) {
-            int markTime = marks.get(i);
-            int lastMarkTime = 0;
-            if (i > 0) lastMarkTime = marks.get(i - 1);
-            int wordPeriod = markTime - lastMarkTime;
-            float percentage = (float) (time - lastMarkTime) / wordPeriod;
-
+        for (int i = lineStartMark + 1; i < marks.size(); i++) {
             String textBeforeMark = lyricsProcessor.getTextBeforeMark(i);
-            if (textBeforeMark != null && textBeforeMark.length() == 2)
-                linkWordCount++;
+            if (textBeforeMark == null) continue;
 
-            if (percentage > 0 && percentage < 1) {
-                rectWidth = (int) ((i - lineStartMark - 1 + percentage) * defaultFontSize + linkWordCount * linkedFontSize);
+            int markTime = marks.get(i);
+            boolean isEasternChar = LyricsProcessor.isEasternChar(textBeforeMark.charAt(0));
+            boolean isLinkWord = textBeforeMark.length() == 2 && isEasternChar;
+
+            double wordWidth = FONT.getStringBounds(textBeforeMark, FRC).getWidth();
+            int addWidth = isLinkWord ? (defaultFontSize + linkedFontSize) : (int) (wordWidth * defaultFontSize);
+
+            if (time < markTime) {
+                int lastMarkTime = marks.get(i - 1);
+                int wordPeriod = markTime - lastMarkTime;
+                float percentage = (float) (time - lastMarkTime) / wordPeriod;
+
+                rectWidth += (int) (percentage * addWidth);
+
                 break;
             }
+
+            rectWidth += addWidth;
+
+            // IF it is a western char, add a space offset.(Except for the first word in the line.)
+            if (!isEasternChar && i >= lineStartMark + 1)
+                rectWidth += (int) (spaceWidth * defaultFontSize);
         }
 
         Rectangle rectangle = new Rectangle(0, -defaultFontSize, rectWidth, defaultFontSize * 2);

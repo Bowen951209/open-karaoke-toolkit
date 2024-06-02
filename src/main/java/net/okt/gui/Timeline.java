@@ -230,6 +230,10 @@ public class Timeline extends JPanel {
         timer.stop();
         controlPanel.playPauseButton.setIcon(PLAY_BUTTON_ICON);
         saveLoadManager.getLoadedAudio().pause();
+
+        // Reset the pointer or else it will stop at a wrong position.
+        resetPointerX();
+        canvas.repaint();
     }
 
     public void timeStop() {

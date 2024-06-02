@@ -178,7 +178,8 @@ public class Viewport extends JPanel {
     }
 
     private LyricsArea getAreaAtLine(int line) {
-        if (line == -1) return new LyricsArea(new Area(), -1);
+        if (line == -1 || line >= lyricsProcessor.getLyricsLines().size())
+            return new LyricsArea(new Area(), -1);
 
         int defaultFontSize = saveLoadManager.getPropInt("defaultFontSize");
         int linkedFontSize = saveLoadManager.getPropInt("linkedFontSize");

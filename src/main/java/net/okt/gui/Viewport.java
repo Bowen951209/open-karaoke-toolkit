@@ -208,7 +208,7 @@ public class Viewport extends JPanel {
         int rectWidth = 0;
         for (int i = lineStartMark + 1; i < marks.size(); i++) {
             String textBeforeMark = lyricsProcessor.getTextBeforeMark(i);
-            if (textBeforeMark == null) continue;
+            if (textBeforeMark == null) break;
 
             int markTime = marks.get(i);
             boolean isEasternChar = LyricsProcessor.isEasternChar(textBeforeMark.charAt(0));

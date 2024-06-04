@@ -217,6 +217,8 @@ class LyricsProcessorTest {
         assertArrayEquals(new int[]{3, 4}, lyricsProcessor.getDisplayingLines());
     }
 
+    //TODO: add tests for underscores
+
     @Test
     void displayingLinesTestForLyrics3() {
         var marks = saveLoadManager.getMarks();

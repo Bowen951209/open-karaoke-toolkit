@@ -306,9 +306,10 @@ public class LyricsProcessor {
                     charIdx += 2;
                 } else textBeforeMark = String.valueOf(correctChar); // normal case.
             } else { // western chars.
-                int nextSpaceIdx = getNextSpaceIdx(charIdx);
-                int nextLineBreakIdx = getNextLineBreakIdx(charIdx);
-                int wordEndIdx = getWordEndIdx(nextSpaceIdx, nextLineBreakIdx);
+                int nextSpaceIdx = lyrics.indexOf(' ', charIdx);
+                int nextLineBreakIdx = lyrics.indexOf('\n', charIdx);
+                int nextUnderscoreIdx = lyrics.indexOf('_', charIdx);
+                int wordEndIdx = getWordEndIdx(nextSpaceIdx, nextLineBreakIdx, nextUnderscoreIdx);
 
                 textBeforeMark = lyrics.substring(correctCharIdx, wordEndIdx);
                 charIdx = wordEndIdx;
@@ -321,22 +322,16 @@ public class LyricsProcessor {
         }
     }
 
-    private int getWordEndIdx(int nextSpaceIdx, int nextLineBreakIdx) {
-        int wordEndIdx;
+    private int getWordEndIdx(int nextSpaceIdx, int nextLineBreakIdx, int nextUnderscoreIdx) {
+        int wordEndIdx = lyrics.length();
 
-        if (nextSpaceIdx == -1 && nextLineBreakIdx == -1) {
-            // If there's no space or line break beyond, the word should end at the end of the lyrics.
-            wordEndIdx = lyrics.length();
-        } else if (nextSpaceIdx == -1) {
-            // if there's no space beyond, cut word at next line break.
-            wordEndIdx = nextLineBreakIdx;
-        } else if (nextLineBreakIdx == -1) {
-            // if there's no line break beyond, cut word at next space.
+        if (nextSpaceIdx != -1)
             wordEndIdx = nextSpaceIdx;
-        } else {
-            // Cut word at the nearest space or line break.
-            wordEndIdx = Math.min(nextSpaceIdx, nextLineBreakIdx);
-        }
+        if (nextLineBreakIdx != -1)
+            wordEndIdx = Math.min(wordEndIdx, nextLineBreakIdx);
+        if (nextUnderscoreIdx != -1)
+            wordEndIdx = Math.min(wordEndIdx, nextUnderscoreIdx);
+
         return wordEndIdx;
     }
 
@@ -353,14 +348,6 @@ public class LyricsProcessor {
      */
     private int getNextMark(int time) {
         return Math.abs(Collections.binarySearch(marks, time)) - 1;
-    }
-
-    private int getNextSpaceIdx(int fromIdx) {
-        return lyrics.indexOf(' ', fromIdx);
-    }
-
-    private int getNextLineBreakIdx(int fromIdx) {
-        return lyrics.indexOf('\n', fromIdx);
     }
 
     /**

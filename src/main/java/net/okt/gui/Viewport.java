@@ -53,6 +53,9 @@ public class Viewport extends JPanel {
                     // The next char is the link char, apply to linkTransform.
                     glyphVector.setGlyphTransform(i, linkTransform);
                 }
+            } else if (currentChar == '_') {
+                glyphVector.setGlyphTransform(i, ZERO_TRANSFORM);
+                i++;
             }
         }
 
@@ -86,6 +89,7 @@ public class Viewport extends JPanel {
 
     /**
      * Update the displaying areas. It uses cache if not forceUpdate.
+     *
      * @param forceUpdate If you want to ignore the cache and force update.
      */
     public void updateDisplayingAreas(boolean forceUpdate) {
@@ -212,6 +216,7 @@ public class Viewport extends JPanel {
 
             int markTime = marks.get(i);
             boolean isEasternChar = LyricsProcessor.isEasternChar(textBeforeMark.charAt(0));
+            boolean isSepWord = textBeforeMark.charAt(0) == '_';
             boolean isLinkWord = textBeforeMark.length() == 2 && isEasternChar;
 
             double wordWidth = FONT.getStringBounds(textBeforeMark, FRC).getWidth();
@@ -229,8 +234,8 @@ public class Viewport extends JPanel {
 
             rectWidth += addWidth;
 
-            // IF it is a western char, add a space offset.(Except for the first word in the line.)
-            if (!isEasternChar && i >= lineStartMark + 1)
+            // If it is a sep word or western char, add a space offset.(Except for the first word in the line.)
+            if (!isSepWord && !isEasternChar && i >= lineStartMark + 1)
                 rectWidth += (int) (spaceWidth * defaultFontSize);
         }
 

@@ -160,6 +160,33 @@ class LyricsProcessorTest {
     }
 
     @Test
+    void textBeforeMarkTestForEnglish3() {
+        lyricsProcessor.setLyrics("""
+                one two fun_ny
+                ka_ra_o_ke three
+                
+                four hap_py five
+                six""");
+
+        assertNull(lyricsProcessor.getTextBeforeMark(0));
+        assertEquals("one", lyricsProcessor.getTextBeforeMark(1));
+        assertEquals("two", lyricsProcessor.getTextBeforeMark(2));
+        assertEquals("fun", lyricsProcessor.getTextBeforeMark(3));
+        assertEquals("_ny", lyricsProcessor.getTextBeforeMark(4));
+        assertEquals("ka", lyricsProcessor.getTextBeforeMark(5));
+        assertEquals("_ra", lyricsProcessor.getTextBeforeMark(6));
+        assertEquals("_o", lyricsProcessor.getTextBeforeMark(7));
+        assertEquals("_ke", lyricsProcessor.getTextBeforeMark(8));
+        assertEquals("three", lyricsProcessor.getTextBeforeMark(9));
+        assertNull(lyricsProcessor.getTextBeforeMark(10));
+        assertEquals("four", lyricsProcessor.getTextBeforeMark(11));
+        assertEquals("hap", lyricsProcessor.getTextBeforeMark(12));
+        assertEquals("_py", lyricsProcessor.getTextBeforeMark(13));
+        assertEquals("five", lyricsProcessor.getTextBeforeMark(14));
+        assertEquals("six", lyricsProcessor.getTextBeforeMark(15));
+    }
+
+    @Test
     void displayingLinesTestForLyrics1() {
         var marks = saveLoadManager.getMarks();
         marks.clear();
@@ -216,8 +243,6 @@ class LyricsProcessorTest {
         lyricsProcessor.setTime(850); // after mark 7
         assertArrayEquals(new int[]{3, 4}, lyricsProcessor.getDisplayingLines());
     }
-
-    //TODO: add tests for underscores
 
     @Test
     void displayingLinesTestForLyrics3() {

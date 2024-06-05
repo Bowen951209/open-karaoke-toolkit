@@ -208,18 +208,27 @@ public class Viewport extends JPanel {
         int linkedFontSize = toDrawSize(saveLoadManager.getPropInt("linkedFontSize"));
         int lineStartMark = lyricsProcessor.getStartMarkAtLine(line);
         double spaceWidth = FONT.getStringBounds(" ", FRC).getWidth();
+        double underscoreWidth = FONT.getStringBounds("_", FRC).getWidth();
 
         int rectWidth = 0;
         for (int i = lineStartMark + 1; i < marks.size(); i++) {
             String textBeforeMark = lyricsProcessor.getTextBeforeMark(i);
             if (textBeforeMark == null) break;
 
+            // Get the word before next mark. If the index is out of bounds, set it to null.
+            String textBeforeNextMark = i == marks.size() - 1 ?
+                    null : lyricsProcessor.getTextBeforeMark(i + 1);
+
             int markTime = marks.get(i);
             boolean isEasternChar = LyricsProcessor.isEasternChar(textBeforeMark.charAt(0));
             boolean isSepWord = textBeforeMark.charAt(0) == '_';
+            boolean isNextWordSepWord = textBeforeNextMark != null && textBeforeNextMark.charAt(0) == '_';
             boolean isLinkWord = textBeforeMark.length() == 2 && isEasternChar;
-
             double wordWidth = FONT.getStringBounds(textBeforeMark, FRC).getWidth();
+
+            // Remember, a sep word have an underscore at its head, so minus it.
+            if (isSepWord) wordWidth -= underscoreWidth;
+
             int addWidth = isLinkWord ? (defaultFontSize + linkedFontSize) : (int) (wordWidth * defaultFontSize);
 
             if (time < markTime) {
@@ -234,8 +243,8 @@ public class Viewport extends JPanel {
 
             rectWidth += addWidth;
 
-            // If it is a sep word or western char, add a space offset.(Except for the first word in the line.)
-            if (!isSepWord && !isEasternChar && i >= lineStartMark + 1)
+            // If next is a sep word, or this is a western char, add a space offset.(Except for the first word in the line.)
+            if (!isNextWordSepWord && !isEasternChar && i >= lineStartMark + 1)
                 rectWidth += (int) (spaceWidth * defaultFontSize);
         }
 

@@ -132,6 +132,9 @@ public class SaveLoadManager {
             throw new RuntimeException(e);
         }
 
+        // Set the audio path property back to full path.
+        setProp("audio", audioPath.toString());
+
         System.out.println("Project saved to: " + file);
     }
 

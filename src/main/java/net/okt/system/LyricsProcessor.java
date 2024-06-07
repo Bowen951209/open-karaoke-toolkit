@@ -361,7 +361,7 @@ public class LyricsProcessor {
             return paragraphStartTime.compareTo(t);
         });
 
-        return Math.abs(index) - 1;
+        return Math.max(0, Math.abs(index) - 1);
     }
 
     /**

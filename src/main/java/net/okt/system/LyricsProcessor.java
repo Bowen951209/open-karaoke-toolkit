@@ -300,11 +300,11 @@ public class LyricsProcessor {
         int index =  Collections.binarySearch(paragraphEndMarks, time, (paragraphEndMark, t) -> {
             int nextMark = paragraphEndMark + 1;
             if (nextMark >= marks.size()) return 1;
-            Integer paragraphStartTime = Math.toIntExact(marks.get(nextMark) - readyDotsPeriod);
+            Integer paragraphStartTime = marks.get(nextMark) - readyDotsPeriod;
             return paragraphStartTime.compareTo(t);
         });
 
-        return Math.abs(index) - 1;
+        return Math.max(0, Math.abs(index) - 1);
     }
 
     /**

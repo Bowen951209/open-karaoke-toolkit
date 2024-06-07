@@ -18,10 +18,13 @@ public class LyricsProcessor {
     private final List<Integer> paragraphEndMarks = new ArrayList<>();
     /**
      * The marks that are the start of a line.
+     * (Doesn't include mark0.)
      */
     private final List<Integer> lineStartMarks = new ArrayList<>();
     /**
-     * The lines that should be currently displayed.
+     * The lines that should be displayed at the set time.
+     *
+     * @see #setTime(int)
      */
     private final int[] displayingLines = new int[2];
 
@@ -71,6 +74,10 @@ public class LyricsProcessor {
         updateMarkLists();
     }
 
+    /**
+     * @return The text before the given mark. If there's no word before the mark(a paragraph start mark), return
+     * null.
+     */
     public String getTextBeforeMark(int markIdx) {
         if (markIdx == 0 || markTextList.isEmpty()) return null;
         return markTextList.get(markIdx - 1);
@@ -104,7 +111,11 @@ public class LyricsProcessor {
         return readyDotsPercentage;
     }
 
+    /**
+     * @return Whether the maximum size of marks is reached.
+     */
     public boolean isMaxMarkNumber() {
+        // (markTextList's size + 1) is the maximum size for marks.
         return marks.size() == markTextList.size() + 1;
     }
 
@@ -201,52 +212,58 @@ public class LyricsProcessor {
         }
     }
 
-    // TODO: Update the docs with English/Chinese differences.
-
     /**
-     * Process the set lyrics and updates 3 lists:
-     * <pre>
-     * 1. {@link #paragraphEndMarks}
-     * 2. {@link #lineStartMarks}
-     * 3. {@link #markTextList}
-     * </pre>
-     * The {@link #markTextList} is calculated based on the rules below:
+     * Processes the set lyrics and updates 3 lists:
+     * <ul>
+     *   <li><code>paragraphEndMarks</code></li>
+     *   <li><code>lineStartMarks</code></li>
+     *   <li><code>markTextList</code></li>
+     * </ul>
      *
-     * <pre>
-     * 1. In general, 2 marks hold a word.
-     * 2. When meeting the symbol “'“, it is the link word case, take the chars right before and after “'”.
-     * 3. When meeting a single “\n” symbol, it is the end of a line, ignore it and skip to the next line’s start word
-     *    (the word after “\n”).
-     * 4. When meeting double “\n”s, it is the end of a paragraph, also skip that, but make sure the new
-     *    paragraph’s start mark holds “null”, so that we know it’s not connected to the last mark.
-     * </pre>
+     * <p>The <code>markTextList</code> is calculated based on its language (Western/Eastern). The rules below:</p>
      *
-     * <p>
-     * Then, store the texts corresponding to the marks in a list, where index 0 is the text held by mark0 and mark1,
-     * index 1 is the text held by mark1 and mark2, and so on.
-     * </p>
-     * <p>
-     * Here’s some examples:
-     * <pre>
-     * 1)
-     * Given lyrics: “ab\nc'd\n\nefg”
-     * Marks distribution would be:
+     * <h2>For Eastern (Chinese):</h2>
+     * <ol>
+     *   <li>In general, 2 marks hold a single character.</li>
+     *   <li>When meeting the symbol <code>‘'’</code>, it is a link word, take the characters right before and after <code>‘'’</code>.
+     *       So the characters "一'二" will be "一二".</li>
+     * </ol>
      *
-     * m0 a m1 b m2 cd m3 m4 e m5 f m6 g m7
+     * <h2>For Western (English):</h2>
+     * <ol>
+     *   <li>2 marks hold a word. A word is separated by spaces. For example, the string "one two three" will be divided into the
+     *       set {"one", "two", "three"}.</li>
+     *   <li>When meeting the symbol <code>‘_’</code>, it is a separated word, separate the word into more parts. For example, the word
+     *       "ma_ni_pu_la_tion" should be divided into the set {"ma", "_ni", "_pu", "_la", "_tion"}.</li>
+     * </ol>
      *
-     * The list would be:
-     * {a, b, cd, null, e, f, g}
+     * <h2>Common Rules:</h2>
+     * <ol>
+     *   <li>When meeting a single <code>‘\n’</code> symbol, it is the end of a line, ignore it and skip to the next line’s start word
+     *       (the word after <code>‘\n’</code>).</li>
+     *   <li>When meeting double <code>‘\n’</code> symbols, it is the end of a paragraph, also skip that, but make sure the new
+     *       paragraph’s start mark holds <code>null</code>, so that we know it’s not connected to the last mark.</li>
+     * </ol>
      *
-     * 2)
+     * <p>Then, store the texts corresponding to the marks in a list, where index 0 is the text held by mark0 and mark1, index 1 is the text held by mark1 and mark2, and so on.</p>
      *
-     * Given lyrics:  “a\nbc\n\nd\nef'g”
-     *
-     * Marks distribution would be:
-     * m0 a m1 b m2 c m3 m4 d m5 e m6 fg m7
-     *
-     * The list would be:
-     * {a, b, c, null, d, e, fg}
-     * <pre>
+     * <h2>Examples:</h2>
+     * <ol>
+     *   <li>
+     *     <p>Given lyrics: “一二\n三'四\n\n五六七”</p>
+     *     <p>Marks distribution would be:</p>
+     *     <pre>m0 一 m1 二 m2 三四 m3 m4 五 m5 六 m6 七 m7</pre>
+     *     <p>The list would be:</p>
+     *     <pre>{一, 二, 三四, null, 五, 六, 七}</pre>
+     *   </li>
+     *   <li>
+     *     <p>Given lyrics: “one\ntwo\n\nthree\nfour five”</p>
+     *     <p>Marks distribution would be:</p>
+     *     <pre>m0 one m1 two m2 m3 three m4 four m5 five m6</pre>
+     *     <p>The list would be:</p>
+     *     <pre>{one, two, null, three, four, five}</pre>
+     *   </li>
+     * </ol>
      */
     private void updateMarkLists() {
         markTextList.clear();
@@ -322,6 +339,9 @@ public class LyricsProcessor {
         }
     }
 
+    /**
+     * @return The index which the word should end at.
+     */
     private int getWordEndIdx(int nextSpaceIdx, int nextLineBreakIdx, int nextUnderscoreIdx) {
         int wordEndIdx = lyrics.length();
 

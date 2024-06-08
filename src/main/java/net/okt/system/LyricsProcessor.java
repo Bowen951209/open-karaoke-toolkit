@@ -201,7 +201,7 @@ public class LyricsProcessor {
         if (isParagraphEndMark(lastMark) || nextMark == 0) {
             int disappearStart = lastMark == -1 ? 0 : marks.get(lastMark) + textDisappearTime;
             int disappearEnd = nextMark >= marks.size() ? Integer.MAX_VALUE : marks.get(nextMark) - readyDotsPeriod;
-            boolean shouldDisappear = time > disappearStart && time < disappearEnd;
+            boolean shouldDisappear = time >= disappearStart && time <= disappearEnd;
 
             shouldDisplayText = !shouldDisappear;
 

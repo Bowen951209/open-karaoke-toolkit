@@ -28,10 +28,16 @@ application {
     mainClassName = 'net.okt.Main'
 }
 
-task runWithSampleFile(type: JavaExec) {
+task runWithTaiwaneseSampleFile(type: JavaExec) {
     mainClass = 'net.okt.Main'
     classpath = sourceSets.main.runtimeClasspath
     args = ['src/main/resources/saves/sample.properties']
+}
+
+task runWithEnglishSmapleFile(type: JavaExec) {
+    mainClass = 'net.okt.Main'
+    classpath = sourceSets.main.runtimeClasspath
+    args = ['src/main/resources/saves/clock.properties']
 }
 
 tasks.withType(JavaCompile) {

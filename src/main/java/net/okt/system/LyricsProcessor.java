@@ -195,11 +195,11 @@ public class LyricsProcessor {
         }
 
         int nextMark = getNextMark(time);
-        int lastMark = Math.max(nextMark - 1, 0); // If nextMark is 0, lastMark will be -1, just take 0 for the case.
+        int lastMark = nextMark - 1; // If nextMark is 0, lastMark will be -1.
 
         // Decide if to display text and the percentage of ready dots.
-        if (isParagraphEndMark(lastMark) || time < marks.get(0)) {
-            int disappearStart = marks.get(lastMark) + textDisappearTime;
+        if (isParagraphEndMark(lastMark) || nextMark == 0) {
+            int disappearStart = lastMark == -1 ? 0 : marks.get(lastMark) + textDisappearTime;
             int disappearEnd = nextMark >= marks.size() ? Integer.MAX_VALUE : marks.get(nextMark) - readyDotsPeriod;
             boolean shouldDisappear = time > disappearStart && time < disappearEnd;
 

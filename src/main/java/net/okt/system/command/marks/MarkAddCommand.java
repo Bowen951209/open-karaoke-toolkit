@@ -20,6 +20,6 @@ public class MarkAddCommand implements Command {
 
     @Override
     public void undo() {
-        markList.remove(time);
+        markList.remove((Integer) time);
     }
 }

@@ -18,10 +18,13 @@ public class LyricsProcessor {
     private final List<Integer> paragraphEndMarks = new ArrayList<>();
     /**
      * The marks that are the start of a line.
+     * (Doesn't include mark0.)
      */
     private final List<Integer> lineStartMarks = new ArrayList<>();
     /**
-     * The lines that should be currently displayed.
+     * The lines that should be displayed at the set time.
+     *
+     * @see #setTime(int)
      */
     private final int[] displayingLines = new int[2];
 
@@ -33,6 +36,20 @@ public class LyricsProcessor {
     public LyricsProcessor(SaveLoadManager saveLoadManager) {
         this.saveLoadManager = saveLoadManager;
         this.marks = saveLoadManager.getMarks();
+    }
+
+    public static boolean isEasternChar(char c) {
+        Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
+        return ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS ||
+                ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A ||
+                ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B ||
+                ub == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION ||
+                ub == Character.UnicodeBlock.HIRAGANA ||
+                ub == Character.UnicodeBlock.KATAKANA ||
+                ub == Character.UnicodeBlock.KATAKANA_PHONETIC_EXTENSIONS ||
+                ub == Character.UnicodeBlock.HANGUL_SYLLABLES ||
+                ub == Character.UnicodeBlock.HANGUL_JAMO ||
+                ub == Character.UnicodeBlock.HANGUL_COMPATIBILITY_JAMO;
     }
 
     public int getStartMarkAtLine(int line) {
@@ -57,6 +74,10 @@ public class LyricsProcessor {
         updateMarkLists();
     }
 
+    /**
+     * @return The text before the given mark. If there's no word before the mark(a paragraph start mark), return
+     * null.
+     */
     public String getTextBeforeMark(int markIdx) {
         if (markIdx == 0 || markTextList.isEmpty()) return null;
         return markTextList.get(markIdx - 1);
@@ -64,6 +85,7 @@ public class LyricsProcessor {
 
     /**
      * Get the lines that should be displayed at the set time.
+     *
      * @see #setTime(int)
      */
     public int[] getDisplayingLines() {
@@ -72,6 +94,7 @@ public class LyricsProcessor {
 
     /**
      * Get if to display lyrics at the set time.
+     *
      * @see #setTime(int)
      */
     public boolean shouldDisplayText() {
@@ -80,6 +103,7 @@ public class LyricsProcessor {
 
     /**
      * Get the progress of the ready dots at the set time.
+     *
      * @return A percentage value in float.
      * @see #setTime(int)
      */
@@ -87,7 +111,11 @@ public class LyricsProcessor {
         return readyDotsPercentage;
     }
 
+    /**
+     * @return Whether the maximum size of marks is reached.
+     */
     public boolean isMaxMarkNumber() {
+        // (markTextList's size + 1) is the maximum size for marks.
         return marks.size() == markTextList.size() + 1;
     }
 
@@ -109,7 +137,7 @@ public class LyricsProcessor {
     /**
      * Change the values that is bond with time position.
      * <p></p>
-     *
+     * <p>
      * 1. Calculate which 2 lines should be displayed at the given time and update to {@link #displayingLines}.
      * With the rules below:
      * (* means the line is currently being sung)
@@ -123,17 +151,17 @@ public class LyricsProcessor {
      *     *01 -> 2*1 -> *21(paragraphEnd) -> *45(paragraphStart) -> 6*5 -> ...
      * </pre>
      * <p></p>
-     *
+     * <p>
      * 2. Calculate if the lyrics should be displayed at the given time and update to {@link #shouldDisplayText}.
      * Lyrics should only not be displayed between different paragraphs(after disappear time and before ready dots time).
      * <p></p>
-     *
+     * <p>
      * 3. Calculate the progress of the ready dots at the given time and update to {@link #readyDotsPercentage}.
      *
      * @param time The time the player is currently at.
      */
     public void setTime(int time) {
-        if (marks.isEmpty()) {
+        if (marks.isEmpty() || lyrics == null) {
             shouldDisplayText = false;
             readyDotsPercentage = 0;
             return;
@@ -185,49 +213,57 @@ public class LyricsProcessor {
     }
 
     /**
-     * Process the set lyrics and updates 3 lists:
-     * <pre>
-     * 1. {@link #paragraphEndMarks}
-     * 2. {@link #lineStartMarks}
-     * 3. {@link #markTextList}
-     * </pre>
-     * The {@link #markTextList} is calculated based on the rules below:
+     * Processes the set lyrics and updates 3 lists:
+     * <ul>
+     *   <li><code>paragraphEndMarks</code></li>
+     *   <li><code>lineStartMarks</code></li>
+     *   <li><code>markTextList</code></li>
+     * </ul>
      *
-     * <pre>
-     * 1. In general, 2 marks hold a word.
-     * 2. When meeting the symbol “'“, it is the link word case, take the chars right before and after “'”.
-     * 3. When meeting a single “\n” symbol, it is the end of a line, ignore it and skip to the next line’s start word
-     *    (the word after “\n”).
-     * 4. When meeting double “\n”s, it is the end of a paragraph, also skip that, but make sure the new
-     *    paragraph’s start mark holds “null”, so that we know it’s not connected to the last mark.
-     * </pre>
+     * <p>The <code>markTextList</code> is calculated based on its language (Western/Eastern). The rules below:</p>
      *
-     * <p>
-     * Then, store the texts corresponding to the marks in a list, where index 0 is the text held by mark0 and mark1,
-     * index 1 is the text held by mark1 and mark2, and so on.
-     * </p>
-     * <p>
-     * Here’s some examples:
-     * <pre>
-     * 1)
-     * Given lyrics: “ab\nc'd\n\nefg”
-     * Marks distribution would be:
+     * <h2>For Eastern (Chinese):</h2>
+     * <ol>
+     *   <li>In general, 2 marks hold a single character.</li>
+     *   <li>When meeting the symbol <code>‘'’</code>, it is a link word, take the characters right before and after <code>‘'’</code>.
+     *       So the characters "一'二" will be "一二".</li>
+     * </ol>
      *
-     * m0 a m1 b m2 cd m3 m4 e m5 f m6 g m7
+     * <h2>For Western (English):</h2>
+     * <ol>
+     *   <li>2 marks hold a word. A word is separated by spaces. For example, the string "one two three" will be divided into the
+     *       set {"one", "two", "three"}.</li>
+     *   <li>When meeting the symbol <code>‘_’</code>, it is a separated word, separate the word into more parts. For example, the word
+     *       "ma_ni_pu_la_tion" should be divided into the set {"ma", "_ni", "_pu", "_la", "_tion"}.</li>
+     * </ol>
      *
-     * The list would be:
-     * {a, b, cd, null, e, f, g}
+     * <h2>Common Rules:</h2>
+     * <ol>
+     *   <li>When meeting a single <code>‘\n’</code> symbol, it is the end of a line, ignore it and skip to the next line’s start word
+     *       (the word after <code>‘\n’</code>).</li>
+     *   <li>When meeting double <code>‘\n’</code> symbols, it is the end of a paragraph, also skip that, but make sure the new
+     *       paragraph’s start mark holds <code>null</code>, so that we know it’s not connected to the last mark.</li>
+     * </ol>
      *
-     * 2)
+     * <p>Then, store the texts corresponding to the marks in a list, where index 0 is the text held by mark0 and mark1, index 1 is the text held by mark1 and mark2, and so on.</p>
      *
-     * Given lyrics:  “a\nbc\n\nd\nef'g”
-     *
-     * Marks distribution would be:
-     * m0 a m1 b m2 c m3 m4 d m5 e m6 fg m7
-     *
-     * The list would be:
-     * {a, b, c, null, d, e, fg}
-     * <pre>
+     * <h2>Examples:</h2>
+     * <ol>
+     *   <li>
+     *     <p>Given lyrics: “一二\n三'四\n\n五六七”</p>
+     *     <p>Marks distribution would be:</p>
+     *     <pre>m0 一 m1 二 m2 三四 m3 m4 五 m5 六 m6 七 m7</pre>
+     *     <p>The list would be:</p>
+     *     <pre>{一, 二, 三四, null, 五, 六, 七}</pre>
+     *   </li>
+     *   <li>
+     *     <p>Given lyrics: “one\ntwo\n\nthree\nfour five”</p>
+     *     <p>Marks distribution would be:</p>
+     *     <pre>m0 one m1 two m2 m3 three m4 four m5 five m6</pre>
+     *     <p>The list would be:</p>
+     *     <pre>{one, two, null, three, four, five}</pre>
+     *   </li>
+     * </ol>
      */
     private void updateMarkLists() {
         markTextList.clear();
@@ -235,11 +271,16 @@ public class LyricsProcessor {
         lineStartMarks.clear();
 
         int charIdx = 0;
-        for (int markIdx = 1; charIdx < lyrics.length(); markIdx++) {
+        for (int markIdx = 1; charIdx <= lyrics.length(); markIdx++) {
             if (charIdx + 1 >= lyrics.length()) {
-                // Add special conditions for the last lyrics line.
-                paragraphEndMarks.add(markIdx);
-                markTextList.add(String.valueOf(lyrics.charAt(charIdx)));
+                // If meet the end of the lyrics, add the last mark as the end of the last paragraph.
+                // And if there's still a char left, add it as the text before the last mark.
+                // p.s. Chinese and English characters will end up in below cases respectively.
+                if (charIdx == lyrics.length() - 1) {
+                    paragraphEndMarks.add(markIdx);
+                    markTextList.add(String.valueOf(lyrics.charAt(charIdx)));
+                } else paragraphEndMarks.add(markIdx - 1);
+
                 break;
             }
 
@@ -249,10 +290,15 @@ public class LyricsProcessor {
 
             if (currentChar == '\n') {
                 if (nextChar == '\n') {
-                    correctCharIdx = -1;
+                    // It's the end of a paragraph.
                     paragraphEndMarks.add(markIdx - 1);
                     lineStartMarks.add(markIdx);
+                    markTextList.add(null);// no correct char for this mark.
+
+                    charIdx += 2;
+                    continue;
                 } else {
+                    // It's the end of a line.
                     correctCharIdx = charIdx + 1;
                     lineStartMarks.add(markIdx - 1);
                 }
@@ -263,19 +309,50 @@ public class LyricsProcessor {
                 charIdx++;
             }
 
+            // The text before the mark.
+            char correctChar = lyrics.charAt(correctCharIdx);
             String textBeforeMark;
-            if (correctCharIdx + 1 < lyrics.length() && lyrics.charAt(correctCharIdx + 1) == '\'') {
-                char firstChar = lyrics.charAt(correctCharIdx);
-                char secondChar = lyrics.charAt(correctCharIdx + 2);
-                textBeforeMark = String.valueOf(new char[]{firstChar, secondChar});
 
-                charIdx += 2;
-            } else {
-                textBeforeMark = correctCharIdx == -1 ? null : String.valueOf(lyrics.charAt(correctCharIdx));
+            // Eastern chars and western chars are handled differently.
+            if (isEasternChar(correctChar)) {
+                // If the next char is ', handle the link word case.
+                if (correctCharIdx + 1 < lyrics.length() && lyrics.charAt(correctCharIdx + 1) == '\'') {
+                    char secondChar = lyrics.charAt(correctCharIdx + 2);
+                    textBeforeMark = String.valueOf(new char[]{correctChar, secondChar});
+
+                    charIdx += 2;
+                } else textBeforeMark = String.valueOf(correctChar); // normal case.
+            } else { // western chars.
+                int nextSpaceIdx = lyrics.indexOf(' ', charIdx);
+                int nextLineBreakIdx = lyrics.indexOf('\n', charIdx);
+                int nextUnderscoreIdx = lyrics.indexOf('_', charIdx);
+                int wordEndIdx = getWordEndIdx(nextSpaceIdx, nextLineBreakIdx, nextUnderscoreIdx);
+
+                textBeforeMark = lyrics.substring(correctCharIdx, wordEndIdx);
+                charIdx = wordEndIdx;
+
+                // If the word ends with a space, skip the space for next word.
+                if (wordEndIdx == nextSpaceIdx) charIdx++;
             }
 
             markTextList.add(textBeforeMark);
         }
+    }
+
+    /**
+     * @return The index which the word should end at.
+     */
+    private int getWordEndIdx(int nextSpaceIdx, int nextLineBreakIdx, int nextUnderscoreIdx) {
+        int wordEndIdx = lyrics.length();
+
+        if (nextSpaceIdx != -1)
+            wordEndIdx = nextSpaceIdx;
+        if (nextLineBreakIdx != -1)
+            wordEndIdx = Math.min(wordEndIdx, nextLineBreakIdx);
+        if (nextUnderscoreIdx != -1)
+            wordEndIdx = Math.min(wordEndIdx, nextUnderscoreIdx);
+
+        return wordEndIdx;
     }
 
     /**
@@ -297,14 +374,14 @@ public class LyricsProcessor {
      * @return The paragraph it is at the given time.
      */
     private int getParagraphAtTime(int time, int readyDotsPeriod) {
-        int index =  Collections.binarySearch(paragraphEndMarks, time, (paragraphEndMark, t) -> {
+        int index = Collections.binarySearch(paragraphEndMarks, time, (paragraphEndMark, t) -> {
             int nextMark = paragraphEndMark + 1;
             if (nextMark >= marks.size()) return 1;
-            Integer paragraphStartTime = Math.toIntExact(marks.get(nextMark) - readyDotsPeriod);
+            Integer paragraphStartTime = marks.get(nextMark) - readyDotsPeriod;
             return paragraphStartTime.compareTo(t);
         });
 
-        return Math.abs(index) - 1;
+        return Math.max(0, Math.abs(index) - 1);
     }
 
     /**

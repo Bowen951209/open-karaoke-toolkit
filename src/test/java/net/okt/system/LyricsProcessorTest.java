@@ -12,23 +12,32 @@ class LyricsProcessorTest {
     private final SaveLoadManager saveLoadManager = new SaveLoadManager(mainFrame);
     private final LyricsProcessor lyricsProcessor = new LyricsProcessor(saveLoadManager);
     private final String lyricsSample1 = """
-            ab
-            c'd
+            一二
+            三'四
 
-            efg""";
+            五六七""";
     private final String lyricsSample2 = """
-            a
-            bc
+            一
+            二三
 
-            d
-            ef'g""";
+            四
+            五六'七""";
     private final String lyricsSample3 = """
-            abc
-            def
-            ghi
+            一二三
+            四五六
+            七八九
             
-            jkl
-            mno""";
+            十一二
+            三四五""";
+
+    @Test
+    void isEasternCharTest() {
+        assertTrue(LyricsProcessor.isEasternChar('漢'));
+        assertTrue(LyricsProcessor.isEasternChar('汉'));
+        assertTrue(LyricsProcessor.isEasternChar('変'));
+        assertTrue(LyricsProcessor.isEasternChar('あ'));
+        assertTrue(LyricsProcessor.isEasternChar('한'));
+    }
 
     @Test
     void lineStartMarkTestForLyrics1() {
@@ -68,13 +77,13 @@ class LyricsProcessorTest {
         lyricsProcessor.setLyrics(lyricsSample1);
 
         assertNull(lyricsProcessor.getTextBeforeMark(0));
-        assertEquals("a", lyricsProcessor.getTextBeforeMark(1));
-        assertEquals("b", lyricsProcessor.getTextBeforeMark(2));
-        assertEquals("cd", lyricsProcessor.getTextBeforeMark(3));
+        assertEquals("一", lyricsProcessor.getTextBeforeMark(1));
+        assertEquals("二", lyricsProcessor.getTextBeforeMark(2));
+        assertEquals("三四", lyricsProcessor.getTextBeforeMark(3));
         assertNull(lyricsProcessor.getTextBeforeMark(4));
-        assertEquals("e", lyricsProcessor.getTextBeforeMark(5));
-        assertEquals("f", lyricsProcessor.getTextBeforeMark(6));
-        assertEquals("g", lyricsProcessor.getTextBeforeMark(7));
+        assertEquals("五", lyricsProcessor.getTextBeforeMark(5));
+        assertEquals("六", lyricsProcessor.getTextBeforeMark(6));
+        assertEquals("七", lyricsProcessor.getTextBeforeMark(7));
     }
 
     @Test
@@ -82,13 +91,13 @@ class LyricsProcessorTest {
         lyricsProcessor.setLyrics(lyricsSample2);
 
         assertNull(lyricsProcessor.getTextBeforeMark(0));
-        assertEquals("a", lyricsProcessor.getTextBeforeMark(1));
-        assertEquals("b", lyricsProcessor.getTextBeforeMark(2));
-        assertEquals("c", lyricsProcessor.getTextBeforeMark(3));
+        assertEquals("一", lyricsProcessor.getTextBeforeMark(1));
+        assertEquals("二", lyricsProcessor.getTextBeforeMark(2));
+        assertEquals("三", lyricsProcessor.getTextBeforeMark(3));
         assertNull(lyricsProcessor.getTextBeforeMark(4));
-        assertEquals("d", lyricsProcessor.getTextBeforeMark(5));
-        assertEquals("e", lyricsProcessor.getTextBeforeMark(6));
-        assertEquals("fg", lyricsProcessor.getTextBeforeMark(7));
+        assertEquals("四", lyricsProcessor.getTextBeforeMark(5));
+        assertEquals("五", lyricsProcessor.getTextBeforeMark(6));
+        assertEquals("六七", lyricsProcessor.getTextBeforeMark(7));
     }
 
     @Test
@@ -96,22 +105,85 @@ class LyricsProcessorTest {
         lyricsProcessor.setLyrics(lyricsSample3);
 
         assertNull(lyricsProcessor.getTextBeforeMark(0));
-        assertEquals("a", lyricsProcessor.getTextBeforeMark(1));
-        assertEquals("b", lyricsProcessor.getTextBeforeMark(2));
-        assertEquals("c", lyricsProcessor.getTextBeforeMark(3));
-        assertEquals("d", lyricsProcessor.getTextBeforeMark(4));
-        assertEquals("e", lyricsProcessor.getTextBeforeMark(5));
-        assertEquals("f", lyricsProcessor.getTextBeforeMark(6));
-        assertEquals("g", lyricsProcessor.getTextBeforeMark(7));
-        assertEquals("h", lyricsProcessor.getTextBeforeMark(8));
-        assertEquals("i", lyricsProcessor.getTextBeforeMark(9));
+        assertEquals("一", lyricsProcessor.getTextBeforeMark(1));
+        assertEquals("二", lyricsProcessor.getTextBeforeMark(2));
+        assertEquals("三", lyricsProcessor.getTextBeforeMark(3));
+        assertEquals("四", lyricsProcessor.getTextBeforeMark(4));
+        assertEquals("五", lyricsProcessor.getTextBeforeMark(5));
+        assertEquals("六", lyricsProcessor.getTextBeforeMark(6));
+        assertEquals("七", lyricsProcessor.getTextBeforeMark(7));
+        assertEquals("八", lyricsProcessor.getTextBeforeMark(8));
+        assertEquals("九", lyricsProcessor.getTextBeforeMark(9));
         assertNull(lyricsProcessor.getTextBeforeMark(10));
-        assertEquals("j", lyricsProcessor.getTextBeforeMark(11));
-        assertEquals("k", lyricsProcessor.getTextBeforeMark(12));
-        assertEquals("l", lyricsProcessor.getTextBeforeMark(13));
-        assertEquals("m", lyricsProcessor.getTextBeforeMark(14));
-        assertEquals("n", lyricsProcessor.getTextBeforeMark(15));
-        assertEquals("o", lyricsProcessor.getTextBeforeMark(16));
+        assertEquals("十", lyricsProcessor.getTextBeforeMark(11));
+        assertEquals("一", lyricsProcessor.getTextBeforeMark(12));
+        assertEquals("二", lyricsProcessor.getTextBeforeMark(13));
+        assertEquals("三", lyricsProcessor.getTextBeforeMark(14));
+        assertEquals("四", lyricsProcessor.getTextBeforeMark(15));
+        assertEquals("五", lyricsProcessor.getTextBeforeMark(16));
+    }
+
+    @Test
+    void textBeforeMarkTestForEnglish1() {
+        lyricsProcessor.setLyrics("""
+                one
+                two
+                three
+                four
+                five""");
+
+        assertNull(lyricsProcessor.getTextBeforeMark(0));
+        assertEquals("one", lyricsProcessor.getTextBeforeMark(1));
+        assertEquals("two", lyricsProcessor.getTextBeforeMark(2));
+        assertEquals("three", lyricsProcessor.getTextBeforeMark(3));
+        assertEquals("four", lyricsProcessor.getTextBeforeMark(4));
+        assertEquals("five", lyricsProcessor.getTextBeforeMark(5));
+    }
+
+    @Test
+    void textBeforeMarkTestForEnglish2() {
+        lyricsProcessor.setLyrics("""
+                one two
+                three
+                
+                four five
+                six""");
+
+        assertNull(lyricsProcessor.getTextBeforeMark(0));
+        assertEquals("one", lyricsProcessor.getTextBeforeMark(1));
+        assertEquals("two", lyricsProcessor.getTextBeforeMark(2));
+        assertEquals("three", lyricsProcessor.getTextBeforeMark(3));
+        assertNull(lyricsProcessor.getTextBeforeMark(4));
+        assertEquals("four", lyricsProcessor.getTextBeforeMark(5));
+        assertEquals("five", lyricsProcessor.getTextBeforeMark(6));
+        assertEquals("six", lyricsProcessor.getTextBeforeMark(7));
+    }
+
+    @Test
+    void textBeforeMarkTestForEnglish3() {
+        lyricsProcessor.setLyrics("""
+                one two fun_ny
+                ka_ra_o_ke three
+                
+                four hap_py five
+                six""");
+
+        assertNull(lyricsProcessor.getTextBeforeMark(0));
+        assertEquals("one", lyricsProcessor.getTextBeforeMark(1));
+        assertEquals("two", lyricsProcessor.getTextBeforeMark(2));
+        assertEquals("fun", lyricsProcessor.getTextBeforeMark(3));
+        assertEquals("_ny", lyricsProcessor.getTextBeforeMark(4));
+        assertEquals("ka", lyricsProcessor.getTextBeforeMark(5));
+        assertEquals("_ra", lyricsProcessor.getTextBeforeMark(6));
+        assertEquals("_o", lyricsProcessor.getTextBeforeMark(7));
+        assertEquals("_ke", lyricsProcessor.getTextBeforeMark(8));
+        assertEquals("three", lyricsProcessor.getTextBeforeMark(9));
+        assertNull(lyricsProcessor.getTextBeforeMark(10));
+        assertEquals("four", lyricsProcessor.getTextBeforeMark(11));
+        assertEquals("hap", lyricsProcessor.getTextBeforeMark(12));
+        assertEquals("_py", lyricsProcessor.getTextBeforeMark(13));
+        assertEquals("five", lyricsProcessor.getTextBeforeMark(14));
+        assertEquals("six", lyricsProcessor.getTextBeforeMark(15));
     }
 
     @Test
@@ -233,19 +305,24 @@ class LyricsProcessorTest {
                 jkl""");
 
         saveLoadManager.setProp("textDisappearTime", 50);
+        saveLoadManager.setProp("dotsPeriod", 0);
 
         var marks = saveLoadManager.getMarks();
         marks.clear();
-        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400));
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600));
 
-        lyricsProcessor.setTime(700);
+        lyricsProcessor.setTime(349);
         assertTrue(lyricsProcessor.shouldDisplayText());
-        lyricsProcessor.setTime(760);
+        lyricsProcessor.setTime(351);
         assertFalse(lyricsProcessor.shouldDisplayText());
-
-        lyricsProcessor.setTime(1400);
+        lyricsProcessor.setTime(401);
         assertTrue(lyricsProcessor.shouldDisplayText());
-        lyricsProcessor.setTime(1460);
+
+        lyricsProcessor.setTime(599);
+        assertTrue(lyricsProcessor.shouldDisplayText());
+        lyricsProcessor.setTime(649);
+        assertTrue(lyricsProcessor.shouldDisplayText());
+        lyricsProcessor.setTime(651);
         assertFalse(lyricsProcessor.shouldDisplayText());
     }
 
@@ -286,9 +363,9 @@ class LyricsProcessorTest {
         var marks = saveLoadManager.getMarks();
         marks.clear();
         assertFalse(lyricsProcessor.isMaxMarkNumber());
-        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300));
+        marks.addAll(List.of(100, 200, 300, 400, 500));
         assertFalse(lyricsProcessor.isMaxMarkNumber());
-        marks.add(1400);
+        marks.add(600);
         assertTrue(lyricsProcessor.isMaxMarkNumber());
     }
 
@@ -297,16 +374,16 @@ class LyricsProcessorTest {
         lyricsProcessor.setLyrics("""
                 abc
                 def
-                
+
                 ghi
                 jkl""");
 
         var marks = saveLoadManager.getMarks();
         marks.clear();
         assertTrue(lyricsProcessor.getRedundantMarkNumber() < 0);
-        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400));
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600));
         assertEquals(0, lyricsProcessor.getRedundantMarkNumber());
-        marks.addAll(List.of(1500, 1600, 1700));
+        marks.addAll(List.of(700, 800, 900));
         assertEquals(3, lyricsProcessor.getRedundantMarkNumber());
     }
 
@@ -315,27 +392,18 @@ class LyricsProcessorTest {
         lyricsProcessor.setLyrics("""
                 abc
                 def
-                
+
                 ghi
                 jkl""");
 
         var marks = saveLoadManager.getMarks();
         marks.clear();
-        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400));
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600));
         assertFalse(lyricsProcessor.isParagraphEndMark(0));
         assertFalse(lyricsProcessor.isParagraphEndMark(1));
-        assertFalse(lyricsProcessor.isParagraphEndMark(2));
+        assertTrue(lyricsProcessor.isParagraphEndMark(2));
         assertFalse(lyricsProcessor.isParagraphEndMark(3));
         assertFalse(lyricsProcessor.isParagraphEndMark(4));
-        assertFalse(lyricsProcessor.isParagraphEndMark(5));
-        assertTrue(lyricsProcessor.isParagraphEndMark(6));
-
-        assertFalse(lyricsProcessor.isParagraphEndMark(7));
-        assertFalse(lyricsProcessor.isParagraphEndMark(8));
-        assertFalse(lyricsProcessor.isParagraphEndMark(9));
-        assertFalse(lyricsProcessor.isParagraphEndMark(10));
-        assertFalse(lyricsProcessor.isParagraphEndMark(11));
-        assertFalse(lyricsProcessor.isParagraphEndMark(12));
-        assertTrue(lyricsProcessor.isParagraphEndMark(13));
+        assertTrue(lyricsProcessor.isParagraphEndMark(5));
     }
 }

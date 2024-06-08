@@ -14,6 +14,7 @@ import javax.swing.plaf.SliderUI;
 import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 
@@ -230,6 +231,10 @@ public class Timeline extends JPanel {
         timer.stop();
         controlPanel.playPauseButton.setIcon(PLAY_BUTTON_ICON);
         saveLoadManager.getLoadedAudio().pause();
+
+        // Reset the pointer or else it will stop at a wrong position.
+        resetPointerX();
+        canvas.repaint();
     }
 
     public void timeStop() {
@@ -426,6 +431,7 @@ public class Timeline extends JPanel {
     }
 
     public class Canvas extends JPanel {
+        private static final FontRenderContext FRC = new FontRenderContext(null, false, true);
         private final Font FONT_PLAIN_10 = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
         private final Font FONT_BOLD_8 = new Font(Font.SANS_SERIF, Font.BOLD, 8);
         private final int MARK_ICON_SIZE = 10;
@@ -581,20 +587,22 @@ public class Timeline extends JPanel {
         private void drawTextGap(int markIdx, String string, Graphics2D g2d) {
             var marks = saveLoadManager.getMarks();
             int thisX = toX(marks.get(markIdx));
-            // lastX and width variables are applied to some adjusts to avoid covering the marks.
+            // lastX and gapWidth variables are applied to some adjusts to avoid covering the marks.
             int lastX = toX(marks.get(markIdx - 1)) + MARK_ICON_SIZE / 2 - 1;
-            int width = thisX - lastX - MARK_ICON_SIZE / 2 + 1;
+            int gapWidth = thisX - lastX - MARK_ICON_SIZE / 2 + 1;
             int height = 15;
-            Font f = new Font(Font.SANS_SERIF, Font.BOLD, Math.min(height - 2, width));
+            Font f = new Font(Font.SANS_SERIF, Font.BOLD, Math.min(height - 2, gapWidth));
+            int stringWidth = (int) f.getStringBounds(string, FRC).getWidth();
+            int stringX = lastX + (gapWidth - stringWidth) / 2;
 
             // Draw the rectangle.
             g2d.setColor(Color.WHITE);
-            g2d.fillRect(lastX, 0, width, height);
+            g2d.fillRect(lastX, 0, gapWidth, height);
 
             // Draw the words in the gaps.
             g2d.setColor(Color.BLACK);
             g2d.setFont(f);
-            g2d.drawString(string, lastX + width / 2 - f.getSize() * string.length() / 2, 10); // x is at the middle.
+            g2d.drawString(string, stringX, 10); // x is at the middle.
         }
 
         private void drawReadyDotsRect(int markX, Graphics2D g2d) {

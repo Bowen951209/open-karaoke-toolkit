@@ -55,13 +55,13 @@ application {
 task runWithTaiwaneseSampleFile(type: JavaExec) {
     mainClass = 'net.okt.Main'
     classpath = sourceSets.main.runtimeClasspath
-    args = ['src/main/resources/saves/sample.properties']
+    args = ['samples/LiuLongKid/LiuLongKid.properties']
 }
 
 task runWithEnglishSmapleFile(type: JavaExec) {
     mainClass = 'net.okt.Main'
     classpath = sourceSets.main.runtimeClasspath
-    args = ['src/main/resources/saves/clock.properties']
+    args = ['samples/MyGrandFathersClock/clock.properties']
 }
 
 tasks.withType(JavaCompile) {

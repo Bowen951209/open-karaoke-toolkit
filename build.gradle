@@ -1,7 +1,15 @@
 //file:noinspection ConfigurationAvoidance
+//file:noinspection GroovyAssignabilityCheck
+//file:noinspection GroovyAccessibility
 plugins {
     id 'java'
     id 'application'
+    id 'java-library'
+    id 'org.bytedeco.gradle-javacpp-platform' version "1.5.10"
+}
+
+ext {
+    javacppPlatform = 'linux-x86_64,macosx-x86_64,windows-x86_64'
 }
 
 group = 'net.bowen'
@@ -14,10 +22,26 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.10'
 
+    api('org.bytedeco:javacv:1.5.10') {
+        exclude group: 'org.bytedeco', module: 'artoolkitplus'
+        exclude group: 'org.bytedeco', module: 'ffmpeg'
+        exclude group: 'org.bytedeco', module: 'flycapture'
+        exclude group: 'org.bytedeco', module: 'leptonica'
+        exclude group: 'org.bytedeco', module: 'libdc1394'
+        exclude group: 'org.bytedeco', module: 'libfreenect'
+        exclude group: 'org.bytedeco', module: 'libfreenect2'
+        exclude group: 'org.bytedeco', module: 'librealsense'
+        exclude group: 'org.bytedeco', module: 'librealsense2'
+        exclude group: 'org.bytedeco', module: 'openblas'
+        exclude group: 'org.bytedeco', module: 'opencv'
+        exclude group: 'org.bytedeco', module: 'tesseract'
+        exclude group: 'org.bytedeco', module: 'videoinput'
+    }
     // The GPL dependency enable us to use H.265/HEVC codec(libx265 GPL license problem).
-    implementation group: 'org.bytedeco', name: 'ffmpeg-platform-gpl', version: '6.1.1-1.5.10'
+    api('org.bytedeco:ffmpeg-platform-gpl:6.1.1-1.5.10') {
+        exclude group: 'org.bytedeco', module: 'javacpp-platform'
+    }
 }
 
 test {

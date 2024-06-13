@@ -4,6 +4,7 @@ import net.okt.system.SaveLoadManager;
 import net.okt.system.VideoMaker;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 
 public class VideoExportDialog {
@@ -44,7 +45,7 @@ public class VideoExportDialog {
                 new JLabel("Bitrate(kbps):"),
                 bitrateComboBox,
                 new JLabel("Time Length(ms):"),
-                timeBar,
+                getVidLengthPanel(),
                 new JLabel("Save Location:"),
                 textFieldFileChooser
         };
@@ -99,5 +100,24 @@ public class VideoExportDialog {
             progressBarDialog.setManualCloseOperation(videoMaker::stopProcessing);
             progressBarDialog.setVisible(true);
         }
+    }
+
+    private JPanel getVidLengthPanel() {
+        JCheckBox fullVidCheckBox = new JCheckBox("Full Length");
+        fullVidCheckBox.addItemListener(e -> {
+            timeBar.setEnabled(!fullVidCheckBox.isSelected());
+
+            var loadedAudio = saveLoadManager.getLoadedAudio();
+            if (loadedAudio == null) return;
+            timeBar.setVal(loadedAudio.getTotalTime());
+        });
+
+        JPanel timeLengthPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        timeLengthPanel.add(fullVidCheckBox);
+        timeLengthPanel.add(timeBar);
+
+        fullVidCheckBox.setSelected(true);
+
+        return timeLengthPanel;
     }
 }

@@ -23,14 +23,6 @@ public class SlidableNumberBar extends JPanel {
     private int val;
     private int mouseLastX;
 
-    public void setDragStep(int v) {
-        this.dragStep = v;
-    }
-
-    public int getVal() {
-        return val;
-    }
-
     /**
      * @param limitDigit limit digit of font size.
      */
@@ -60,12 +52,13 @@ public class SlidableNumberBar extends JPanel {
         textField.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                if (!isEnabled()) return;
+
                 requestFocus(); // *This is for even mouse is outside the component, drag callback still calls.
                 int delta = (e.getX() - mouseLastX) * dragStep;
                 val = Math.max(delta + oVal, 0);
                 val = Math.min(val, maxValue);
-                oVal = val;
-                textField.setText(String.valueOf(val));
+                setVal(val);
                 mouseLastX = e.getX();
             }
         });
@@ -94,7 +87,26 @@ public class SlidableNumberBar extends JPanel {
         this.saveLoadManager = saveLoadManager;
     }
 
+    public void setDragStep(int v) {
+        this.dragStep = v;
+    }
+
+    public int getVal() {
+        return val;
+    }
+
+    public void setVal(int val) {
+        oVal = val;
+        textField.setText(String.valueOf(val));
+    }
+
     public void addDocumentListener(Runnable e) {
         docListeners.add(e);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        textField.setEnabled(enabled);
     }
 }

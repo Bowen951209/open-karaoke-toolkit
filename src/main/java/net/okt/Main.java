@@ -108,7 +108,7 @@ public class Main extends JFrame {
         // -- File Menu --
         JMenu fileMenu = new JMenu("File");
 
-        JFileChooser fileChooser = new JFileChooser("src/main/resources/audios"); // for temporary path
+        JFileChooser fileChooser = new JFileChooser();
 
         // load project
         JMenuItem loadProject = getLoadProject(fileChooser);

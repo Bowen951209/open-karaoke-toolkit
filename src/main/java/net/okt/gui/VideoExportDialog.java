@@ -5,7 +5,6 @@ import net.okt.system.VideoMaker;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
 import java.io.File;
 
 public class VideoExportDialog {
@@ -36,7 +35,7 @@ public class VideoExportDialog {
         this.timeBar = new SlidableNumberBar(null, 7, 45000);
         this.fullVidCheckBox = new JCheckBox("Full Length", true);
         // Update timeBar state when checking/unchecking the checkbox.
-        this.fullVidCheckBox.addItemListener(this::updateTimeBarState);
+        this.fullVidCheckBox.addItemListener(e -> updateTimeBarState());
         String file = fileChooser.getCurrentDirectory() + File.separator + "output";
         this.textFieldFileChooser = new TextFieldFileChooser(file);
         // If the selected format is changed, also change to the file chooser.
@@ -76,7 +75,7 @@ public class VideoExportDialog {
         }
 
         // We should update the time bar state every time the dialog is shown.
-        updateTimeBarState(null);
+        updateTimeBarState();
 
         // Show the option dialog.
         int option = JOptionPane.showConfirmDialog(null, inputs, "Export To Video",
@@ -133,7 +132,7 @@ public class VideoExportDialog {
      * If the {@link #fullVidCheckBox} is checked, disable {@link #timeBar} and set its value to the length of the
      * loaded audio.
      */
-    private void updateTimeBarState(ItemEvent e) {
+    private void updateTimeBarState() {
         // Disable timeBar if the full video box is checked.
         timeBar.setEnabled(!fullVidCheckBox.isSelected());
 

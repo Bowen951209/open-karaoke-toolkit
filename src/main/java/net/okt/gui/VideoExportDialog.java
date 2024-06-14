@@ -5,6 +5,7 @@ import net.okt.system.VideoMaker;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.io.File;
 
 public class VideoExportDialog {
@@ -16,6 +17,7 @@ public class VideoExportDialog {
     private final JComboBox<Integer> bitrateComboBox;
     private final SlidableNumberBar timeBar;
     private final TextFieldFileChooser textFieldFileChooser;
+    private final JCheckBox fullVidCheckBox;
     private final JComponent[] inputs;
 
     public VideoExportDialog(SaveLoadManager saveLoadManager, Viewport viewport, JFileChooser fileChooser) {
@@ -32,8 +34,17 @@ public class VideoExportDialog {
         this.fpsComboBox = new JComboBox<>(fpsOptions);
         this.bitrateComboBox = new JComboBox<>(bitrateOptions);
         this.timeBar = new SlidableNumberBar(null, 7, 45000);
+        this.fullVidCheckBox = new JCheckBox("Full Length", true);
+        // Update timeBar state when checking/unchecking the checkbox.
+        this.fullVidCheckBox.addItemListener(this::updateTimeBarState);
         String file = fileChooser.getCurrentDirectory() + File.separator + "output";
         this.textFieldFileChooser = new TextFieldFileChooser(file);
+        // If the selected format is changed, also change to the file chooser.
+        this.formatComboBox.addActionListener(e -> {
+            String selectedFormat = (String) formatComboBox.getSelectedItem();
+            textFieldFileChooser.setExtensionFilter("." + selectedFormat, selectedFormat);
+        });
+        this.formatComboBox.setSelectedIndex(0); // activate the action listener to init the extension filter.
 
         this.inputs = new JComponent[]{
                 new JLabel("Format:"),
@@ -49,17 +60,25 @@ public class VideoExportDialog {
                 new JLabel("Save Location:"),
                 textFieldFileChooser
         };
-
-        // Settings.
-        // If the selected format is changed, also change to the file chooser.
-        this.formatComboBox.addActionListener(e -> {
-            String selectedFormat = (String) formatComboBox.getSelectedItem();
-            textFieldFileChooser.setExtensionFilter("." + selectedFormat, selectedFormat);
-        });
-        this.formatComboBox.setSelectedIndex(0); // activate the action listener to init the extension filter.
     }
 
     public void show() {
+        // If there's no loaded audio, it's invalid to export a video. Show a warning dialog.
+        var loadedAudio = saveLoadManager.getLoadedAudio();
+        if (loadedAudio == null) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    "No audio file loaded. Unable to export a video.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        // We should update the time bar state every time the dialog is shown.
+        updateTimeBarState(null);
+
+        // Show the option dialog.
         int option = JOptionPane.showConfirmDialog(null, inputs, "Export To Video",
                 JOptionPane.OK_CANCEL_OPTION);
 
@@ -103,21 +122,24 @@ public class VideoExportDialog {
     }
 
     private JPanel getVidLengthPanel() {
-        JCheckBox fullVidCheckBox = new JCheckBox("Full Length");
-        fullVidCheckBox.addItemListener(e -> {
-            timeBar.setEnabled(!fullVidCheckBox.isSelected());
-
-            var loadedAudio = saveLoadManager.getLoadedAudio();
-            if (loadedAudio == null) return;
-            timeBar.setVal(loadedAudio.getTotalTime());
-        });
-
         JPanel timeLengthPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         timeLengthPanel.add(fullVidCheckBox);
         timeLengthPanel.add(timeBar);
 
-        fullVidCheckBox.setSelected(true);
-
         return timeLengthPanel;
+    }
+
+    /**
+     * If the {@link #fullVidCheckBox} is checked, disable {@link #timeBar} and set its value to the length of the
+     * loaded audio.
+     */
+    private void updateTimeBarState(ItemEvent e) {
+        // Disable timeBar if the full video box is checked.
+        timeBar.setEnabled(!fullVidCheckBox.isSelected());
+
+        // Set the timeBar time to audio time if the full video box is checked.
+        var loadedAudio = saveLoadManager.getLoadedAudio();
+        if (fullVidCheckBox.isSelected())
+            timeBar.setVal(loadedAudio.getTotalTime());
     }
 }

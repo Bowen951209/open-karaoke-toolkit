@@ -8,10 +8,6 @@ public class Audio {
     private final Clip clip;
     private final int totalTime;
 
-    public int getTotalTime() {
-        return totalTime;
-    }
-
     public Audio(File src) {
         try {
             this.clip = AudioSystem.getClip();
@@ -27,6 +23,10 @@ public class Audio {
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public int getTotalTime() {
+        return totalTime;
     }
 
     public void play() {

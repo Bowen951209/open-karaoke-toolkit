@@ -53,4 +53,12 @@ public class Audio {
         float timeScale = (float) clip.getFramePosition() / clip.getFrameLength();
         return (int) (timeScale * totalTime);
     }
+
+
+    /**
+     * @return If the audio has finished playing.
+     */
+    public boolean isFinished() {
+        return getTimePosition() == getTotalTime();
+    }
 }

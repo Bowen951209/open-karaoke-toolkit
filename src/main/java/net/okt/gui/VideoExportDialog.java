@@ -113,6 +113,8 @@ public class VideoExportDialog {
 
             VideoMaker videoMaker = new VideoMaker(filePath, selectedFormat, selectedCodec, fps, bitrate, time,
                     videoWidth, videoHeight, viewport, saveLoadManager, progressBarDialog);
+
+            // Start the video processing on a separated thread so the progress bar can be updated at the
             videoMaker.start();
 
             progressBarDialog.setManualCloseOperation(videoMaker::stopProcessing);

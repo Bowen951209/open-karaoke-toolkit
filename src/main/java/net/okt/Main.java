@@ -133,7 +133,10 @@ public class Main extends JFrame {
     private JMenuItem getExportMenuItem(JFileChooser fileChooser) {
         VideoExportDialog videoExportDialog = new VideoExportDialog(saveLoadManager, viewport, fileChooser);
         JMenuItem item = new JMenuItem("Export");
-        item.addActionListener(e -> videoExportDialog.show());
+        item.addActionListener(e -> {
+            timeline.timePause(); // Pause the play to prevent the GUI viewport and export rendering meddle.
+            videoExportDialog.show();
+        });
 
         return item;
     }

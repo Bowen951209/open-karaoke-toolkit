@@ -15,7 +15,6 @@ import java.awt.image.BufferedImage;
 
 public class Viewport extends JPanel {
     private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
-    private static final Font FONT = new Font(Font.SANS_SERIF, Font.BOLD, 1);
     private static final AffineTransform ZERO_TRANSFORM = AffineTransform.getScaleInstance(0, 0);
 
     private final SaveLoadManager saveLoadManager;
@@ -28,7 +27,7 @@ public class Viewport extends JPanel {
         super();
         this.saveLoadManager = saveLoadManager;
         this.lyricsProcessor = lyricsProcessor;
-
+        setFont(new Font(Font.SANS_SERIF, Font.BOLD, 1));
         setBorder(BorderFactory.createLineBorder(Color.black));
         setBackground(Color.LIGHT_GRAY);
     }
@@ -37,8 +36,8 @@ public class Viewport extends JPanel {
      * Get the glyph vector of the passed in string.
      * If the string contains a link word, it'll be applied the linkTransform.
      */
-    private static GlyphVector getGlyphVector(String s, AffineTransform linkTransform) {
-        GlyphVector glyphVector = FONT.createGlyphVector(FRC, s);
+    private static GlyphVector getGlyphVector(String s, AffineTransform linkTransform, Font font) {
+        GlyphVector glyphVector = font.createGlyphVector(FRC, s);
         int length = s.length();
 
         for (int i = 0; i < length; i++) {
@@ -182,7 +181,8 @@ public class Viewport extends JPanel {
     }
 
     private LyricsArea getAreaAtLine(int line) {
-        if (line == -1 || line >= lyricsProcessor.getLyricsLines().size())
+        var lyricsLines = lyricsProcessor.getLyricsLines();
+        if (lyricsLines == null || line == -1 || line >= lyricsLines.size())
             return new LyricsArea(new Area(), -1);
 
         int defaultFontSize = saveLoadManager.getPropInt("defaultFontSize");
@@ -194,7 +194,7 @@ public class Viewport extends JPanel {
         AffineTransform linkScaleTransform = AffineTransform.getScaleInstance(linkScale, linkScale);
 
         String string = lyricsProcessor.getLyricsLines().get(line);
-        GlyphVector glyphVector = getGlyphVector(string, linkScaleTransform);
+        GlyphVector glyphVector = getGlyphVector(string, linkScaleTransform, getFont());
         LyricsArea area = new LyricsArea(glyphVector.getOutline(), line);
 
         area.transform(defaultScaleTransform);
@@ -203,12 +203,13 @@ public class Viewport extends JPanel {
     }
 
     private Area getRectangleArea(int line, int time) {
+        Font font = getFont();
         var marks = saveLoadManager.getMarks();
         int defaultFontSize = toDrawSize(saveLoadManager.getPropInt("defaultFontSize"));
         int linkedFontSize = toDrawSize(saveLoadManager.getPropInt("linkedFontSize"));
         int lineStartMark = lyricsProcessor.getStartMarkAtLine(line);
-        double spaceWidth = FONT.getStringBounds(" ", FRC).getWidth();
-        double underscoreWidth = FONT.getStringBounds("_", FRC).getWidth();
+        double spaceWidth = font.getStringBounds(" ", FRC).getWidth();
+        double underscoreWidth = font.getStringBounds("_", FRC).getWidth();
 
         int rectWidth = 0;
         for (int i = lineStartMark + 1; i < marks.size(); i++) {
@@ -224,7 +225,7 @@ public class Viewport extends JPanel {
             boolean isSepWord = textBeforeMark.charAt(0) == '_';
             boolean isNextWordSepWord = textBeforeNextMark != null && textBeforeNextMark.charAt(0) == '_';
             boolean isLinkWord = textBeforeMark.length() == 2 && isEasternChar;
-            double wordWidth = FONT.getStringBounds(textBeforeMark, FRC).getWidth();
+            double wordWidth = font.getStringBounds(textBeforeMark, FRC).getWidth();
 
             // Remember, a sep word have an underscore at its head, so minus it.
             if (isSepWord) wordWidth -= underscoreWidth;

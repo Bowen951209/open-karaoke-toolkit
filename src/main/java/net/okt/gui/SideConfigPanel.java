@@ -107,6 +107,7 @@ public class SideConfigPanel extends JScrollPane {
         textColorChooserBtn.callListeners();// update to the saveLoadManager for init.
 
         panel.add(new TitleLabel("Text Settings"));
+        panel.add(getFontComboBox());
         panel.add(textPosPanel);
         panel.add(defaultFontSizeBar);
         panel.add(linkedFontSizeBar);
@@ -163,5 +164,23 @@ public class SideConfigPanel extends JScrollPane {
         panel.add(readyDotsColorChooserBtn);
 
         return panel;
+    }
+
+    private JComboBox<String> getFontComboBox() {
+        JComboBox<String> comboBox = new JComboBox<>();
+        comboBox.addActionListener(e -> {
+            viewport.setFont(new Font((String) comboBox.getSelectedItem(), Font.BOLD, 1));
+            viewport.updateDisplayingAreas(true);
+        });
+
+        // Get system fonts.
+        GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        for (String fontName : graphicsEnvironment.getAvailableFontFamilyNames())
+            comboBox.addItem(fontName);
+
+        // Set the default to SansSerif, with which most characters are supported.
+        comboBox.setSelectedItem("SansSerif");
+
+        return comboBox;
     }
 }

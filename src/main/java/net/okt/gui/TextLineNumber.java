@@ -1,10 +1,6 @@
 package net.okt.gui;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -27,7 +23,6 @@ import java.util.HashMap;
  * Modified from <a href="https://github.com/tips4java/tips4java/blob/main/source/TextLineNumber.java">here</a>
  */
 public class TextLineNumber extends JPanel implements CaretListener, DocumentListener {
-    private final static Border OUTER = new MatteBorder(0, 0, 0, 2, Color.GRAY);
     private final static int HEIGHT = Integer.MAX_VALUE - 1000000;
     private static  final float DIGIT_ALIGNMENT = 1.0f;
 
@@ -62,25 +57,12 @@ public class TextLineNumber extends JPanel implements CaretListener, DocumentLis
 
         setFont(component.getFont());
 
-        setBorderGap(5);
+        setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100)));
         setCurrentLineForeground(Color.RED);
         setMinimumDisplayDigits(minimumDisplayDigits);
 
         component.getDocument().addDocumentListener(this);
         component.addCaretListener(this);
-    }
-
-    /**
-     * The border gap is used in calculating the left and right insets of the
-     * border. Default value is 5.
-     *
-     * @param borderGap the gap in pixels
-     */
-    public void setBorderGap(int borderGap) {
-        Border inner = new EmptyBorder(0, borderGap, 0, borderGap);
-        setBorder(new CompoundBorder(OUTER, inner));
-        lastDigits = 0;
-        setPreferredWidth();
     }
 
     /**

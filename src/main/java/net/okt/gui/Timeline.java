@@ -70,9 +70,13 @@ public class Timeline extends JPanel {
             int scrollX = scrollBar.getValue();
             int distance = getWidth() - pointerX + scrollX;
 
-            // if less than 50 pixels from the end border || if we are viewing the further timeline and the pointer is not in view
+            // If less than 50 pixels from the end border || if we are viewing the further timeline and the pointer is not in view
             if (distance < 50 || distance > getWidth())
                 scrollBar.setValue(pointerX - getWidth() + 50); // set to 50 pixels from the end border
+
+            // If the audio is finished, stop the play.
+            if (saveLoadManager.getLoadedAudio().isFinished())
+                timeStop();
 
             canvas.repaint();
 

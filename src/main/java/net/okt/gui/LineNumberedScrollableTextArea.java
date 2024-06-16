@@ -64,6 +64,8 @@ public class LineNumberedScrollableTextArea extends JScrollPane {
         });
 
         setRowHeaderView(new TextLineNumber(textArea));
+
+        setMinimumSize(getPreferredSize());
     }
 
     public void addUndoListener(Runnable e) {

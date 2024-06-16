@@ -82,7 +82,6 @@ public class Main extends JFrame {
         topSplitPane.setPreferredSize(new Dimension(getWidth(), (int) (getHeight() * .7f)));
         // sp1 hold: textArea & viewport. We have to separate like this because JSplitPane only support 2 splits.
         JSplitPane sp1 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        viewport.setPreferredSize(new Dimension((int) (getWidth() * .6), 0));
         topSplitPane.add(sp1);
         sp1.add(textArea);
         sp1.add(viewport);

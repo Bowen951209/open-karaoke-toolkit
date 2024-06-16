@@ -23,8 +23,7 @@ import java.util.HashMap;
  * Modified from <a href="https://github.com/tips4java/tips4java/blob/main/source/TextLineNumber.java">here</a>
  */
 public class TextLineNumber extends JPanel implements CaretListener, DocumentListener {
-    private final static int HEIGHT = Integer.MAX_VALUE - 1000000;
-    private static  final float DIGIT_ALIGNMENT = 1.0f;
+    private static final float DIGIT_ALIGNMENT = 1.0f;
 
     private final JTextComponent component;
     private Color currentLineForeground;
@@ -57,6 +56,7 @@ public class TextLineNumber extends JPanel implements CaretListener, DocumentLis
 
         setFont(component.getFont());
 
+        setPreferredSize();
         setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100)));
         setCurrentLineForeground(Color.RED);
         setMinimumDisplayDigits(minimumDisplayDigits);
@@ -92,31 +92,36 @@ public class TextLineNumber extends JPanel implements CaretListener, DocumentLis
      */
     public void setMinimumDisplayDigits(int minimumDisplayDigits) {
         this.minimumDisplayDigits = minimumDisplayDigits;
-        setPreferredWidth();
+        setPreferredSize();
     }
 
     /**
-     * Calculate the width needed to display the maximum line number
+     * Calculate the size needed to display the maximum line number.
      */
-    private void setPreferredWidth() {
+    private void setPreferredSize() {
         Element root = component.getDocument().getDefaultRootElement();
         int lines = root.getElementCount();
         int digits = Math.max(String.valueOf(lines).length(), minimumDisplayDigits);
+        Dimension d = getPreferredSize();
+        Insets insets = getInsets();
+        FontMetrics fontMetrics = getFontMetrics(getFont());
+
+        int preferredWidth = (int) d.getWidth();
+
+        // Update the height every time.
+        int lineHeight = fontMetrics.getHeight(); // Get the height of a single line
+        int preferredHeight = insets.top + insets.bottom + (lineHeight * lines);
 
         //  Update sizes when number of digits in the line number changes
-
         if (lastDigits != digits) {
             lastDigits = digits;
-            FontMetrics fontMetrics = getFontMetrics(getFont());
             int width = fontMetrics.charWidth('0') * digits;
-            Insets insets = getInsets();
-            int preferredWidth = insets.left + insets.right + width;
-
-            Dimension d = getPreferredSize();
-            d.setSize(preferredWidth, HEIGHT);
-            setPreferredSize(d);
-            setSize(d);
+            preferredWidth = insets.left + insets.right + width;
         }
+
+        d.setSize(preferredWidth, preferredHeight);
+        setPreferredSize(d);
+        setSize(d);
     }
 
     /**
@@ -125,40 +130,37 @@ public class TextLineNumber extends JPanel implements CaretListener, DocumentLis
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
 
-        //	Determine the width of the space available to draw the line number
-
+        //	Determine the width of the space available to draw the line number.
         FontMetrics fontMetrics = component.getFontMetrics(component.getFont());
         Insets insets = getInsets();
         int availableWidth = getSize().width - insets.left - insets.right;
 
         //  Determine the rows to draw within the clipped bounds.
-
-        Rectangle clip = g.getClipBounds();
+        Rectangle clip = g2d.getClipBounds();
         int rowStartOffset = component.viewToModel2D(new Point(0, clip.y));
         int endOffset = component.viewToModel2D(new Point(0, clip.y + clip.height));
 
         while (rowStartOffset <= endOffset) {
             try {
                 if (isCurrentLine(rowStartOffset))
-                    g.setColor(getCurrentLineForeground());
+                    g2d.setColor(getCurrentLineForeground());
                 else
-                    g.setColor(getForeground());
+                    g2d.setColor(getForeground());
 
                 //  Get the line number as a string and then determine the
                 //  "X" and "Y" offsets for drawing the string.
-
                 String lineNumber = getTextLineNumber(rowStartOffset);
                 int stringWidth = fontMetrics.stringWidth(lineNumber);
                 int x = getOffsetX(availableWidth, stringWidth) + insets.left;
                 int y = getOffsetY(rowStartOffset, fontMetrics);
-                g.drawString(lineNumber, x, y);
+                g2d.drawString(lineNumber, x, y);
 
-                //  Move to the next row
-
+                //  Move to the next row.
                 rowStartOffset = Utilities.getRowEnd(component, rowStartOffset) + 1;
-            } catch (Exception e) {
-                break;
+            } catch (BadLocationException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -199,8 +201,7 @@ public class TextLineNumber extends JPanel implements CaretListener, DocumentLis
     /*
      *  Determine the Y offset for the current row
      */
-    private int getOffsetY(int rowStartOffset, FontMetrics fontMetrics)
-            throws BadLocationException {
+    private int getOffsetY(int rowStartOffset, FontMetrics fontMetrics) throws BadLocationException {
         //  Get the bounding rectangle of the row
 
         Rectangle2D r = component.modelToView2D(rowStartOffset);
@@ -290,11 +291,14 @@ public class TextLineNumber extends JPanel implements CaretListener, DocumentLis
                 Rectangle2D rect = component.modelToView2D(endPos);
 
                 if (rect != null && rect.getY() != lastHeight) {
-                    setPreferredWidth();
+
+                    setPreferredSize();
                     getParent().repaint();
                     lastHeight = (int) rect.getY();
                 }
-            } catch (BadLocationException ex) { /* nothing to do */ }
+            } catch (BadLocationException ex) {
+                throw new RuntimeException(ex);
+            }
         });
     }
 }

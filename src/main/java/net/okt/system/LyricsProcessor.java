@@ -315,9 +315,10 @@ public class LyricsProcessor {
 
             // Eastern chars and western chars are handled differently.
             if (isEasternChar(correctChar)) {
-                // If the next char is ', handle the link word case.
-                if (correctCharIdx + 1 < lyrics.length() && lyrics.charAt(correctCharIdx + 1) == '\'') {
-                    char secondChar = lyrics.charAt(correctCharIdx + 2);
+                // If the next char is ' and the 2nd char is accessible, handle the link word case.
+                int secondCharIdx = correctCharIdx + 2;
+                if (secondCharIdx < lyrics.length() && lyrics.charAt(correctCharIdx + 1) == '\'') {
+                    char secondChar = lyrics.charAt(secondCharIdx);
                     textBeforeMark = String.valueOf(new char[]{correctChar, secondChar});
 
                     charIdx += 2;

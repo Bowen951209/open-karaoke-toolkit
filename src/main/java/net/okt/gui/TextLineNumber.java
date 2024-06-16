@@ -57,7 +57,7 @@ public class TextLineNumber extends JPanel implements CaretListener, DocumentLis
         setFont(component.getFont());
 
         setPreferredSize();
-        setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100)));
+        setBorder(BorderFactory.createMatteBorder(0, 0, 0, 2, Color.GRAY));
         setCurrentLineForeground(Color.RED);
         setMinimumDisplayDigits(minimumDisplayDigits);
 

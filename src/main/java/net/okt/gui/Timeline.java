@@ -5,7 +5,6 @@ import net.okt.system.LyricsProcessor;
 import net.okt.system.SaveLoadManager;
 import net.okt.system.command.CommandManager;
 import net.okt.system.command.marks.MarkAddCommand;
-import net.okt.system.command.marks.MarkPopNumberCommand;
 import net.okt.system.command.marks.MarkRemoveCommand;
 import net.okt.system.command.marks.MarkSetCommand;
 
@@ -259,23 +258,6 @@ public class Timeline extends JPanel {
     public void markRedo() {
         markCmdMgr.redo();
         canvas.repaint();
-    }
-
-    /**
-     * Reallocate marks size if the number of marks is too many.
-     * (This will happen if the user delete words in the text field and influenced the exist marks.)
-     */
-    public void resetMarksNum() {
-        int redundantMarks = lyricsProcessor.getRedundantMarkNumber();
-
-        if (redundantMarks > 0) {
-            String text = lyricsProcessor.getLyrics();
-            var marks = saveLoadManager.getMarks();
-
-            int popNum = text.isEmpty() ? saveLoadManager.getMarks().size() : redundantMarks;
-            markCmdMgr.execute(new MarkPopNumberCommand(marks, popNum));
-            canvas.repaint();
-        }
     }
 
     private int toX(int time) {
@@ -547,6 +529,8 @@ public class Timeline extends JPanel {
             var marks = saveLoadManager.getMarks();
 
             for (int i = 0; i < marks.size(); i++) {
+                if (i >= lyricsProcessor.getMaxMarkNumber()) break;
+
                 String gapText = lyricsProcessor.getTextBeforeMark(i);
                 int currentMarkX = toX(marks.get(i));
 
@@ -568,6 +552,11 @@ public class Timeline extends JPanel {
                 g2d.drawImage(MARK_END_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
             else
                 g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
+
+            //TODO: This is a temporary pattern, draw special mark icon.
+            if (lyricsProcessor.isRedundantMark(markIdx)) {
+                g2d.fillArc(x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, 0, 360);
+            }
 
             // Draw the first digit of the mark index on the mark.
             String number = String.valueOf(markIdx % 10);

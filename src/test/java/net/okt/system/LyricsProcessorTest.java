@@ -349,6 +349,12 @@ class LyricsProcessorTest {
         assertEquals(0.6f, lyricsProcessor.getReadyDotsPercentage());
         lyricsProcessor.setTime(99);
         assertEquals(0.98f, lyricsProcessor.getReadyDotsPercentage());
+        lyricsProcessor.setTime(370);
+        assertEquals(0.4f, lyricsProcessor.getReadyDotsPercentage());
+
+        // Make sure percentage is 0 at the 2nd paragraph's end mark to its next.
+        lyricsProcessor.setTime(660);
+        assertEquals(0f, lyricsProcessor.getReadyDotsPercentage());
     }
 
     @Test

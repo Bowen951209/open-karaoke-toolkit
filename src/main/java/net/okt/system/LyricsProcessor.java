@@ -110,28 +110,11 @@ public class LyricsProcessor {
     }
 
     /**
-     * @return Whether the maximum size of marks is reached.
-     */
-    public boolean isMaxMarkNumber() {
-        // TODO: remove this
-        return marks.size() == getMaxMarkNumber();
-    }
-
-    /**
      * @return The max number of mark needed.
      */
     public int getMaxMarkNumber() {
         // (markTextList's size + 1) is the maximum size for marks.
         return markTextList.size() + 1;
-    }
-
-    /**
-     * Get the redundant marks number. The max mark number should be decided by the {@link #lyrics}. Any mark more than
-     * that is considered a redundant mark.
-     */
-    public int getRedundantMarkNumber() {
-        // TODO: remove this
-        return marks.size() - getMaxMarkNumber();
     }
 
     /**

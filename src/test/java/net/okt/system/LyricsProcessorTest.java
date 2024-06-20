@@ -358,42 +358,6 @@ class LyricsProcessorTest {
     }
 
     @Test
-    void isMaxMarkNumberTest() {
-        lyricsProcessor.setLyrics("""
-                abc
-                def
-                
-                ghi
-                jkl""");
-
-        var marks = saveLoadManager.getMarks();
-        marks.clear();
-        assertFalse(lyricsProcessor.isMaxMarkNumber());
-        marks.addAll(List.of(100, 200, 300, 400, 500));
-        assertFalse(lyricsProcessor.isMaxMarkNumber());
-        marks.add(600);
-        assertTrue(lyricsProcessor.isMaxMarkNumber());
-    }
-
-    @Test
-    void redundantMarkNumberTest() {
-        lyricsProcessor.setLyrics("""
-                abc
-                def
-
-                ghi
-                jkl""");
-
-        var marks = saveLoadManager.getMarks();
-        marks.clear();
-        assertTrue(lyricsProcessor.getRedundantMarkNumber() < 0);
-        marks.addAll(List.of(100, 200, 300, 400, 500, 600));
-        assertEquals(0, lyricsProcessor.getRedundantMarkNumber());
-        marks.addAll(List.of(700, 800, 900));
-        assertEquals(3, lyricsProcessor.getRedundantMarkNumber());
-    }
-
-    @Test
     void isParagraphEndMarkTest() {
         lyricsProcessor.setLyrics("""
                 abc

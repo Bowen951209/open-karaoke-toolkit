@@ -2,6 +2,7 @@ package net.okt.system.command.marks;
 
 import net.okt.system.command.Command;
 
+import java.util.Collections;
 import java.util.List;
 
 public class MarkAddCommand implements Command {
@@ -15,7 +16,10 @@ public class MarkAddCommand implements Command {
 
     @Override
     public void execute() {
+        boolean shouldSort = time < markList.get(markList.size() - 1);
         markList.add(time);
+        if (shouldSort)
+            Collections.sort(markList);
     }
 
     @Override

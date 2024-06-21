@@ -192,8 +192,6 @@ public class LyricsProcessor {
         int nextMark = getNextMark(time);
         int lastMark = nextMark - 1; // If nextMark is 0, lastMark will be -1.
 
-        // TODO: Make users can put marks in the middle.
-
         // If last mark is a redundant mark, process it as the end of paragraph end marks. By doing so, the following
         // logic can work properly.
         if (isRedundantMark(lastMark))

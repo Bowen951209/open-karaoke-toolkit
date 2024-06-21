@@ -340,9 +340,7 @@ public class Timeline extends JPanel {
 
                 var marks = saveLoadManager.getMarks();
                 int pointerTime = saveLoadManager.getLoadedAudio().getTimePosition();
-                int lastMarkTime = marks.size() - 1 > 0 ? marks.get(marks.size() - 1) : 0;
-                if (lastMarkTime < pointerTime) // It is only available to put a mark after the last one.
-                    markCmdMgr.execute(new MarkAddCommand(marks, pointerTime));
+                markCmdMgr.execute(new MarkAddCommand(marks, pointerTime));
             });
 
             btn.setPreferredSize(ICON_SIZE);

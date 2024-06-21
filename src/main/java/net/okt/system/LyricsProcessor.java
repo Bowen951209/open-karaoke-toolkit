@@ -192,8 +192,7 @@ public class LyricsProcessor {
         int nextMark = getNextMark(time);
         int lastMark = nextMark - 1; // If nextMark is 0, lastMark will be -1.
 
-        // TODO: Make the code readable and keep working on this.
-        //  make users can put marks in the middle.
+        // TODO: Make users can put marks in the middle.
 
         // If last mark is a redundant mark, process it as the end of paragraph end marks. By doing so, the following
         // logic can work properly.
@@ -203,17 +202,15 @@ public class LyricsProcessor {
         // Decide if to display text and the percentage of ready dots.
         if (isParagraphEndMark(lastMark) || nextMark == 0) {
             // Calculate the start and end the text should disappear.
+            boolean isEndMark = nextMark >= getMaxMarkNumber(); // If it's the end of the last paragraph.
             int disappearStart = nextMark == 0 ? 0 : marks.get(lastMark) + textDisappearTime;
-            int disappearEnd = nextMark >= getMaxMarkNumber() ? Integer.MAX_VALUE : marks.get(nextMark) - readyDotsPeriod;
+            int disappearEnd = isEndMark ? Integer.MAX_VALUE : marks.get(nextMark) - readyDotsPeriod;
             boolean shouldDisappear = time >= disappearStart && time <= disappearEnd;
             shouldDisplayText = !shouldDisappear;
 
             // Only if next mark is not the very end mark should we calculate the readyDotsPercentage, as ready dots
             // should not display at the very end paragraph.
-            if (nextMark < getMaxMarkNumber())
-                readyDotsPercentage = (float) (time - disappearEnd) / readyDotsPeriod;
-            else
-                readyDotsPercentage = 0;
+            readyDotsPercentage = isEndMark ? 0 : (float) (time - disappearEnd) / readyDotsPeriod;
         } else {
             shouldDisplayText = true;
             readyDotsPercentage = 0;

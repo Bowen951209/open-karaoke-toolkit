@@ -63,10 +63,6 @@ public class LyricsProcessor {
         return lyricsLines;
     }
 
-    public String getLyrics() {
-        return lyrics;
-    }
-
     public void setLyrics(String lyrics) {
         this.lyrics = lyrics;
         lyricsLines = Arrays.asList(lyrics.split("\n"));
@@ -75,11 +71,13 @@ public class LyricsProcessor {
     }
 
     /**
-     * @return The text before the given mark. If there's no word before the mark(a paragraph start mark), return
-     * null.
+     * @return The text before the given mark. If the lyrics is empty or there's no word before the mark(a paragraph
+     * start mark or redundant mark), return null.
      */
     public String getTextBeforeMark(int markIdx) {
-        if (markIdx == 0 || markTextList.isEmpty()) return null;
+        if (markIdx == 0 || markTextList.isEmpty() || markIdx >= getMaxMarkNumber())
+            return null;
+
         return markTextList.get(markIdx - 1);
     }
 
@@ -112,19 +110,11 @@ public class LyricsProcessor {
     }
 
     /**
-     * @return Whether the maximum size of marks is reached.
+     * @return The max number of mark needed.
      */
-    public boolean isMaxMarkNumber() {
+    public int getMaxMarkNumber() {
         // (markTextList's size + 1) is the maximum size for marks.
-        return marks.size() == markTextList.size() + 1;
-    }
-
-    /**
-     * Get the redundant marks number. The max mark number should be decided by the {@link #lyrics}. Any mark more than
-     * that is considered a redundant mark.
-     */
-    public int getRedundantMarkNumber() {
-        return marks.size() - markTextList.size() - 1;
+        return markTextList.size() + 1;
     }
 
     /**
@@ -132,6 +122,11 @@ public class LyricsProcessor {
      */
     public boolean isParagraphEndMark(int mark) {
         return paragraphEndMarks.contains(mark);
+    }
+
+    public boolean isRedundantMark(int mark) {
+        // Make sure there is redundant mark first.
+        return marks.size() > getMaxMarkNumber() && mark >= getMaxMarkNumber();
     }
 
     /**
@@ -197,15 +192,23 @@ public class LyricsProcessor {
         int nextMark = getNextMark(time);
         int lastMark = nextMark - 1; // If nextMark is 0, lastMark will be -1.
 
+        // If last mark is a redundant mark, process it as the end of paragraph end marks. By doing so, the following
+        // logic can work properly.
+        if (isRedundantMark(lastMark))
+            lastMark = paragraphEndMarks.get(paragraphEndMarks.size() - 1);
+
         // Decide if to display text and the percentage of ready dots.
         if (isParagraphEndMark(lastMark) || nextMark == 0) {
-            int disappearStart = lastMark == -1 ? 0 : marks.get(lastMark) + textDisappearTime;
-            int disappearEnd = nextMark >= marks.size() ? Integer.MAX_VALUE : marks.get(nextMark) - readyDotsPeriod;
+            // Calculate the start and end the text should disappear.
+            boolean isEndMark = nextMark >= getMaxMarkNumber(); // If it's the end of the last paragraph.
+            int disappearStart = nextMark == 0 ? 0 : marks.get(lastMark) + textDisappearTime;
+            int disappearEnd = isEndMark ? Integer.MAX_VALUE : marks.get(nextMark) - readyDotsPeriod;
             boolean shouldDisappear = time >= disappearStart && time <= disappearEnd;
-
             shouldDisplayText = !shouldDisappear;
 
-            readyDotsPercentage = (float) (time - disappearEnd) / readyDotsPeriod;
+            // Only if next mark is not the very end mark should we calculate the readyDotsPercentage, as ready dots
+            // should not display at the very end paragraph.
+            readyDotsPercentage = isEndMark ? 0 : (float) (time - disappearEnd) / readyDotsPeriod;
         } else {
             shouldDisplayText = true;
             readyDotsPercentage = 0;
@@ -377,9 +380,9 @@ public class LyricsProcessor {
     private int getParagraphAtTime(int time, int readyDotsPeriod) {
         int index = Collections.binarySearch(paragraphEndMarks, time, (paragraphEndMark, t) -> {
             int nextMark = paragraphEndMark + 1;
-            if (nextMark >= marks.size()) return 1;
-            Integer paragraphStartTime = marks.get(nextMark) - readyDotsPeriod;
-            return paragraphStartTime.compareTo(t);
+            if (nextMark >= getMaxMarkNumber()) return 1;
+            int paragraphStartTime = marks.get(nextMark) - readyDotsPeriod;
+            return Integer.compare(paragraphStartTime, t);
         });
 
         return Math.max(0, Math.abs(index) - 1);
@@ -406,7 +409,7 @@ public class LyricsProcessor {
         int index = Math.abs(Collections.binarySearch(lineStartMarks, time, (lineStartMark, t) -> {
             if (lineStartMark >= marks.size()) return 1;
 
-            int lineStartTime = Math.toIntExact(marks.get(lineStartMark));
+            int lineStartTime = marks.get(lineStartMark);
             if (isParagraphStartMark(lineStartMark)) {
                 return Integer.compare(lineStartTime - readyDotsPeriod, t);
             } else {

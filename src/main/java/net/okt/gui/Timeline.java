@@ -5,7 +5,6 @@ import net.okt.system.LyricsProcessor;
 import net.okt.system.SaveLoadManager;
 import net.okt.system.command.CommandManager;
 import net.okt.system.command.marks.MarkAddCommand;
-import net.okt.system.command.marks.MarkPopNumberCommand;
 import net.okt.system.command.marks.MarkRemoveCommand;
 import net.okt.system.command.marks.MarkSetCommand;
 
@@ -26,6 +25,7 @@ public class Timeline extends JPanel {
     private static final ImageIcon MARK_END_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_end.png")));
     private static final ImageIcon MARK_SELECTED_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_selected.png")));
     private static final ImageIcon MARK_FLOAT_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_float.png")));
+    private static final ImageIcon MARK_GRAY_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_gray.png")));
     private static final Dimension ICON_SIZE = new Dimension(PLAY_BUTTON_ICON.getIconHeight(), PLAY_BUTTON_ICON.getIconWidth());
     /**
      * The width between separation lines in pixel.
@@ -261,23 +261,6 @@ public class Timeline extends JPanel {
         canvas.repaint();
     }
 
-    /**
-     * Reallocate marks size if the number of marks is too many.
-     * (This will happen if the user delete words in the text field and influenced the exist marks.)
-     */
-    public void resetMarksNum() {
-        int redundantMarks = lyricsProcessor.getRedundantMarkNumber();
-
-        if (redundantMarks > 0) {
-            String text = lyricsProcessor.getLyrics();
-            var marks = saveLoadManager.getMarks();
-
-            int popNum = text.isEmpty() ? saveLoadManager.getMarks().size() : redundantMarks;
-            markCmdMgr.execute(new MarkPopNumberCommand(marks, popNum));
-            canvas.repaint();
-        }
-    }
-
     private int toX(int time) {
         return (int) (time * PIXEL_TIME_RATIO * canvas.scale);
     }
@@ -358,23 +341,7 @@ public class Timeline extends JPanel {
 
                 var marks = saveLoadManager.getMarks();
                 int pointerTime = saveLoadManager.getLoadedAudio().getTimePosition();
-                int lastMarkTime = marks.size() - 1 > 0 ? marks.get(marks.size() - 1) : 0;
-                if (lastMarkTime < pointerTime) // It is only available to put a mark after the last one.
-                    markCmdMgr.execute(new MarkAddCommand(marks, pointerTime));
-            });
-
-            btn.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    // Prevent users from putting redundant marks.
-                    if (lyricsProcessor.isMaxMarkNumber()) {
-                        btn.setEnabled(false);
-                        btn.setToolTipText("Reached max mark number.");
-                    } else {
-                        btn.setEnabled(true);
-                        btn.setToolTipText(null);
-                    }
-                }
+                markCmdMgr.execute(new MarkAddCommand(marks, pointerTime));
             });
 
             btn.setPreferredSize(ICON_SIZE);
@@ -535,7 +502,7 @@ public class Timeline extends JPanel {
                 } else {
                     // Draw the mark image. If the mark is the end mark, draw the special end icon.
                     // p.s. End marks are the last one of all the marks or the last mark of the paragraph.
-                    drawMark(i, markX, lyricsProcessor.isParagraphEndMark(i), g2d);
+                    drawMark(i, markX, g2d);
                 }
             }
         }
@@ -547,6 +514,8 @@ public class Timeline extends JPanel {
             var marks = saveLoadManager.getMarks();
 
             for (int i = 0; i < marks.size(); i++) {
+                if (i >= lyricsProcessor.getMaxMarkNumber()) break;
+
                 String gapText = lyricsProcessor.getTextBeforeMark(i);
                 int currentMarkX = toX(marks.get(i));
 
@@ -563,9 +532,11 @@ public class Timeline extends JPanel {
             }
         }
 
-        private void drawMark(int markIdx, int x, boolean isEndMark, Graphics2D g2d) {
-            if (isEndMark)
+        private void drawMark(int markIdx, int x, Graphics2D g2d) {
+            if (lyricsProcessor.isParagraphEndMark(markIdx))
                 g2d.drawImage(MARK_END_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
+            else if (lyricsProcessor.isRedundantMark(markIdx))
+                g2d.drawImage(MARK_GRAY_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
             else
                 g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
 

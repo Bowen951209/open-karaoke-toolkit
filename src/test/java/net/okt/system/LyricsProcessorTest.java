@@ -349,42 +349,12 @@ class LyricsProcessorTest {
         assertEquals(0.6f, lyricsProcessor.getReadyDotsPercentage());
         lyricsProcessor.setTime(99);
         assertEquals(0.98f, lyricsProcessor.getReadyDotsPercentage());
-    }
+        lyricsProcessor.setTime(370);
+        assertEquals(0.4f, lyricsProcessor.getReadyDotsPercentage());
 
-    @Test
-    void isMaxMarkNumberTest() {
-        lyricsProcessor.setLyrics("""
-                abc
-                def
-                
-                ghi
-                jkl""");
-
-        var marks = saveLoadManager.getMarks();
-        marks.clear();
-        assertFalse(lyricsProcessor.isMaxMarkNumber());
-        marks.addAll(List.of(100, 200, 300, 400, 500));
-        assertFalse(lyricsProcessor.isMaxMarkNumber());
-        marks.add(600);
-        assertTrue(lyricsProcessor.isMaxMarkNumber());
-    }
-
-    @Test
-    void redundantMarkNumberTest() {
-        lyricsProcessor.setLyrics("""
-                abc
-                def
-
-                ghi
-                jkl""");
-
-        var marks = saveLoadManager.getMarks();
-        marks.clear();
-        assertTrue(lyricsProcessor.getRedundantMarkNumber() < 0);
-        marks.addAll(List.of(100, 200, 300, 400, 500, 600));
-        assertEquals(0, lyricsProcessor.getRedundantMarkNumber());
-        marks.addAll(List.of(700, 800, 900));
-        assertEquals(3, lyricsProcessor.getRedundantMarkNumber());
+        // Make sure percentage is 0 at the 2nd paragraph's end mark to its next.
+        lyricsProcessor.setTime(660);
+        assertEquals(0f, lyricsProcessor.getReadyDotsPercentage());
     }
 
     @Test

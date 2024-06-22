@@ -25,6 +25,7 @@ public class Timeline extends JPanel {
     private static final ImageIcon MARK_END_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_end.png")));
     private static final ImageIcon MARK_SELECTED_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_selected.png")));
     private static final ImageIcon MARK_FLOAT_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_float.png")));
+    private static final ImageIcon MARK_GRAY_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_gray.png")));
     private static final Dimension ICON_SIZE = new Dimension(PLAY_BUTTON_ICON.getIconHeight(), PLAY_BUTTON_ICON.getIconWidth());
     /**
      * The width between separation lines in pixel.
@@ -501,7 +502,7 @@ public class Timeline extends JPanel {
                 } else {
                     // Draw the mark image. If the mark is the end mark, draw the special end icon.
                     // p.s. End marks are the last one of all the marks or the last mark of the paragraph.
-                    drawMark(i, markX, lyricsProcessor.isParagraphEndMark(i), g2d);
+                    drawMark(i, markX, g2d);
                 }
             }
         }
@@ -531,16 +532,13 @@ public class Timeline extends JPanel {
             }
         }
 
-        private void drawMark(int markIdx, int x, boolean isEndMark, Graphics2D g2d) {
-            if (isEndMark)
+        private void drawMark(int markIdx, int x, Graphics2D g2d) {
+            if (lyricsProcessor.isParagraphEndMark(markIdx))
                 g2d.drawImage(MARK_END_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
+            else if (lyricsProcessor.isRedundantMark(markIdx))
+                g2d.drawImage(MARK_GRAY_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
             else
                 g2d.drawImage(MARK_NORM_BUTTON_ICON.getImage(), x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, null);
-
-            //TODO: This is a temporary pattern, draw special mark icon.
-            if (lyricsProcessor.isRedundantMark(markIdx)) {
-                g2d.fillArc(x, 0, MARK_ICON_SIZE, MARK_ICON_SIZE, 0, 360);
-            }
 
             // Draw the first digit of the mark index on the mark.
             String number = String.valueOf(markIdx % 10);

@@ -63,10 +63,11 @@ public class Timeline extends JPanel {
         this.viewport = viewport;
         this.canvas = new Canvas();
         this.controlPanel = new ControlPanel();
+        this.scrollPane = getCanvasScrollPane();
         this.timer = new Timer(TIMER_DELAY, (e) -> {
             resetPointerX();
 
-            JScrollBar scrollBar = getCanvasScrollPane().getHorizontalScrollBar();
+            JScrollBar scrollBar = scrollPane.getHorizontalScrollBar();
             int scrollX = scrollBar.getValue();
             int distance = getWidth() - pointerX + scrollX;
 
@@ -87,7 +88,7 @@ public class Timeline extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         add(controlPanel);
-        add(getCanvasScrollPane());
+        add(scrollPane);
     }
 
     public void setWaveImg(BufferedImage waveImg) {
@@ -105,124 +106,6 @@ public class Timeline extends JPanel {
 
     public Canvas getCanvas() {
         return canvas;
-    }
-
-    public JScrollPane getCanvasScrollPane() {
-        if (scrollPane == null) { // if scrollPane == null, init it.
-            scrollPane = new JScrollPane(canvas);
-            scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-            scrollPane.setMinimumSize(new Dimension(0, 100));
-            scrollPane.getHorizontalScrollBar().setUnitIncrement(15);
-
-            scrollPane.setFocusable(true);
-            scrollPane.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (saveLoadManager.getLoadedAudio() == null) return;
-
-                    scrollPane.requestFocus();
-                    int x = (e.getX() + scrollPane.getHorizontalScrollBar().getValue());
-                    int ms = toTime(x);
-
-                    switch (e.getButton()) {
-                        case MouseEvent.BUTTON1 -> {
-                            // If you left-click, Jump the time.
-                            saveLoadManager.getLoadedAudio().setTimeTo(ms);
-                            resetPointerX();
-                        }
-
-                        case MouseEvent.BUTTON2 -> {
-                            // If you middle-click, delete selected mark.
-                            if (canvas.coveredMark != -1) {
-                                var marks = saveLoadManager.getMarks();
-                                markCmdMgr.execute(new MarkRemoveCommand(marks, canvas.coveredMark));
-                            }
-                        }
-                    }
-
-                    canvas.repaint();
-                    viewport.repaint();
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    canvas.isMouseDragging = false;
-                    if (canvas.draggingMark != -1) {
-                        int x = (e.getX() + scrollPane.getHorizontalScrollBar().getValue());
-                        markCmdMgr.execute(new MarkSetCommand(saveLoadManager.getMarks(), canvas.draggingMark, toTime(x)));
-                        canvas.draggingMark = -1;
-                        canvas.repaint();
-                    }
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    controlPanel.timeLabel.setText(null);
-                }
-            });
-            scrollPane.addMouseMotionListener(new MouseMotionAdapter() {
-                @Override
-                public void mouseMoved(MouseEvent e) {
-                    canvas.repaint();
-                }
-
-                @Override
-                public void mouseDragged(MouseEvent e) {
-                    canvas.isMouseDragging = true;
-                    int time = toTime(e.getX() + scrollPane.getHorizontalScrollBar().getValue());
-                    controlPanel.timeLabel.setText(toMinutesAndSecond(time, 2));
-
-                    canvas.repaint();
-                }
-            });
-            scrollPane.addMouseWheelListener(new MouseAdapter() {
-                @Override
-                public void mouseWheelMoved(MouseWheelEvent e) {
-                    scrollPane.setWheelScrollingEnabled(true);
-
-                    if (e.isControlDown()) {
-                        scrollPane.setWheelScrollingEnabled(false);
-
-                        JScrollBar scrollBar = scrollPane.getHorizontalScrollBar();
-                        controlPanel.sliderScale(-e.getWheelRotation(), e.getX() + scrollBar.getValue());
-                    }
-                }
-            });
-
-            scrollPane.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    scrollPane.setBorder(BorderFactory.createLineBorder(Color.GREEN));
-                }
-
-                @Override
-                public void focusLost(FocusEvent e) {
-                    scrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                }
-            });
-
-            // Disable the IME of the pane. This way, the key event can be handled properly.
-            scrollPane.enableInputMethods(false);
-
-            scrollPane.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    // Space: play/pause
-                    if (e.getKeyCode() == KeyEvent.VK_SPACE) controlPanel.playPauseButton.doClick();
-                    else if (e.isControlDown()) {
-                        // Ctrl + Z: Undo
-                        if (e.getKeyCode() == KeyEvent.VK_Z) {
-                            markUndo();
-                        }
-                        // Ctrl + Y: Redo
-                        else if (e.getKeyCode() == KeyEvent.VK_Y) {
-                            markRedo();
-                        }
-                    }
-                }
-            });
-        }
-        return scrollPane;
     }
 
     public void timePlay() {
@@ -244,7 +127,7 @@ public class Timeline extends JPanel {
     public void timeStop() {
         isPlaying = false;
         timePause();
-        getCanvasScrollPane().getHorizontalScrollBar().setValue(0);
+        scrollPane.getHorizontalScrollBar().setValue(0);
         saveLoadManager.getLoadedAudio().setTimeTo(0);
 
         pointerX = 0;
@@ -259,6 +142,143 @@ public class Timeline extends JPanel {
     public void markRedo() {
         markCmdMgr.redo();
         canvas.repaint();
+    }
+
+    private JScrollPane getCanvasScrollPane() {
+        scrollPane = new JScrollPane(canvas);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPane.setMinimumSize(new Dimension(0, 100));
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(15);
+
+        scrollPane.setFocusable(true);
+        scrollPane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (saveLoadManager.getLoadedAudio() == null) return;
+
+                scrollPane.requestFocus();
+                int x = (e.getX() + scrollPane.getHorizontalScrollBar().getValue());
+                int ms = toTime(x);
+
+                switch (e.getButton()) {
+                    case MouseEvent.BUTTON1 -> {
+                        // If you left-click, Jump the time.
+                        saveLoadManager.getLoadedAudio().setTimeTo(ms);
+                        resetPointerX();
+                    }
+
+                    case MouseEvent.BUTTON2 -> {
+                        // If you middle-click, delete selected mark.
+                        if (canvas.coveredMark != -1) {
+                            var marks = saveLoadManager.getMarks();
+                            markCmdMgr.execute(new MarkRemoveCommand(marks, canvas.coveredMark));
+                        }
+                    }
+                }
+
+                canvas.repaint();
+                viewport.repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                canvas.isMouseDragging = false;
+                if (canvas.draggingMark != -1) {
+                    int x = (e.getX() + scrollPane.getHorizontalScrollBar().getValue());
+                    markCmdMgr.execute(new MarkSetCommand(saveLoadManager.getMarks(), canvas.draggingMark, toTime(x)));
+                    canvas.draggingMark = -1;
+                    canvas.repaint();
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                controlPanel.timeLabel.setText(null);
+            }
+        });
+        scrollPane.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                canvas.repaint();
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                canvas.isMouseDragging = true;
+                int time = toTime(e.getX() + scrollPane.getHorizontalScrollBar().getValue());
+                controlPanel.timeLabel.setText(toMinutesAndSecond(time, 2));
+
+                canvas.repaint();
+            }
+        });
+
+        // Remove the default mouse wheel listener and add back later because the one we want to add disables the
+        // scroll when ctrl is down. Thus, the default one should be performed after it.
+        var defaultMouseListener = scrollPane.getMouseWheelListeners()[0];
+        scrollPane.removeMouseWheelListener(defaultMouseListener);
+
+        scrollPane.addMouseWheelListener(new MouseAdapter() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.isControlDown()) {
+                    scrollPane.setWheelScrollingEnabled(false);
+
+                    int speed = 10;
+                    int orientation = -e.getWheelRotation();
+                    JSlider slider = controlPanel.slider;
+                    slider.setValue(slider.getValue() + orientation * speed);
+                } else {
+                    scrollPane.setWheelScrollingEnabled(true);
+                }
+            }
+        });
+        scrollPane.addMouseWheelListener(defaultMouseListener);
+
+        scrollPane.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                scrollPane.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                scrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            }
+        });
+
+        // Disable the IME of the pane. This way, the key event can be handled properly.
+        scrollPane.enableInputMethods(false);
+
+        scrollPane.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // Space: play/pause
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) controlPanel.playPauseButton.doClick();
+                else if (e.isControlDown()) {
+                    // Ctrl + Z: Undo
+                    if (e.getKeyCode() == KeyEvent.VK_Z) {
+                        markUndo();
+                    }
+                    // Ctrl + Y: Redo
+                    else if (e.getKeyCode() == KeyEvent.VK_Y) {
+                        markRedo();
+                    }
+                }
+            }
+        });
+
+        return scrollPane;
+    }
+
+    /**
+     * Make the {@link #scrollPane} focus on the given time in the middle.
+     *
+     * @param time          The time in the middle of the view.
+     * @param timelineWidth The width of the timeline.(Not the canvas width.)
+     */
+    private void scrollPaneSetTime(int time, int timelineWidth) {
+        int val = toX(time) - timelineWidth / 2;
+        scrollPane.getHorizontalScrollBar().setValue(val);
     }
 
     private int toX(int time) {
@@ -364,11 +384,12 @@ public class Timeline extends JPanel {
 
             slider.addChangeListener(e -> {
                 if (saveLoadManager.getLoadedAudio() == null) return;
+                int time = toTime(scrollPane.getHorizontalScrollBar().getValue() + getWidth() / 2);
                 canvas.setSize();
                 resetPointerX();
+                scrollPaneSetTime(time, getWidth());
             });
 
-            slider.addMouseWheelListener(e -> sliderScale(e.getWheelRotation()));
             slider.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -379,25 +400,6 @@ public class Timeline extends JPanel {
             });
 
             return slider;
-        }
-
-        private void sliderScale(int orientation) {
-            int sliderSpeed = 10;
-            slider.setValue(slider.getValue() + orientation * sliderSpeed);
-        }
-
-        /**
-         * This method will ensure that we are focus on the time of the original specified x pos.
-         *
-         * @param x x position of the whole length of canvas.
-         */
-        private void sliderScale(int orientation, int x) {
-            int time = toTime(x);
-            sliderScale(orientation);
-            int newX = toX(time);
-
-            JScrollBar scrollBar = getCanvasScrollPane().getHorizontalScrollBar();
-            scrollBar.setValue(scrollBar.getValue() + (newX - x));
         }
     }
 

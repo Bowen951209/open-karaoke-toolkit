@@ -211,19 +211,28 @@ public class Timeline extends JPanel {
                 canvas.repaint();
             }
         });
+
+        // Remove the default mouse wheel listener and add back later because the one we want to add disables the
+        // scroll when ctrl is down. Thus, the default one should be performed after it.
+        var defaultMouseListener = scrollPane.getMouseWheelListeners()[0];
+        scrollPane.removeMouseWheelListener(defaultMouseListener);
+
         scrollPane.addMouseWheelListener(new MouseAdapter() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
-                scrollPane.setWheelScrollingEnabled(true);
-
                 if (e.isControlDown()) {
                     scrollPane.setWheelScrollingEnabled(false);
 
-                    JScrollBar scrollBar = scrollPane.getHorizontalScrollBar();
-                    controlPanel.sliderScale(-e.getWheelRotation(), e.getX() + scrollBar.getValue());
+                    int speed = 10;
+                    int orientation = -e.getWheelRotation();
+                    JSlider slider = controlPanel.slider;
+                    slider.setValue(slider.getValue() + orientation * speed);
+                } else {
+                    scrollPane.setWheelScrollingEnabled(true);
                 }
             }
         });
+        scrollPane.addMouseWheelListener(defaultMouseListener);
 
         scrollPane.addFocusListener(new FocusAdapter() {
             @Override
@@ -261,6 +270,16 @@ public class Timeline extends JPanel {
         return scrollPane;
     }
 
+    /**
+     * Make the {@link #scrollPane} focus on the given time in the middle.
+     *
+     * @param time          The time in the middle of the view.
+     * @param timelineWidth The width of the timeline.(Not the canvas width.)
+     */
+    private void scrollPaneSetTime(int time, int timelineWidth) {
+        int val = toX(time) - timelineWidth / 2;
+        scrollPane.getHorizontalScrollBar().setValue(val);
+    }
 
     private int toX(int time) {
         return (int) (time * PIXEL_TIME_RATIO * canvas.scale);
@@ -365,11 +384,12 @@ public class Timeline extends JPanel {
 
             slider.addChangeListener(e -> {
                 if (saveLoadManager.getLoadedAudio() == null) return;
+                int time = toTime(scrollPane.getHorizontalScrollBar().getValue() + getWidth() / 2);
                 canvas.setSize();
                 resetPointerX();
+                scrollPaneSetTime(time, getWidth());
             });
 
-            slider.addMouseWheelListener(e -> sliderScale(e.getWheelRotation()));
             slider.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -380,25 +400,6 @@ public class Timeline extends JPanel {
             });
 
             return slider;
-        }
-
-        private void sliderScale(int orientation) {
-            int sliderSpeed = 10;
-            slider.setValue(slider.getValue() + orientation * sliderSpeed);
-        }
-
-        /**
-         * This method will ensure that we are focus on the time of the original specified x pos.
-         *
-         * @param x x position of the whole length of canvas.
-         */
-        private void sliderScale(int orientation, int x) {
-            int time = toTime(x);
-            sliderScale(orientation);
-            int newX = toX(time);
-
-            JScrollBar scrollBar = scrollPane.getHorizontalScrollBar();
-            scrollBar.setValue(scrollBar.getValue() + (newX - x));
         }
     }
 

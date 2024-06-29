@@ -174,8 +174,13 @@ public class LyricsProcessor {
         int nextLine = line + 1;
 
         // Set the displayingLines.
+        // If line is out of bounds, set it to -1.
+        if (line >= lyricsLines.size()) {
+            displayingLines[0] = -1;
+            displayingLines[1] = -1;
+        }
         // If nextLine is blank, switch it back because we don't want to display blank lines.
-        if ((line - paragraphStartLine) % 2 == 0) {
+        else if ((line - paragraphStartLine) % 2 == 0) {
             displayingLines[0] = line;
             if (isBlankLine(nextLine))
                 displayingLines[1] = line - 1;

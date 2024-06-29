@@ -24,6 +24,8 @@ public class SideConfigPanel extends JScrollPane {
         setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         setMinimumSize(minSize);
 
+        getVerticalScrollBar().setUnitIncrement(15);
+
         panel.add(getViewportConfigPanel());
         addSeparator();
 

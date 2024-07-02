@@ -16,7 +16,7 @@ public class MarkAddCommand implements Command {
 
     @Override
     public void execute() {
-        boolean shouldSort = time < markList.get(markList.size() - 1);
+        boolean shouldSort = !markList.isEmpty() && time < markList.get(markList.size() - 1);
         markList.add(time);
         if (shouldSort)
             Collections.sort(markList);

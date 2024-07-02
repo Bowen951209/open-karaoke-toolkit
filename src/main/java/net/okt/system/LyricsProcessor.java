@@ -207,7 +207,7 @@ public class LyricsProcessor {
             // Calculate the start and end the text should disappear.
             boolean isEndMark = nextMark >= getMaxMarkNumber(); // If it's the end of the last paragraph.
             int disappearStart = nextMark == 0 ? 0 : marks.get(lastMark) + textDisappearTime;
-            int disappearEnd = isEndMark ? Integer.MAX_VALUE : marks.get(nextMark) - readyDotsPeriod;
+            int disappearEnd = isEndMark || nextMark >= marks.size() ? Integer.MAX_VALUE : marks.get(nextMark) - readyDotsPeriod;
             boolean shouldDisappear = time >= disappearStart && time <= disappearEnd;
             shouldDisplayText = !shouldDisappear;
 
@@ -385,7 +385,7 @@ public class LyricsProcessor {
     private int getParagraphAtTime(int time, int readyDotsPeriod) {
         int index = Collections.binarySearch(paragraphEndMarks, time, (paragraphEndMark, t) -> {
             int nextMark = paragraphEndMark + 1;
-            if (nextMark >= getMaxMarkNumber()) return 1;
+            if (nextMark >= marks.size()) return 1;
             int paragraphStartTime = marks.get(nextMark) - readyDotsPeriod;
             return Integer.compare(paragraphStartTime, t);
         });

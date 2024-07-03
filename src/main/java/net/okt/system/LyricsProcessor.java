@@ -411,15 +411,20 @@ public class LyricsProcessor {
      * @return The line that should be sung at the given time.
      */
     private int getLine(int time, int paragraph, int readyDotsPeriod) {
+        @SuppressWarnings("ComparatorMethodParameterNotUsed")
         int index = Math.abs(Collections.binarySearch(lineStartMarks, time, (lineStartMark, t) -> {
             if (lineStartMark >= marks.size()) return 1;
 
             int lineStartTime = marks.get(lineStartMark);
+            int compare;
             if (isParagraphStartMark(lineStartMark)) {
-                return Integer.compare(lineStartTime - readyDotsPeriod, t);
+                compare = Integer.compare(lineStartTime - readyDotsPeriod, t);
             } else {
-                return Integer.compare(lineStartTime, t);
+                compare = Integer.compare(lineStartTime, t);
             }
+
+            if (compare == 0) return -1; // If equal, return -1 so the final index will be correct.
+            return compare;
         }));
 
         return index - 1 + paragraph;

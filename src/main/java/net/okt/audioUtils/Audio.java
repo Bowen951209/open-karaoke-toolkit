@@ -1,59 +1,115 @@
 package net.okt.audioUtils;
 
-import javax.sound.sampled.*;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.SourceDataLine;
 import java.io.File;
-import java.io.IOException;
+import java.nio.ShortBuffer;
 
 public class Audio {
-    private final Clip clip;
-    private final int totalTime;
+    private final SourceDataLine line;
+    private final FFmpegFrameGrabber grabber;
 
-    public Audio(File src) {
-        try {
-            this.clip = AudioSystem.getClip();
-        } catch (LineUnavailableException e) {
-            throw new RuntimeException(e);
-        }
+    private Thread playThread;
+    private boolean isPlaying;
 
-        try(AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(src)) {
-            clip.open(audioInputStream);
-            AudioFormat format = audioInputStream.getFormat();
-            long frames = audioInputStream.getFrameLength();
-            totalTime = (int) ((float) frames / format.getFrameRate() * 1000);
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public Audio(File audioFile) throws Exception {
+        // Create a FFmpegFrameGrabber to grab audio frames.
+        grabber = new FFmpegFrameGrabber(audioFile);
+        grabber.start();
 
-    public int getTotalTime() {
-        return totalTime;
+        // Get the audio format.
+        AudioFormat audioFormat = new AudioFormat(grabber.getSampleRate(), 16,
+                grabber.getAudioChannels(), true, false);
+
+        // Create a SourceDataLine, which can play the audio.
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
+        line = (SourceDataLine) AudioSystem.getLine(info);
+        line.open(audioFormat);
     }
 
     public void play() {
-        clip.start();
-    }
+        isPlaying = true;
 
-    public void pause() {
-        clip.stop();
+        playThread = new Thread(() -> {
+            line.start();
+
+            // Play the audio.
+            Frame frame;
+            try {
+                while ((frame = grabber.grabFrame()) != null && isPlaying) {
+                    if (frame.samples != null) {
+                        ShortBuffer sb = (ShortBuffer) frame.samples[0];
+                        sb.rewind();
+                        byte[] audioBytes = new byte[sb.remaining() * 2];
+                        for (int i = 0; sb.remaining() > 0; i += 2) {
+                            short val = sb.get();
+                            audioBytes[i] = (byte) (val & 0xff);
+                            audioBytes[i + 1] = (byte) ((val >> 8) & 0xff);
+                        }
+                        line.write(audioBytes, 0, audioBytes.length);
+                    }
+                }
+            } catch (FrameGrabber.Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        playThread.start();
     }
 
     public void close() {
-        clip.close();
+        line.flush();
+        line.stop();
+        line.close();
+        try {
+            grabber.close();
+        } catch (FrameGrabber.Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void pause() {
+        if (playThread == null) return;
+
+        isPlaying = false;
+
+        // Wait the thread to finish.
+        try {
+            playThread.join();
+            line.stop();
+            line.drain();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public void setTimeTo(int ms) {
-        float ratio = (float) ms / totalTime;
-        clip.setFramePosition((int) (ratio * clip.getFrameLength()));
+        try {
+            grabber.setAudioTimestamp(ms * 1000L);
+
+            // Flush the buffer to clean the data left. This can make sure playback without previous sound left.
+            line.flush();
+        } catch (FFmpegFrameGrabber.Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * @return The current playing time.
-     * */
+     */
     public int getTimePosition() {
-        float timeScale = (float) clip.getFramePosition() / clip.getFrameLength();
-        return (int) (timeScale * totalTime);
+        return (int) grabber.getTimestamp() / 1000;
     }
 
+    public int getTotalTime() {
+        return (int) grabber.getLengthInTime() / 1000;
+    }
 
     /**
      * @return If the audio has finished playing.

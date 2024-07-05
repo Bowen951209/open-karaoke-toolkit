@@ -67,7 +67,11 @@ public class SaveLoadManager {
         if (loadedAudio != null)
             loadedAudio.close();
 
-        loadedAudio = new Audio(audio);
+        try {
+            loadedAudio = new Audio(audio);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         setProp("audio", audio.getPath());
 

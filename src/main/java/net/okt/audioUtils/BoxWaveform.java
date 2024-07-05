@@ -15,7 +15,8 @@ import java.io.IOException;
  * Class modified from @GOXR3PLUS STUDIO
  */
 public class BoxWaveform {
-    // draw the image
+
+    //TODO: Enable this for more formats with ffmpeg.
     private static void drawImage(BufferedImage img, float[] samples, int boxWidth, Dimension size, Color color) {
         Graphics2D g2d = img.createGraphics();
 

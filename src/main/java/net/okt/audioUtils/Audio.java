@@ -17,6 +17,7 @@ public class Audio {
 
     private Thread playThread;
     private boolean isPlaying;
+    private long startPlayTime;
 
     public Audio(File audioFile) throws Exception {
         // Create a FFmpegFrameGrabber to grab audio frames.
@@ -38,6 +39,7 @@ public class Audio {
 
         playThread = new Thread(() -> {
             line.start();
+            startPlayTime = line.getMicrosecondPosition() / 1000 - getTimePosition();
 
             // Play the audio.
             Frame frame;
@@ -77,24 +79,16 @@ public class Audio {
         if (playThread == null) return;
 
         isPlaying = false;
-
-        // Wait the thread to finish.
-        try {
-            playThread.join();
-            line.stop();
-            line.drain();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
+        line.stop();
     }
 
     public void setTimeTo(int ms) {
         try {
-            grabber.setAudioTimestamp(ms * 1000L);
-
             // Flush the buffer to clean the data left. This can make sure playback without previous sound left.
             line.flush();
+
+            grabber.setAudioTimestamp(ms * 1000L);
+            startPlayTime = line.getMicrosecondPosition() / 1000 - ms;
         } catch (FFmpegFrameGrabber.Exception e) {
             throw new RuntimeException(e);
         }
@@ -104,7 +98,7 @@ public class Audio {
      * @return The current playing time.
      */
     public int getTimePosition() {
-        return (int) grabber.getTimestamp() / 1000;
+        return (int) (line.getMicrosecondPosition() / 1000 - startPlayTime);
     }
 
     public int getTotalTime() {

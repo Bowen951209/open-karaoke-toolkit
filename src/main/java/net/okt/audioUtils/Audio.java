@@ -109,6 +109,6 @@ public class Audio {
      * @return If the audio has finished playing.
      */
     public boolean isFinished() {
-        return getTimePosition() == getTotalTime();
+        return getTimePosition() >= getTotalTime();
     }
 }

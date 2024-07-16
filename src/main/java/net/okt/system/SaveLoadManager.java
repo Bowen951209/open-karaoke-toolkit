@@ -83,7 +83,7 @@ public class SaveLoadManager {
 
         timeline.setWaveImg(BoxWaveform.loadImage(
                 audio,
-                new Dimension(imgWidth, 50), 1,
+                new Dimension(imgWidth, 50),
                 new Color(5, 80, 20)));
 
         // Stop the timer and revalidate the canvas.

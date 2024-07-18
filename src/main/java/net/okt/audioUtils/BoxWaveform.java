@@ -20,25 +20,36 @@ public class BoxWaveform {
             grabber.start();
 
             long lengthInNanoTime = grabber.getLengthInTime();
-            long nanoPerPixel = lengthInNanoTime / size.width;
+            int sampleRate = grabber.getSampleRate();
+            int channels = grabber.getAudioChannels();
+            float samplePerPixel = (float) lengthInNanoTime / 1000000 * sampleRate / size.width * channels;
             int arrSize = size.width;
             short[] samples = new short[arrSize];
 
-            short peakVal = 0; // the max of all samples.
+            float bufIdx = 0;
             int idx = 0;
-            for (int i = 0; i < arrSize; i++) {
-                grabber.setAudioTimestamp(i * nanoPerPixel);
-                Frame audioFrame = grabber.grabSamples();
-                ShortBuffer buffer = (ShortBuffer) audioFrame.samples[0];
+            short peakVal = 0;
+            Frame frame;
 
-                // Only the 0th element represent the value of this timestamp.
-                samples[idx] = buffer.get(0);
+            grabLoop:
+            while ((frame = grabber.grabFrame()) != null) {
+                if (frame.samples != null) {
+                    ShortBuffer sb = (ShortBuffer) frame.samples[0];
+                    while (bufIdx < sb.limit()) {
+                        if (idx >= arrSize) break grabLoop;
 
-                // update peak value if larger.
-                if (samples[idx] > peakVal)
-                    peakVal = samples[idx];
+                        // This make sure that we always take the first channel.
+                        samples[idx] = sb.get((int) bufIdx % channels == 0 ? (int) bufIdx : (int) bufIdx - 1);
 
-                idx++;
+                        if (samples[idx] > peakVal)
+                            peakVal = samples[idx];
+
+                        bufIdx += samplePerPixel;
+                        idx++;
+                    }
+
+                    bufIdx %= sb.limit();
+                }
             }
 
             BufferedImage img = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
@@ -52,7 +63,6 @@ public class BoxWaveform {
     /**
      * @param img     The buffered image to draw to.
      * @param samples The samples to draw. Its length should be the same as img's width.
-     * @param peakVal The max of all samples. This is for scaling the waveform, so it'll look clearer.
      * @param color   The color of the waveform.
      */
     private static void drawToImage(BufferedImage img, short[] samples, short peakVal, Color color) {

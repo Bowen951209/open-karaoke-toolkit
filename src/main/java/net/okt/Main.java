@@ -1,18 +1,16 @@
 package net.okt;
 
 import net.okt.gui.*;
+import net.okt.system.FileExtensionUtils;
 import net.okt.system.LyricsProcessor;
 import net.okt.system.SaveLoadManager;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 
 public class Main extends JFrame {
     public static final String INIT_FRAME_TITLE = "Open Karaoke Toolkit";
-    public static final FileNameExtensionFilter WAV_EXT_FILTER = new FileNameExtensionFilter("*.wav", "wav");
-    public static final FileNameExtensionFilter PROPS_EXT_FILTER = new FileNameExtensionFilter("*.properties", "properties");
 
     public static Main mainFrame;
 
@@ -144,7 +142,7 @@ public class Main extends JFrame {
         JMenuItem loadProject = new JMenuItem("Load Project");
         loadProject.addActionListener(e -> {
             fileChooser.setDialogTitle("Choose Project");
-            fileChooser.setFileFilter(Main.PROPS_EXT_FILTER);
+            fileChooser.setFileFilter(FileExtensionUtils.PROPS_EXT_FILTER);
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 saveLoadManager.load(selectedFile, textArea);
@@ -157,11 +155,11 @@ public class Main extends JFrame {
         JMenuItem saveProject = new JMenuItem("Save Project");
         saveProject.addActionListener(e -> {
             fileChooser.setDialogTitle("Save as");
-            fileChooser.setFileFilter(Main.PROPS_EXT_FILTER);
+            fileChooser.setFileFilter(FileExtensionUtils.PROPS_EXT_FILTER);
 
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
-                String extension = "." + PROPS_EXT_FILTER.getExtensions()[0];
+                String extension = "." + FileExtensionUtils.PROPS_EXT_FILTER.getExtensions()[0];
                 if (!selectedFile.getName().endsWith(extension)) {
                     selectedFile = new File(selectedFile + extension);
                 }
@@ -176,7 +174,7 @@ public class Main extends JFrame {
         JMenuItem loadAudio = new JMenuItem("Load Audio");
         loadAudio.addActionListener(e -> {
             fileChooser.setDialogTitle("Choose Audio");
-            fileChooser.setFileFilter(WAV_EXT_FILTER);
+            fileChooser.setFileFilter(FileExtensionUtils.AUDIO_EXT_FILTER);
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 saveLoadManager.setLoadedAudio(selectedFile);

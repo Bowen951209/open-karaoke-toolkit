@@ -170,7 +170,7 @@ public class SaveLoadManager {
 
                 JFileChooser fcr = new JFileChooser(".");
                 fcr.setDialogTitle("Please redirect the file: ");
-                fcr.setFileFilter(Main.WAV_EXT_FILTER);
+                fcr.setFileFilter(FileExtensionUtils.AUDIO_EXT_FILTER);
                 if (fcr.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     audioFile = fcr.getSelectedFile();
                 } else {

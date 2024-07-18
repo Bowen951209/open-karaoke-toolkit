@@ -47,7 +47,6 @@ public class Audio {
                 while ((frame = grabber.grabFrame()) != null && isPlaying) {
                     if (frame.samples != null) {
                         ShortBuffer sb = (ShortBuffer) frame.samples[0];
-                        sb.rewind();
                         byte[] audioBytes = new byte[sb.remaining() * 2];
                         for (int i = 0; sb.remaining() > 0; i += 2) {
                             short val = sb.get();

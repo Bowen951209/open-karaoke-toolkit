@@ -59,6 +59,7 @@ public class BoxWaveform {
     /**
      * @param img     The buffered image to draw to.
      * @param samples The samples to draw. Its length should be the same as img's width.
+     * @param peakVal The max value of the samples. This is to normalize the waveform.
      * @param color   The color of the waveform.
      */
     private static void drawToImage(BufferedImage img, short[] samples, short peakVal, Color color) {
@@ -70,5 +71,7 @@ public class BoxWaveform {
             int y = samples[i] * midY / peakVal;
             g2d.drawLine(i, midY - y, i, midY + y);
         }
+
+        g2d.dispose();
     }
 }

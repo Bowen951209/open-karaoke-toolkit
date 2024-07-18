@@ -10,10 +10,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ShortBuffer;
 
-
-/**
- * Class modified from @GOXR3PLUS STUDIO
- */
 public class BoxWaveform {
     public static BufferedImage loadImage(File file, Dimension size, Color color) {
         try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(file.getPath())) {

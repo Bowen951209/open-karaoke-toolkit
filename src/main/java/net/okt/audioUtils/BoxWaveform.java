@@ -35,7 +35,7 @@ public class BoxWaveform {
                         if (idx >= size.width) break grabLoop;
 
                         // This make sure that we always take the first channel.
-                        samples[idx] = sb.get((int) bufIdx % channels == 0 ? (int) bufIdx : (int) bufIdx - channels + 1);
+                        samples[idx] = sb.get((int) (bufIdx - (bufIdx % channels)));
 
                         if (samples[idx] > peakVal)
                             peakVal = samples[idx];

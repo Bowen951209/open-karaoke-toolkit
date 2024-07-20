@@ -16,11 +16,11 @@ public class BoxWaveform {
             grabber.start();
 
             long lengthInNanoTime = grabber.getLengthInTime();
+            float lengthInSecond = (float) lengthInNanoTime / 1000000f;
             int sampleRate = grabber.getSampleRate();
             int channels = grabber.getAudioChannels();
-            float samplePerPixel = (float) lengthInNanoTime / 1000000 * sampleRate / size.width * channels;
-            int arrSize = size.width;
-            short[] samples = new short[arrSize];
+            float sampleStep = lengthInSecond * sampleRate / size.width * channels;
+            short[] samples = new short[size.width];
 
             float bufIdx = 0;
             int idx = 0;
@@ -32,7 +32,7 @@ public class BoxWaveform {
                 if (frame.samples != null) {
                     ShortBuffer sb = (ShortBuffer) frame.samples[0];
                     while (bufIdx < sb.limit()) {
-                        if (idx >= arrSize) break grabLoop;
+                        if (idx >= size.width) break grabLoop;
 
                         // This make sure that we always take the first channel.
                         samples[idx] = sb.get((int) bufIdx % channels == 0 ? (int) bufIdx : (int) bufIdx - channels + 1);
@@ -40,7 +40,7 @@ public class BoxWaveform {
                         if (samples[idx] > peakVal)
                             peakVal = samples[idx];
 
-                        bufIdx += samplePerPixel;
+                        bufIdx += sampleStep;
                         idx++;
                     }
 

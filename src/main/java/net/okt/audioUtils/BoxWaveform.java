@@ -1,145 +1,77 @@
 package net.okt.audioUtils;
 
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
+import java.nio.ShortBuffer;
 
-
-/**
- * Class modified from @GOXR3PLUS STUDIO
- */
 public class BoxWaveform {
-    // draw the image
-    private static void drawImage(BufferedImage img, float[] samples, int boxWidth, Dimension size, Color color) {
-        Graphics2D g2d = img.createGraphics();
+    public static BufferedImage loadImage(File file, Dimension size, Color color) {
+        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(file.getPath())) {
+            grabber.start();
 
-        int numSubsets = size.width / boxWidth;
-        int subsetLength = samples.length / numSubsets;
+            long lengthInNanoTime = grabber.getLengthInTime();
+            float lengthInSecond = (float) lengthInNanoTime / 1000000f;
+            int sampleRate = grabber.getSampleRate();
+            int channels = grabber.getAudioChannels();
+            float sampleStep = lengthInSecond * sampleRate / size.width * channels;
+            short[] samples = new short[size.width];
 
-        float[] subsets = new float[numSubsets];
+            float bufIdx = 0;
+            int idx = 0;
+            short peakVal = 0;
+            Frame frame;
 
-        // find average(abs) of each box subset
-        int s = 0;
-        for (int i = 0; i < subsets.length; i++) {
+            grabLoop:
+            while ((frame = grabber.grabFrame()) != null) {
+                if (frame.samples != null) {
+                    ShortBuffer sb = (ShortBuffer) frame.samples[0];
+                    while (bufIdx < sb.limit()) {
+                        if (idx >= size.width) break grabLoop;
 
-            double sum = 0;
-            for (int k = 0; k < subsetLength; k++) {
-                sum += Math.abs(samples[s++]);
+                        // This make sure that we always take the first channel.
+                        samples[idx] = sb.get((int) (bufIdx - (bufIdx % channels)));
+
+                        if (samples[idx] > peakVal)
+                            peakVal = samples[idx];
+
+                        bufIdx += sampleStep;
+                        idx++;
+                    }
+
+                    bufIdx %= sb.limit();
+                }
             }
 
-            subsets[i] = (float) (sum / subsetLength);
+            BufferedImage img = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
+            drawToImage(img, samples, peakVal, color);
+            return img;
+        } catch (FrameGrabber.Exception e) {
+            throw new RuntimeException(e);
         }
+    }
 
-        // find the peak so the waveform can be normalized
-        // to the height of the image
-        float normal = 0;
-        for (float sample : subsets) {
-            if (sample > normal)
-                normal = sample;
-        }
-
-        // normalize and scale
-        normal = 32768.0f / normal;
-        for (int i = 0; i < subsets.length; i++) {
-            subsets[i] *= normal;
-            subsets[i] = (subsets[i] / 32768.0f) * ((float) size.height / 2);
-        }
+    /**
+     * @param img     The buffered image to draw to.
+     * @param samples The samples to draw. Its length should be the same as img's width.
+     * @param peakVal The max value of the samples. This is to normalize the waveform.
+     * @param color   The color of the waveform.
+     */
+    private static void drawToImage(BufferedImage img, short[] samples, short peakVal, Color color) {
+        Graphics2D g2d = (Graphics2D) img.getGraphics();
+        int midY = img.getHeight() / 2;
 
         g2d.setColor(color);
-
-        // convert to image coords and do actual drawing
-        for (int i = 0; i < subsets.length; i++) {
-            int sample = (int) subsets[i];
-
-            int posY = (size.height / 2) - sample;
-            int negY = (size.height / 2) + sample;
-
-            int x = i * boxWidth;
-
-            g2d.drawLine(x, posY, x, negY);
+        for (int i = 0; i < samples.length; i++) {
+            int y = samples[i] * midY / peakVal;
+            g2d.drawLine(i, midY - y, i, midY + y);
         }
 
         g2d.dispose();
-    }
-
-
-    // handle most WAV and AIFF files
-    public static BufferedImage loadImage(File file, Dimension size, int boxWidth, Color color) {
-        float[] samples;
-
-
-        //Now procceeed orgasm...
-        try (AudioInputStream in = AudioSystem.getAudioInputStream(file)){
-            AudioFormat fmt = in.getFormat();
-
-            if (fmt.getEncoding() != AudioFormat.Encoding.PCM_SIGNED) {
-                throw new UnsupportedAudioFileException("unsigned");
-            }
-
-            boolean big = fmt.isBigEndian();
-            int chans = fmt.getChannels();
-            int bits = fmt.getSampleSizeInBits();
-            int bytes = bits + 7 >> 3;
-
-            int frameLength = (int) in.getFrameLength();
-            int bufferLength = chans * bytes * 1024;
-
-            samples = new float[frameLength];
-            byte[] buf = new byte[bufferLength];
-
-            int i = 0;
-            int bRead;
-            while ((bRead = in.read(buf)) > -1) {
-
-                for (int b = 0; b < bRead; ) {
-                    double sum = 0;
-
-                    // (sums to mono if multiple channels)
-                    for (int c = 0; c < chans; c++) {
-                        if (bytes == 1) {
-                            sum += buf[b++] << 8;
-
-                        } else {
-                            int sample = 0;
-
-                            // (quantizes to 16-bit)
-                            if (big) {
-                                sample |= (buf[b++] & 0xFF) << 8;
-                                sample |= (buf[b++] & 0xFF);
-                                b += bytes - 2;
-                            } else {
-                                b += bytes - 2;
-                                sample |= (buf[b++] & 0xFF);
-                                sample |= (buf[b++] & 0xFF) << 8;
-                            }
-
-                            final int sign = 1 << 15;
-                            final int mask = -1 << 16;
-                            if ((sample & sign) == sign) {
-                                sample |= mask;
-                            }
-
-                            sum += sample;
-                        }
-                    }
-
-                    samples[i++] = (float) (sum / chans);
-                }
-            }
-        } catch (UnsupportedAudioFileException | IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        BufferedImage img = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
-
-        drawImage(img, samples, boxWidth, size, color);
-
-        return img;
     }
 }

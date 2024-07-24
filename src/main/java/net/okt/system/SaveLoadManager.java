@@ -67,7 +67,11 @@ public class SaveLoadManager {
         if (loadedAudio != null)
             loadedAudio.close();
 
-        loadedAudio = new Audio(audio);
+        try {
+            loadedAudio = new Audio(audio);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         setProp("audio", audio.getPath());
 
@@ -79,7 +83,7 @@ public class SaveLoadManager {
 
         timeline.setWaveImg(BoxWaveform.loadImage(
                 audio,
-                new Dimension(imgWidth, 50), 1,
+                new Dimension(imgWidth, 50),
                 new Color(5, 80, 20)));
 
         // Stop the timer and revalidate the canvas.
@@ -166,7 +170,7 @@ public class SaveLoadManager {
 
                 JFileChooser fcr = new JFileChooser(".");
                 fcr.setDialogTitle("Please redirect the file: ");
-                fcr.setFileFilter(Main.WAV_EXT_FILTER);
+                fcr.setFileFilter(FileExtensionUtils.AUDIO_EXT_FILTER);
                 if (fcr.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     audioFile = fcr.getSelectedFile();
                 } else {

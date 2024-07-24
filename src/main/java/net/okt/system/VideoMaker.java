@@ -84,7 +84,7 @@ public class VideoMaker extends Thread {
 
         // Audio
         frameRecorder.setAudioCodec(audioGrabber.getAudioCodec());
-        frameRecorder.setSampleFormat(audioGrabber.getSampleFormat());
+        frameRecorder.setSampleFormat(avutil.AV_SAMPLE_FMT_FLTP); // This is the only supported sample format.
         frameRecorder.setSampleRate(audioGrabber.getSampleRate());
 
         // Recording frames.

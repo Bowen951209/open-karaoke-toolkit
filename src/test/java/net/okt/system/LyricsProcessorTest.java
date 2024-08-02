@@ -336,7 +336,7 @@ class LyricsProcessorTest {
     }
 
     @Test
-    void readyDotsPercentageTest() {
+    void readyDotsPercentageUniversalTest() {
         lyricsProcessor.setLyrics("""
                 abc
                 def
@@ -364,6 +364,27 @@ class LyricsProcessorTest {
         // Make sure percentage is 0 at the 2nd paragraph's end mark to its next.
         lyricsProcessor.setTime(660);
         assertEquals(0f, lyricsProcessor.getReadyDotsPercentage());
+    }
+
+    @Test
+    void readyDotsPercentageAtFirstMarkTest() {
+        lyricsProcessor.setLyrics("""
+                abc
+                def
+                
+                ghi
+                jkl""");
+
+        saveLoadManager.setProp("dotsPeriod", 50);
+
+        var marks = saveLoadManager.getMarks();
+        marks.clear();
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400));
+
+        lyricsProcessor.setTime(100);
+        assertEquals(0, lyricsProcessor.getReadyDotsPercentage());
+        lyricsProcessor.setTime(200);
+        assertEquals(0, lyricsProcessor.getReadyDotsPercentage());
     }
 
     @Test

@@ -147,37 +147,55 @@ public class Viewport extends JPanel {
         topIntersectArea.intersect(getRectangleArea(lyricsProcessor.getDisplayingLines()[0], time));
         bottomIntersectArea.intersect(getRectangleArea(lyricsProcessor.getDisplayingLines()[1], time));
 
-        int strokeWidth = (int) (toDrawSize(saveLoadManager.getPropInt("textStroke")) * 0.01);
-        g2d.setStroke(new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
+        int baseStrokeWidth = (int) (toDrawSize(saveLoadManager.getPropInt("textStroke")) * 0.01);
+        Stroke baseStroke = new BasicStroke(baseStrokeWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+        int intersectStrokeWidth = (int) (toDrawSize(saveLoadManager.getPropInt("intersectStroke")) * 0.01);
+        Stroke intersectStroke = new BasicStroke(intersectStrokeWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
 
         Color textColor = new Color(saveLoadManager.getPropInt("textColor"));
+        Color intersectStrokeColor = new Color(saveLoadManager.getPropInt("intersectStrokeColor"));
 
-        // base
+        // ----- The top line. -----
+        // base fill
         g2d.setColor(Color.WHITE);
         g2d.fill(topFontArea);
 
-        // intersect area
+        // base outline
+        g2d.setColor(Color.BLACK);
+        g2d.setStroke(baseStroke);
+        g2d.draw(topFontArea);
+
+        // intersect area fill
         g2d.setColor(textColor);
         g2d.fill(topIntersectArea);
 
-        // outline
-        g2d.setColor(Color.BLACK);
-        g2d.draw(topFontArea);
+        // intersect area outline
+        g2d.setColor(intersectStrokeColor);
+        g2d.setStroke(intersectStroke);
+        g2d.draw(topIntersectArea);
+
 
         // Translate position to the bottom line.
         g2d.translate(secondLineIndent, lineSpace);
 
-        // base
+        // ----- The bottom line. -----
+        // base fill
         g2d.setColor(Color.WHITE);
         g2d.fill(bottomFontArea);
+
+        // base outline
+        g2d.setColor(Color.BLACK);
+        g2d.setStroke(baseStroke);
+        g2d.draw(bottomFontArea);
 
         // intersect area
         g2d.setColor(textColor);
         g2d.fill(bottomIntersectArea);
 
-        // outline
-        g2d.setColor(Color.BLACK);
-        g2d.draw(bottomFontArea);
+        // intersect area outline
+        g2d.setColor(intersectStrokeColor);
+        g2d.setStroke(intersectStroke);
+        g2d.draw(bottomIntersectArea);
     }
 
     private LyricsArea getAreaAtLine(int line) {

@@ -21,6 +21,13 @@ public class ColorChooserButton extends JButton {
         });
     }
 
+    public JPanel getPanel(String description) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(new JLabel(description));
+        panel.add(this);
+        return panel;
+    }
+
     public void setSelectedColor(Color newColor) {
         if (newColor == null) return;
 

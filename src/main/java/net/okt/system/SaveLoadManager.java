@@ -27,31 +27,31 @@ public class SaveLoadManager {
 
     public SaveLoadManager(Main mainFrame) {
         this.mainFrame = mainFrame;
+        initProps();
     }
 
-    public static SaveLoadManager createDefault(Main mainFrame) {
-        SaveLoadManager mgr = new SaveLoadManager(mainFrame);
-        mgr.setProp("backgroundColor", Color.WHITE.getRGB());
-        mgr.setProp("defaultFontSize", 10);
-        mgr.setProp("dotsColor", Color.BLUE.getRGB());
-        mgr.setProp("dotsNum", 4);
-        mgr.setProp("dotsPeriod", 2500);
-        mgr.setProp("dotsPosX", 0);
-        mgr.setProp("dotsPosY", 0);
-        mgr.setProp("dotsSize", 10);
-        mgr.setProp("dotsStroke", 45);
-        mgr.setProp("indentSize", 15);
-        mgr.setProp("lineSpace", 15);
-        mgr.setProp("linkedFontSize", 7);
-        mgr.setProp("resolutionX", 1920);
-        mgr.setProp("resolutionY", 1080);
-        mgr.setProp("textColor", Color.BLUE.getRGB());
-        mgr.setProp("textDisappearTime", 1500);
-        mgr.setProp("textPosX", 0);
-        mgr.setProp("textPosY", 20);
-        mgr.setProp("textStroke", 45);
-
-        return mgr;
+    public void initProps() {
+        setProp("backgroundColor", Color.WHITE.getRGB());
+        setProp("defaultFontSize", 10);
+        setProp("dotsColor", Color.BLUE.getRGB());
+        setProp("dotsNum", 4);
+        setProp("dotsPeriod", 2500);
+        setProp("dotsPosX", 0);
+        setProp("dotsPosY", 0);
+        setProp("dotsSize", 10);
+        setProp("dotsStroke", 45);
+        setProp("indentSize", 15);
+        setProp("lineSpace", 15);
+        setProp("linkedFontSize", 7);
+        setProp("resolutionX", 1920);
+        setProp("resolutionY", 1080);
+        setProp("textColor", Color.BLUE.getRGB());
+        setProp("intersectStrokeColor", Color.WHITE.getRGB());
+        setProp("textDisappearTime", 1500);
+        setProp("textPosX", 0);
+        setProp("textPosY", 20);
+        setProp("textStroke", 45);
+        setProp("intersectStroke", 48);
     }
 
     public Audio getLoadedAudio() {

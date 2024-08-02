@@ -57,7 +57,7 @@ public class SideConfigPanel extends JScrollPane {
 
         panel.add(new TitleLabel("Viewport Settings"));
         panel.add(resolutionPanel);
-        panel.add(backgroundColorChooserBtn);
+        panel.add(backgroundColorChooserBtn.getPanel("Background Color"));
 
         return panel;
     }
@@ -97,9 +97,13 @@ public class SideConfigPanel extends JScrollPane {
             viewport.repaint();
         });
 
-        var textStrokeSizeConfigBar =
-                new SlidableNumberBar("Stroke", 2, "textStroke", saveLoadManager);
-        textStrokeSizeConfigBar.addDocumentListener(viewport::repaint);
+        var textBaseStrokeSizeConfigBar =
+                new SlidableNumberBar("Base Stroke", 2, "textStroke", saveLoadManager);
+        textBaseStrokeSizeConfigBar.addDocumentListener(viewport::repaint);
+
+        var textIntersectStrokeSizeConfigBar =
+                new SlidableNumberBar("Intersect Stroke", 2, "intersectStroke", saveLoadManager);
+        textIntersectStrokeSizeConfigBar.addDocumentListener(viewport::repaint);
 
         var textColorChooserBtn = new ColorChooserButton(saveLoadManager.getPropInt("textColor"));
         textColorChooserBtn.addColorChangedListener(newColor -> {
@@ -107,6 +111,14 @@ public class SideConfigPanel extends JScrollPane {
             viewport.repaint();
         });
         textColorChooserBtn.callListeners();// update to the saveLoadManager for init.
+
+        var textIntersectStrokeColorChooserBtn =
+                new ColorChooserButton(saveLoadManager.getPropInt("intersectStrokeColor"));
+        textIntersectStrokeColorChooserBtn.addColorChangedListener(newColor -> {
+            saveLoadManager.setProp("intersectStrokeColor", newColor.getRGB());
+            viewport.repaint();
+        });
+        textIntersectStrokeColorChooserBtn.callListeners();// update to the saveLoadManager for init.
 
         panel.add(new TitleLabel("Text Settings"));
         panel.add(getFontComboBox());
@@ -116,8 +128,10 @@ public class SideConfigPanel extends JScrollPane {
         panel.add(lineIndentSizeBar);
         panel.add(lineSpaceSizeConfigBar);
         panel.add(textDisappearTimeConfigBar);
-        panel.add(textStrokeSizeConfigBar);
-        panel.add(textColorChooserBtn);
+        panel.add(textBaseStrokeSizeConfigBar);
+        panel.add(textIntersectStrokeSizeConfigBar);
+        panel.add(textColorChooserBtn.getPanel("Text Color"));
+        panel.add(textIntersectStrokeColorChooserBtn.getPanel("Intersect Stroke Color"));
 
         return panel;
     }
@@ -163,7 +177,7 @@ public class SideConfigPanel extends JScrollPane {
         panel.add(readyDotsNumComboBox);
         panel.add(readyDotsTimeConfigBar);
         panel.add(readyDotsStrokeSizeConfigBar);
-        panel.add(readyDotsColorChooserBtn);
+        panel.add(readyDotsColorChooserBtn.getPanel("Dots Color"));
 
         return panel;
     }

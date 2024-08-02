@@ -27,10 +27,7 @@ public class Main extends JFrame {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
 
-        if (propsFile == null)
-            saveLoadManager = SaveLoadManager.createDefault(this);
-        else
-            saveLoadManager = new SaveLoadManager(this);
+        saveLoadManager = new SaveLoadManager(this);
 
         lyricsProcessor = new LyricsProcessor(saveLoadManager);
         viewport = new Viewport(saveLoadManager, lyricsProcessor);

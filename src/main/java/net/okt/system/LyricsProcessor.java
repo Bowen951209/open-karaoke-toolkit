@@ -376,7 +376,9 @@ public class LyricsProcessor {
      * @return The mark that is after and nearest to the given time.
      */
     private int getNextMark(int time) {
-        return Math.abs(Collections.binarySearch(marks, time)) - 1;
+        int index = Collections.binarySearch(marks, time);
+        if (index > 0) return index;
+        else return -index - 1;
     }
 
     /**

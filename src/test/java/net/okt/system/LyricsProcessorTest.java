@@ -193,8 +193,11 @@ class LyricsProcessorTest {
         marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800));
 
         lyricsProcessor.setLyrics(lyricsSample1);
+        saveLoadManager.setProp("dotsPeriod", 50);
 
-        lyricsProcessor.setTime(50); // before mark 0
+        // We don't care about the values right before ready dots start, because they are not displayed
+
+        lyricsProcessor.setTime(50); // before mark 0, after ready dots start
         assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
         lyricsProcessor.setTime(150); // mark 0 ~ 1
         assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
@@ -222,6 +225,9 @@ class LyricsProcessorTest {
         marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800));
 
         lyricsProcessor.setLyrics(lyricsSample2);
+        saveLoadManager.setProp("dotsPeriod", 50);
+
+        // We don't care about the values right before ready dots start, because they are not displayed
 
         lyricsProcessor.setTime(50); // before mark 0
         assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
@@ -253,6 +259,9 @@ class LyricsProcessorTest {
         ));
 
         lyricsProcessor.setLyrics(lyricsSample3);
+        saveLoadManager.setProp("dotsPeriod", 50);
+
+        // We don't care about the values right before ready dots start, because they are not displayed
 
         lyricsProcessor.setTime(50); // before mark 0
         assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());

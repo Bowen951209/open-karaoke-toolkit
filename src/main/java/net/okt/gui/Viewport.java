@@ -165,14 +165,14 @@ public class Viewport extends JPanel {
         g2d.setStroke(baseStroke);
         g2d.draw(topFontArea);
 
-        // intersect area fill
-        g2d.setColor(textColor);
-        g2d.fill(topIntersectArea);
-
         // intersect area outline
         g2d.setColor(intersectStrokeColor);
         g2d.setStroke(intersectStroke);
         g2d.draw(topIntersectArea);
+
+        // intersect area fill
+        g2d.setColor(textColor);
+        g2d.fill(topIntersectArea);
 
 
         // Translate position to the bottom line.
@@ -188,14 +188,14 @@ public class Viewport extends JPanel {
         g2d.setStroke(baseStroke);
         g2d.draw(bottomFontArea);
 
-        // intersect area
-        g2d.setColor(textColor);
-        g2d.fill(bottomIntersectArea);
-
         // intersect area outline
         g2d.setColor(intersectStrokeColor);
         g2d.setStroke(intersectStroke);
         g2d.draw(bottomIntersectArea);
+
+        // intersect area fill
+        g2d.setColor(textColor);
+        g2d.fill(bottomIntersectArea);
     }
 
     private LyricsArea getAreaAtLine(int line) {

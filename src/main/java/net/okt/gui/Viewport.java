@@ -8,9 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Area;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 
 public class Viewport extends JPanel {
@@ -20,6 +18,7 @@ public class Viewport extends JPanel {
     private final SaveLoadManager saveLoadManager;
     private final LyricsProcessor lyricsProcessor;
     private final LyricsArea[] displayingAreas = new LyricsArea[2];
+    private final GlyphVector[] displayingGlyphVectors = new GlyphVector[2];
 
     private BufferedImage bufferedImage;
 
@@ -87,22 +86,29 @@ public class Viewport extends JPanel {
     }
 
     /**
-     * Update the displaying areas. It uses cache if not forceUpdate.
+     * Update {@link #displayingAreas} and {@link #displayingGlyphVectors}. Use cache if not forceUpdate.
      *
-     * @param forceUpdate If you want to ignore the cache and force update.
+     * @param forceUpdate If you want to force update even if the displaying lines are the same.
      */
     public void updateDisplayingAreas(boolean forceUpdate) {
         int[] displayingLines = lyricsProcessor.getDisplayingLines();
 
         if (forceUpdate) {
-            displayingAreas[0] = getAreaAtLine(displayingLines[0]);
-            displayingAreas[1] = getAreaAtLine(displayingLines[1]);
-        } else {
-            if (displayingAreas[0] == null || displayingAreas[0].line != displayingLines[0])
-                displayingAreas[0] = getAreaAtLine(displayingLines[0]);
+            displayingGlyphVectors[0] = getGlyphVectorAtLine(displayingLines[0]);
+            displayingGlyphVectors[1] = getGlyphVectorAtLine(displayingLines[1]);
 
-            if (displayingAreas[1] == null || displayingAreas[1].line != displayingLines[1])
-                displayingAreas[1] = getAreaAtLine(displayingLines[1]);
+            displayingAreas[0] = getAreaAtLine(displayingGlyphVectors[0], displayingLines[0]);
+            displayingAreas[1] = getAreaAtLine(displayingGlyphVectors[1], displayingLines[1]);
+        } else {
+            if (displayingAreas[0] == null || displayingAreas[0].line != displayingLines[0]) {
+                displayingGlyphVectors[0] = getGlyphVectorAtLine(displayingLines[0]);
+                displayingAreas[0] = getAreaAtLine(displayingGlyphVectors[0], displayingLines[0]);
+            }
+
+            if (displayingAreas[1] == null || displayingAreas[1].line != displayingLines[1]) {
+                displayingGlyphVectors[1] = getGlyphVectorAtLine(displayingLines[1]);
+                displayingAreas[1] = getAreaAtLine(displayingGlyphVectors[1], displayingLines[1]);
+            }
         }
     }
 
@@ -144,8 +150,8 @@ public class Viewport extends JPanel {
 
         Area topIntersectArea = new Area(topFontArea);
         Area bottomIntersectArea = new Area(bottomFontArea);
-        topIntersectArea.intersect(getRectangleArea(lyricsProcessor.getDisplayingLines()[0], time));
-        bottomIntersectArea.intersect(getRectangleArea(lyricsProcessor.getDisplayingLines()[1], time));
+        topIntersectArea.intersect(getRectangleArea(displayingGlyphVectors[0], lyricsProcessor.getDisplayingLines()[0], time));
+        bottomIntersectArea.intersect(getRectangleArea(displayingGlyphVectors[1], lyricsProcessor.getDisplayingLines()[1], time));
 
         int baseStrokeWidth = (int) (toDrawSize(saveLoadManager.getPropInt("textStroke")) * 0.01);
         Stroke baseStroke = new BasicStroke(baseStrokeWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
@@ -198,79 +204,148 @@ public class Viewport extends JPanel {
         g2d.fill(bottomIntersectArea);
     }
 
-    private LyricsArea getAreaAtLine(int line) {
+    /**
+     * @param line The line index in the lyrics.
+     * @return The glyph vector at the given line.
+     */
+    private GlyphVector getGlyphVectorAtLine(int line) {
+        var lyricsLines = lyricsProcessor.getLyricsLines();
+        if (lyricsLines == null || line == -1 || line >= lyricsLines.size())
+            return null;
+
+        int defaultFontSize = saveLoadManager.getPropInt("defaultFontSize");
+        int linkedFontSize = saveLoadManager.getPropInt("linkedFontSize");
+        float linkScale = (float) linkedFontSize / defaultFontSize;
+
+        AffineTransform linkScaleTransform = AffineTransform.getScaleInstance(linkScale, linkScale);
+        String string = lyricsProcessor.getLyricsLines().get(line);
+
+        return getGlyphVector(string, linkScaleTransform, getFont());
+    }
+
+    private LyricsArea getAreaAtLine(GlyphVector glyphVector, int line) {
         var lyricsLines = lyricsProcessor.getLyricsLines();
         if (lyricsLines == null || line == -1 || line >= lyricsLines.size())
             return new LyricsArea(new Area(), -1);
 
-        int defaultFontSize = saveLoadManager.getPropInt("defaultFontSize");
-        int linkedFontSize = saveLoadManager.getPropInt("linkedFontSize");
-        float defaultScale = toDrawSize(defaultFontSize);
-        float linkScale = (float) linkedFontSize / defaultFontSize;
-
-        AffineTransform defaultScaleTransform = AffineTransform.getScaleInstance(defaultScale, defaultScale);
-        AffineTransform linkScaleTransform = AffineTransform.getScaleInstance(linkScale, linkScale);
-
-        String string = lyricsProcessor.getLyricsLines().get(line);
-        GlyphVector glyphVector = getGlyphVector(string, linkScaleTransform, getFont());
         LyricsArea area = new LyricsArea(glyphVector.getOutline(), line);
-
-        area.transform(defaultScaleTransform);
+        area.transform(getDefaultScaleTransform());
 
         return area;
     }
 
-    private Area getRectangleArea(int line, int time) {
-        Font font = getFont();
+    /**
+     * Get the rectangle area that is used to intersect with glyph vectors.
+     * 
+     * @param glyphVector The glyph vector at given the line.
+     * @param line The line index in the lyrics.
+     * @param time The current play time.
+     * @return The rectangle as an area.
+     */
+    private Area getRectangleArea(GlyphVector glyphVector, int line, int time) {
         var marks = saveLoadManager.getMarks();
-        int defaultFontSize = toDrawSize(saveLoadManager.getPropInt("defaultFontSize"));
-        int linkedFontSize = toDrawSize(saveLoadManager.getPropInt("linkedFontSize"));
         int lineStartMark = lyricsProcessor.getStartMarkAtLine(line);
-        double spaceWidth = font.getStringBounds(" ", FRC).getWidth();
-        double underscoreWidth = font.getStringBounds("_", FRC).getWidth();
+        if (lineStartMark >= marks.size()) return new Area();
 
-        int rectWidth = 0;
-        for (int i = lineStartMark + 1; i < marks.size(); i++) {
+        // If the time is before the line start mark,
+        // there should not be any progress of rectangle, return empty area.
+        if (time < marks.get(lineStartMark)) return new Area();
+
+        int nextMark = lyricsProcessor.getNextMark(time); // the nearest mark after time
+        int nextMarkTime = nextMark < marks.size() ? marks.get(nextMark) : Integer.MAX_VALUE;
+        int lastMarkTime = nextMark == 0 ? 0 : marks.get(nextMark - 1);
+
+        int numFullGlyph = 0; // the number of glyphs that should be full-filled.
+        for (int i = lineStartMark + 1; i < nextMark; i++) {
             String textBeforeMark = lyricsProcessor.getTextBeforeMark(i);
-            if (textBeforeMark == null) break;
+            if (textBeforeMark == null) return new Area();
 
-            // Get the word before next mark. If the index is out of bounds, set it to null.
-            String textBeforeNextMark = i == marks.size() - 1 ?
-                    null : lyricsProcessor.getTextBeforeMark(i + 1);
-
-            int markTime = marks.get(i);
-            boolean isEasternChar = LyricsProcessor.isEasternChar(textBeforeMark.charAt(0));
-            boolean isSepWord = textBeforeMark.charAt(0) == '_';
-            boolean isNextWordSepWord = textBeforeNextMark != null && textBeforeNextMark.charAt(0) == '_';
-            boolean isLinkWord = textBeforeMark.length() == 2 && isEasternChar;
-            double wordWidth = font.getStringBounds(textBeforeMark, FRC).getWidth();
-
-            // Remember, a sep word have an underscore at its head, so minus it.
-            if (isSepWord) wordWidth -= underscoreWidth;
-
-            int addWidth = isLinkWord ? (defaultFontSize + linkedFontSize) : (int) (wordWidth * defaultFontSize);
-
-            if (time < markTime) {
-                int lastMarkTime = marks.get(i - 1);
-                int wordPeriod = markTime - lastMarkTime;
-                float percentage = (float) (time - lastMarkTime) / wordPeriod;
-
-                rectWidth += (int) (percentage * addWidth);
-
-                break;
+            if (LyricsProcessor.isEasternChar(textBeforeMark.charAt(0))) { // eastern
+                // If it's an eastern word, it should be either a single word or a link word.
+                // If it's a link word, remember to add 1 glyph num for the symbol "'".
+                // (The word "一'二" displays as "一二" in textBeforeMark, but actual length is 3.)
+                numFullGlyph += textBeforeMark.length() == 2 ? 3 : 1;
+            } else { // western
+                // If it's a western word, it should be either a single word or a sep word.
+                if (textBeforeMark.charAt(0) == '_') // if is sep word.
+                    numFullGlyph += textBeforeMark.length(); // plus 1 space and minus 1 underscore.
+                else
+                    numFullGlyph += textBeforeMark.length() + 1; // plus 1 space, or 1 underscore.
+                
+                // Take the line "aaa bb_cc ddd" for example, we should add "aaa ", "bb_", "cc "... in order.
             }
 
-            rectWidth += addWidth;
-
-            // If next is a sep word, or this is a western char, add a space offset.(Except for the first word in the line.)
-            if (!isNextWordSepWord && !isEasternChar && i >= lineStartMark + 1)
-                rectWidth += (int) (spaceWidth * defaultFontSize);
+            // If numFullGlyph is full, set it to max number for the ease of further judging.
+            if (numFullGlyph >= glyphVector.getNumGlyphs()) {
+                numFullGlyph = glyphVector.getNumGlyphs();
+                break;
+            }
         }
 
-        Rectangle rectangle = new Rectangle(0, -defaultFontSize, rectWidth, defaultFontSize * 2);
-        // * 2 is the needed adjustment.
+        // The percentage of how much the end glyph should be filled.
+        float endPercentage = (float) (time - lastMarkTime) / (nextMarkTime - lastMarkTime);
 
-        return new Area(rectangle);
+        // The end glyph refers to the glyph that should be filled but not 100%, and it is the one right after the last
+        // full-filled glyph.
+        // The end glyph index is equal to numFullGlyph.
+        // For example, if numFullGlyph is 10, the end glyph is at index 10.
+        int endGlyph = numFullGlyph;
+
+        // The string the end glyph is in.
+        String endString = lyricsProcessor.getTextBeforeMark(nextMark);
+        int endStringLength;
+        if (endString == null) {
+            endStringLength = 0;
+        } else {
+            if (LyricsProcessor.isLinkWord(endString))
+                endStringLength = endString.length() + 1; // A link word should add 1 for the symbol "'".
+            else if (LyricsProcessor.isSepWord(endString))
+                endStringLength = endString.length() - 1; // A sep word should minus 1 for the symbol "_".
+            else
+                endStringLength = endString.length(); // Normal word.
+        }
+
+
+        double boundsStartX; // where the full-filled rectangle should end.
+        double boundsWidth; // the width of the end word.
+        if (endGlyph == glyphVector.getNumGlyphs()) {
+            // This line should be whole-line-filled.
+            Rectangle2D endBounds = glyphVector.getGlyphOutline(endGlyph - 1).getBounds2D();
+
+            boundsStartX = endBounds.getX();
+            boundsWidth = endBounds.getWidth();
+            endPercentage = 1;
+        } else {
+            Shape startGlyph = glyphVector.getGlyphOutline(endGlyph);
+            // The end of this word. For example, "ab cde fg", if the end glyph is "c", boundsWidth is at index of "e".
+            Rectangle2D endBounds = glyphVector.getGlyphOutline(Math.max(0, endGlyph + endStringLength - 1)).getBounds2D();
+
+            // Transfer the startGlyph to an Area object, because the original bounds got from the glyph would be wrong
+            // in some particular fonts, and turning it to an Area object solves the problem. (See #52.)
+            boundsStartX = new Area(startGlyph).getBounds2D().getX();
+            boundsWidth = endBounds.getMaxX() - boundsStartX;
+        }
+
+        double width = boundsStartX + endPercentage * boundsWidth; // the final width of the rectangle.
+
+
+        Rectangle2D lineBounds = glyphVector.getOutline().getBounds2D();
+        Rectangle2D rect = new Rectangle2D.Double(
+                0,
+                -lineBounds.getHeight(),
+                width,
+                lineBounds.getHeight() * 2
+        ); // the y and the height are actually rough numbers, but can make sure the line is well-covered.
+
+        Area area = new Area(rect);
+        area.transform(getDefaultScaleTransform());
+        return area;
+    }
+
+    private AffineTransform getDefaultScaleTransform() {
+        int defaultFontSize = saveLoadManager.getPropInt("defaultFontSize");
+        float defaultScale = toDrawSize(defaultFontSize);
+        return AffineTransform.getScaleInstance(defaultScale, defaultScale);
     }
 
     private void drawReadyDots(Graphics2D g2d, float percentage) {

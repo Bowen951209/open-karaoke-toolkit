@@ -305,6 +305,24 @@ class LyricsProcessorTest {
     }
 
     @Test
+    void displayingLinesTestForRedundantMarks() {
+        var marks = saveLoadManager.getMarks();
+        marks.clear();
+        marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800));
+
+        lyricsProcessor.setLyrics("""
+                abc def
+                ghi jkl
+                """);
+        saveLoadManager.setProp("dotsPeriod", 50);
+
+        lyricsProcessor.setTime(651);
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
+        lyricsProcessor.setTime(751);
+        assertArrayEquals(new int[]{0, 1}, lyricsProcessor.getDisplayingLines());
+    }
+
+    @Test
     void shouldDisplayTextTest() {
         lyricsProcessor.setLyrics("""
                 abc
@@ -381,7 +399,7 @@ class LyricsProcessorTest {
         marks.clear();
         marks.addAll(List.of(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400));
 
-        lyricsProcessor.setTime(100);
+        lyricsProcessor.setTime(101);
         assertEquals(0, lyricsProcessor.getReadyDotsPercentage());
         lyricsProcessor.setTime(200);
         assertEquals(0, lyricsProcessor.getReadyDotsPercentage());

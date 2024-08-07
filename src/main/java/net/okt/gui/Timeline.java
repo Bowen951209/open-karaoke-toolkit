@@ -313,6 +313,10 @@ public class Timeline extends JPanel {
 
         public ControlPanel() {
             super(new BorderLayout(0, 0));
+            Font font = new Font(Font.SANS_SERIF, Font.BOLD, 10);
+            timeLabel.setFont(font);
+            filenameLabel.setFont(font);
+
             Dimension size = new Dimension(Integer.MAX_VALUE, ICON_SIZE.height);
             setMaximumSize(size);
 

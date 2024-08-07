@@ -64,6 +64,7 @@ public class Audio {
     }
 
     public void close() {
+        isPlaying = false;
         line.flush();
         line.stop();
         line.close();

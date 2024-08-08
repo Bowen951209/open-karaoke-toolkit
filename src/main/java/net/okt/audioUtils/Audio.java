@@ -17,6 +17,7 @@ public class Audio {
 
     private Thread playThread;
     private boolean isPlaying;
+    private boolean isFinished;
     private long startPlayTime;
 
     public Audio(File audioFile) throws Exception {
@@ -36,6 +37,7 @@ public class Audio {
 
     public void play() {
         isPlaying = true;
+        isFinished = false;
 
         playThread = new Thread(() -> {
             line.start();
@@ -55,6 +57,12 @@ public class Audio {
                         }
                         line.write(audioBytes, 0, audioBytes.length);
                     }
+                }
+
+                if (frame == null) {
+                    line.drain();
+                    line.stop();
+                    isFinished = true;
                 }
             } catch (FrameGrabber.Exception e) {
                 throw new RuntimeException(e);
@@ -109,6 +117,6 @@ public class Audio {
      * @return If the audio has finished playing.
      */
     public boolean isFinished() {
-        return getTimePosition() >= getTotalTime();
+        return isFinished;
     }
 }

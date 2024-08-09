@@ -184,18 +184,22 @@ public class SideConfigPanel extends JScrollPane {
 
     private JComboBox<String> getFontComboBox() {
         JComboBox<String> comboBox = new JComboBox<>();
-        comboBox.addActionListener(e -> {
-            viewport.setFont(new Font((String) comboBox.getSelectedItem(), Font.BOLD, 1));
-            viewport.updateDisplayingAreas(true);
-        });
 
         // Get system fonts.
         GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
         for (String fontName : graphicsEnvironment.getAvailableFontFamilyNames())
             comboBox.addItem(fontName);
 
-        // Set the default to SansSerif, with which most characters are supported.
-        comboBox.setSelectedItem("SansSerif");
+        // Select the saveLoadManager specified font.
+        comboBox.setSelectedItem(saveLoadManager.getProp("font"));
+
+        comboBox.addActionListener(e -> {
+            String selectedString = (String) comboBox.getSelectedItem();
+
+            saveLoadManager.setProp("font", selectedString);
+            viewport.setFont(new Font(selectedString, Font.BOLD, 1));
+            viewport.updateDisplayingAreas(true);
+        });
 
         return comboBox;
     }

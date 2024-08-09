@@ -40,6 +40,7 @@ public class SaveLoadManager {
         setProp("dotsPosY", 0);
         setProp("dotsSize", 10);
         setProp("dotsStroke", 45);
+        setProp("font", "SansSerif");
         setProp("indentSize", 15);
         setProp("lineSpace", 15);
         setProp("linkedFontSize", 7);

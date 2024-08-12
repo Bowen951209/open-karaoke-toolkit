@@ -51,6 +51,14 @@ public class LyricsProcessor {
                 ub == Character.UnicodeBlock.HANGUL_JAMO ||
                 ub == Character.UnicodeBlock.HANGUL_COMPATIBILITY_JAMO;
     }
+    
+    public static  boolean isLinkWord(String word) {
+        return word.length() == 2 && isEasternChar(word.charAt(0));
+    }
+    
+    public static boolean isSepWord(String word) {
+        return word.charAt(0) == '_';
+    }
 
     public int getStartMarkAtLine(int line) {
         if (line < 0) return 0;
@@ -117,11 +125,28 @@ public class LyricsProcessor {
         return markTextList.size() + 1;
     }
 
+    /***
+     * @return The mark that is after and nearest to the given time.
+     */
+    public int getNextMark(int time) {
+        int index = Collections.binarySearch(marks, time);
+        if (index >= 0) return index;
+        else return -index - 1;
+    }
+
     /**
      * @return If mark is the end of a paragraph.
      */
     public boolean isParagraphEndMark(int mark) {
         return paragraphEndMarks.contains(mark);
+    }
+
+    /**
+     * @return If the mark is the start mark of a paragraph.
+     */
+    public boolean isParagraphStartMark(int mark) {
+        if (mark >= marks.size()) return false;
+        return mark == 0 || paragraphEndMarks.contains(mark - 1);
     }
 
     public boolean isRedundantMark(int mark) {
@@ -365,34 +390,18 @@ public class LyricsProcessor {
     }
 
     /**
-     * @return If the mark is the start mark of a paragraph.
-     */
-    private boolean isParagraphStartMark(int mark) {
-        if (mark >= marks.size()) return false;
-        return mark == 0 || paragraphEndMarks.contains(mark - 1);
-    }
-
-    /***
-     * @return The mark that is after and nearest to the given time.
-     */
-    private int getNextMark(int time) {
-        int index = Collections.binarySearch(marks, time);
-        if (index > 0) return index;
-        else return -index - 1;
-    }
-
-    /**
      * @return The paragraph it is at the given time.
      */
     private int getParagraphAtTime(int time, int readyDotsPeriod) {
         int index = Collections.binarySearch(paragraphEndMarks, time, (paragraphEndMark, t) -> {
             int nextMark = paragraphEndMark + 1;
             if (nextMark >= marks.size()) return 1;
-            int paragraphStartTime = marks.get(nextMark) - readyDotsPeriod;
+            int nextMarkTime = marks.get(nextMark);
+            int paragraphStartTime = isRedundantMark(nextMark) ? nextMarkTime : nextMarkTime - readyDotsPeriod;
             return Integer.compare(paragraphStartTime, t);
         });
 
-        return Math.max(0, Math.abs(index) - 1);
+        return Math.min(paragraphEndMarks.size() - 1, Math.max(0, Math.abs(index) - 1));
     }
 
     /**

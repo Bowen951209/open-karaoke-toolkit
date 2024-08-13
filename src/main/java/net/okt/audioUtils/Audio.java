@@ -15,8 +15,9 @@ public class Audio {
     private final SourceDataLine line;
     private final FFmpegFrameGrabber grabber;
 
+    private volatile boolean isPlaying;
+
     private Thread playThread;
-    private boolean isPlaying;
     private boolean isFinished;
     private long startPlayTime;
 

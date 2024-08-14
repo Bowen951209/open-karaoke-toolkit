@@ -41,7 +41,6 @@ public class Audio {
 
         playThread = new Thread(() -> {
             line.start();
-            startPlayTime = line.getMicrosecondPosition() / 1000 - getTimePosition();
 
             // Play the audio.
             Frame frame;

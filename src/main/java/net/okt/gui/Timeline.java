@@ -16,6 +16,7 @@ import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Timeline extends JPanel {
     private static final ImageIcon PLAY_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/play.png")));
@@ -26,6 +27,7 @@ public class Timeline extends JPanel {
     private static final ImageIcon MARK_SELECTED_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_selected.png")));
     private static final ImageIcon MARK_FLOAT_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_float.png")));
     private static final ImageIcon MARK_GRAY_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/mark_gray.png")));
+    private static final ImageIcon FAST_FORWARD_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/fast_forward.png")));
     private static final Dimension ICON_SIZE = new Dimension(PLAY_BUTTON_ICON.getIconHeight(), PLAY_BUTTON_ICON.getIconWidth());
     /**
      * The width between separation lines in pixel.
@@ -313,14 +315,15 @@ public class Timeline extends JPanel {
 
         public ControlPanel() {
             super(new BorderLayout(0, 0));
-            Font font = new Font(Font.SANS_SERIF, Font.BOLD, 10);
-            timeLabel.setFont(font);
-            filenameLabel.setFont(font);
+            setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
+            timeLabel.setFont(getFont());
+            filenameLabel.setFont(getFont());
+
 
             Dimension size = new Dimension(Integer.MAX_VALUE, ICON_SIZE.height);
             setMaximumSize(size);
 
-            JPanel componentsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 
             playPauseButton.addActionListener(e -> {
                 if (saveLoadManager.getLoadedAudio() == null) return;
@@ -335,12 +338,13 @@ public class Timeline extends JPanel {
             });
             playPauseButton.setPreferredSize(ICON_SIZE);
 
-            componentsPanel.add(playPauseButton);
-            componentsPanel.add(getStopButton());
-            componentsPanel.add(getMarkButton());
-            componentsPanel.add(slider);
-            componentsPanel.add(timeLabel);
-            add(componentsPanel, BorderLayout.WEST);
+            leftPanel.add(playPauseButton);
+            leftPanel.add(getStopButton());
+            leftPanel.add(getMarkButton());
+            leftPanel.add(slider);
+            leftPanel.add(getFastForwardPanel());
+            leftPanel.add(timeLabel);
+            add(leftPanel, BorderLayout.WEST);
             add(filenameLabel, BorderLayout.EAST);
         }
 
@@ -371,6 +375,35 @@ public class Timeline extends JPanel {
             btn.setPreferredSize(ICON_SIZE);
 
             return btn;
+        }
+
+        private JPanel getFastForwardPanel() {
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+
+            AtomicReference<Float> speed = new AtomicReference<>(1f);
+
+            JLabel speedLabel = new JLabel("x1");
+            speedLabel.setFont(getFont());
+
+            JButton btn = new JButton(FAST_FORWARD_ICON);
+            btn.addActionListener(e -> {
+                speed.updateAndGet(v -> (v + 0.5f));
+                if (speed.get() == 3.5f) speed.set(1f);
+                speedLabel.setText("x" + speed);
+
+                Audio audio = saveLoadManager.getLoadedAudio();
+                if (audio != null)
+                    audio.setSpeed(speed.get());
+            });
+
+            btn.setPreferredSize(ICON_SIZE);
+
+            panel.add(speedLabel);
+            panel.add(btn);
+            // Make the panel wider, so it won't be too close to the timeLabel.
+            panel.setPreferredSize(new Dimension(40, ICON_SIZE.height));
+
+            return panel;
         }
 
         private JSlider getSlider() {

@@ -14,20 +14,31 @@ import java.nio.ShortBuffer;
 public class Audio {
     private final SourceDataLine line;
     private final FFmpegFrameGrabber grabber;
+    private final int sampleRate;
 
     private Thread playThread;
     private boolean isPlaying;
     private boolean isFinished;
-    private long startPlayTime;
+    private float speed = 1;
+    /**
+     * The {@link #line} position where last time method {@link #setTimeTo(int)} was called.
+     */
+    private long jumpLinePosition;
+    /**
+     * The specified jump time set by {@link #setTimeTo(int)}.
+     */
+    private long jumpPosition;
 
     public Audio(File audioFile) throws Exception {
         // Create a FFmpegFrameGrabber to grab audio frames.
         grabber = new FFmpegFrameGrabber(audioFile);
         grabber.start();
 
+        this.sampleRate = grabber.getSampleRate();
+
         // Get the audio format.
-        AudioFormat audioFormat = new AudioFormat(grabber.getSampleRate(), 16,
-                grabber.getAudioChannels(), true, false);
+        AudioFormat audioFormat = new AudioFormat(sampleRate, 16, grabber.getAudioChannels(),
+                true, false);
 
         // Create a SourceDataLine, which can play the audio.
         DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
@@ -95,17 +106,27 @@ public class Audio {
             line.flush();
 
             grabber.setAudioTimestamp(ms * 1000L);
-            startPlayTime = line.getMicrosecondPosition() / 1000 - ms;
+            jumpPosition = ms;
+            jumpLinePosition = line.getMicrosecondPosition() / 1000;
         } catch (FFmpegFrameGrabber.Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setSpeed(float speed) {
+        // Reset jumpLinePosition and jumpPosition for correct time position calculation.
+        setTimeTo(getTimePosition());
+
+        this.speed = speed;
+        grabber.setSampleRate((int) (sampleRate / speed));
     }
 
     /**
      * @return The current playing time.
      */
     public int getTimePosition() {
-        return (int) (line.getMicrosecondPosition() / 1000 - startPlayTime);
+        int linePosition = (int) (line.getMicrosecondPosition() / 1000);
+        return (int) ((linePosition - jumpLinePosition) * speed + jumpPosition);
     }
 
     public int getTotalTime() {

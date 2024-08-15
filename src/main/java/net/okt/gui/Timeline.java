@@ -227,7 +227,7 @@ public class Timeline extends JPanel {
 
                     int speed = 10;
                     int orientation = -e.getWheelRotation();
-                    JSlider slider = controlPanel.slider;
+                    JSlider slider = controlPanel.zoomSlider;
                     slider.setValue(slider.getValue() + orientation * speed);
                 } else {
                     scrollPane.setWheelScrollingEnabled(true);
@@ -309,7 +309,7 @@ public class Timeline extends JPanel {
 
     private class ControlPanel extends JPanel {
         private final JButton playPauseButton = new JButton(PLAY_BUTTON_ICON);
-        private final JSlider slider = getSlider();
+        private final JSlider zoomSlider = getZoomSlider();
         private final JLabel filenameLabel = new JLabel();
         private final JLabel timeLabel = new JLabel();
 
@@ -341,8 +341,9 @@ public class Timeline extends JPanel {
             leftPanel.add(playPauseButton);
             leftPanel.add(getStopButton());
             leftPanel.add(getMarkButton());
-            leftPanel.add(slider);
+            leftPanel.add(zoomSlider);
             leftPanel.add(getFastForwardPanel());
+            leftPanel.add(getVolumeSlider());
             leftPanel.add(timeLabel);
             add(leftPanel, BorderLayout.WEST);
             add(filenameLabel, BorderLayout.EAST);
@@ -406,7 +407,7 @@ public class Timeline extends JPanel {
             return panel;
         }
 
-        private JSlider getSlider() {
+        private JSlider getZoomSlider() {
             JSlider slider = new JSlider(100, SLIDER_MAX_VAL, 100);
             slider.setPreferredSize(new Dimension(100, ICON_SIZE.height));
             SliderUI sliderUI = new BasicSliderUI() {
@@ -434,6 +435,17 @@ public class Timeline extends JPanel {
                     int val = (int) ((float) e.getX() / slider.getWidth() * valRange + slider.getMinimum());
                     slider.setValue(val);
                 }
+            });
+
+            return slider;
+        }
+
+        private JSlider getVolumeSlider() {
+            JSlider slider = new VolumeSlider(0, 100, 100);
+            slider.addChangeListener(e -> {
+                Audio audio = saveLoadManager.getLoadedAudio();
+                if (audio != null)
+                    audio.setVolume((float) slider.getValue() / 100);
             });
 
             return slider;
@@ -495,7 +507,7 @@ public class Timeline extends JPanel {
         public void setSize() {
             if (saveLoadManager.getLoadedAudio() == null) return;
 
-            canvas.scale = (float) controlPanel.slider.getValue() * 0.01f;
+            canvas.scale = (float) controlPanel.zoomSlider.getValue() * 0.01f;
             int audioTime = saveLoadManager.getLoadedAudio().getTotalTime();
 
             int height = (int) canvas.getPreferredSize().getHeight();

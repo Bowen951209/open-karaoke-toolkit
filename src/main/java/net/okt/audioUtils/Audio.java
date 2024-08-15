@@ -4,10 +4,7 @@ import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.*;
 import java.io.File;
 import java.nio.ShortBuffer;
 
@@ -21,6 +18,7 @@ public class Audio {
     private Thread playThread;
     private boolean isFinished;
     private float speed = 1;
+    private float volume = 1;
     /**
      * The {@link #line} position where last time method {@link #setTimeTo(int)} was called.
      */
@@ -62,7 +60,7 @@ public class Audio {
                         ShortBuffer sb = (ShortBuffer) frame.samples[0];
                         byte[] audioBytes = new byte[sb.remaining() * 2];
                         for (int i = 0; sb.remaining() > 0; i += 2) {
-                            short val = sb.get();
+                            short val = (short) (sb.get() * volume);
                             audioBytes[i] = (byte) (val & 0xff);
                             audioBytes[i + 1] = (byte) ((val >> 8) & 0xff);
                         }
@@ -112,6 +110,10 @@ public class Audio {
         } catch (FFmpegFrameGrabber.Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setVolume(float volume) {
+        this.volume = volume;
     }
 
     public void setSpeed(float speed) {

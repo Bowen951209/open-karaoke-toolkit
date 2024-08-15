@@ -47,7 +47,7 @@ place marks with it.
 # Supported Platforms
 
 This project is written in **Java** and compiled using **JDK 17**. It should be compatible with Windows, Linux, and macOS,
-running on any JVM version 17 or higher.
+running on any JRE version 17 or higher.
 
 | Platform | Can run            |
 |----------|--------------------|

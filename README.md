@@ -46,13 +46,14 @@ place marks with it.
 
 # Supported Platforms
 
-Since this project is written in ***Java***, it should be able to run on Windows, Linux, and macOS.
+This project is written in **Java** and compiled using **JDK 17**. It should be compatible with Windows, Linux, and macOS,
+running on any JVM version 17 or higher.
 
-| Platform | Can run            | Tested Environment |  
-|----------|--------------------|--------------------|  
-| Window   | :heavy_check_mark: | JDK18              |  
-| Linux    | :heavy_check_mark: | :x:                |  
-| macOS    | :heavy_check_mark: | :x:                |  
+| Platform | Can run            |
+|----------|--------------------|
+| Window   | :heavy_check_mark: |
+| Linux    | :heavy_check_mark: |
+| macOS    | :heavy_check_mark: |
 
 # How to Build & Run?
 

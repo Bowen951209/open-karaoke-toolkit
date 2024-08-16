@@ -343,7 +343,7 @@ public class Timeline extends JPanel {
             leftPanel.add(getMarkButton());
             leftPanel.add(zoomSlider);
             leftPanel.add(getFastForwardPanel());
-            leftPanel.add(getVolumeSlider());
+            leftPanel.add(getVolumeSliderPanel());
             leftPanel.add(timeLabel);
             add(leftPanel, BorderLayout.WEST);
             add(filenameLabel, BorderLayout.EAST);
@@ -440,15 +440,16 @@ public class Timeline extends JPanel {
             return slider;
         }
 
-        private JSlider getVolumeSlider() {
-            JSlider slider = new VolumeSlider(0, 100, 100);
-            slider.addChangeListener(e -> {
+        private JPanel getVolumeSliderPanel() {
+            VolumeSliderPanel sliderPanel = new VolumeSliderPanel(0, 100, 100);
+            sliderPanel.setPreferredSize(new Dimension(50 ,15));
+            sliderPanel.addValueChangeListener(() -> {
                 Audio audio = saveLoadManager.getLoadedAudio();
                 if (audio != null)
-                    audio.setVolume((float) slider.getValue() / 100);
+                    audio.setVolume((float) sliderPanel.getValue() / 100);
             });
 
-            return slider;
+            return sliderPanel;
         }
     }
 

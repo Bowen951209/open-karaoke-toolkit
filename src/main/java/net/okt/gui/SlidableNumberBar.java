@@ -1,5 +1,6 @@
 package net.okt.gui;
 
+import net.okt.system.MathUtils;
 import net.okt.system.SaveLoadManager;
 import net.okt.system.SimpleDocumentListener;
 
@@ -56,8 +57,7 @@ public class SlidableNumberBar extends JPanel {
 
                 requestFocus(); // *This is for even mouse is outside the component, drag callback still calls.
                 int delta = (e.getX() - mouseLastX) * dragStep;
-                val = Math.max(delta + oVal, 0);
-                val = Math.min(val, maxValue);
+                val = MathUtils.clamp(delta + oVal, 0, maxValue);
                 setVal(val);
                 mouseLastX = e.getX();
             }

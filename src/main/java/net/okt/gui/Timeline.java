@@ -401,7 +401,7 @@ public class Timeline extends JPanel {
 
             panel.add(speedLabel);
             panel.add(btn);
-            // Make the panel wider, so it won't be too close to the timeLabel.
+            // Make the panel wider, so it won't be too close to next component.
             panel.setPreferredSize(new Dimension(40, ICON_SIZE.height));
 
             return panel;
@@ -449,7 +449,11 @@ public class Timeline extends JPanel {
                     audio.setVolume((float) sliderPanel.getValue() / 100);
             });
 
-            return sliderPanel;
+            // Create a panel wrapper for making space between the slider and the next component.
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            panel.setPreferredSize(new Dimension(70, ICON_SIZE.height));
+            panel.add(sliderPanel);
+            return panel;
         }
     }
 

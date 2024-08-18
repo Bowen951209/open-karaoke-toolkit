@@ -61,21 +61,26 @@ public class FileDropListener implements DropTargetListener {
 
         files.forEach(o -> {
             File file = (File) o;
-            File[] listFiles = Objects.requireNonNull(file.listFiles());
-
-            for (File listFile : listFiles) {
-                // If is *.properties file:
-                if (FileExtensionUtils.isPropertiesFile(listFile))
-                    saveLoadManager.load(listFile, textArea);
-                    // If is audio file:
-                else if (FileExtensionUtils.isAudioFile(listFile))
-                    saveLoadManager.setLoadedAudio(listFile);
+            if (file.isFile()) {
+                load(file);
+            } else {
+                File[] listFiles = Objects.requireNonNull(file.listFiles());
+                for (File listFile : listFiles)
+                    load(listFile);
             }
         });
     }
 
+    private void load(File file) {
+        if (FileExtensionUtils.isPropertiesFile(file))
+            // If is *.properties file:
+            saveLoadManager.load(file, textArea);
+        else if (FileExtensionUtils.isAudioFile(file))
+            // If is audio file:
+            saveLoadManager.setLoadedAudio(file);
+    }
+
     /**
-     *
      * @param transferable The transfer which can provide the dropped item data.
      * @return A {@link List} of {@link File}.
      */
@@ -91,7 +96,7 @@ public class FileDropListener implements DropTargetListener {
                 // If the drop items are files.
                 if (flavor.isFlavorJavaFileListType()) {
                     // Get all the dropped files.
-                    files = (List<?>)transferable.getTransferData(flavor);
+                    files = (List<?>) transferable.getTransferData(flavor);
                 }
             } catch (Exception ex) {
                 throw new RuntimeException(ex);

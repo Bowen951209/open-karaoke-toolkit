@@ -1,12 +1,14 @@
 package net.okt;
 
 import net.okt.gui.*;
+import net.okt.system.FileDropListener;
 import net.okt.system.FileExtensionUtils;
 import net.okt.system.LyricsProcessor;
 import net.okt.system.SaveLoadManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.dnd.DropTarget;
 import java.io.File;
 
 public class Main extends JFrame {
@@ -35,6 +37,9 @@ public class Main extends JFrame {
         textArea = getTextArea();
 
         if (propsFile != null) saveLoadManager.load(new File(propsFile), textArea);
+
+        // The drag and drop.
+        new DropTarget(this, new FileDropListener(saveLoadManager, textArea));
     }
 
     public static void main(String[] args) {

@@ -19,6 +19,32 @@ public class FileDropListener implements DropTargetListener {
         this.textArea = textArea;
     }
 
+    /**
+     * @param transferable The transfer which can provide the dropped item data.
+     * @return A {@link List} of {@link File}.
+     */
+    private static List<?> getFiles(Transferable transferable) {
+        // Get the data formats of the dropped item.
+        DataFlavor[] flavors = transferable.getTransferDataFlavors();
+
+        List<?> files = null;
+
+        // Loop through the flavors.
+        for (DataFlavor flavor : flavors) {
+            try {
+                // If the drop items are files.
+                if (flavor.isFlavorJavaFileListType()) {
+                    // Get all the dropped files.
+                    files = (List<?>) transferable.getTransferData(flavor);
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        return files;
+    }
+
     @Override
     public void dragEnter(DropTargetDragEvent e) {
         // Accept copy drops.
@@ -78,31 +104,5 @@ public class FileDropListener implements DropTargetListener {
         else if (FileExtensionUtils.isAudioFile(file))
             // If is audio file:
             saveLoadManager.setLoadedAudio(file);
-    }
-
-    /**
-     * @param transferable The transfer which can provide the dropped item data.
-     * @return A {@link List} of {@link File}.
-     */
-    private static List<?> getFiles(Transferable transferable) {
-        // Get the data formats of the dropped item.
-        DataFlavor[] flavors = transferable.getTransferDataFlavors();
-
-        List<?> files = null;
-
-        // Loop through the flavors.
-        for (DataFlavor flavor : flavors) {
-            try {
-                // If the drop items are files.
-                if (flavor.isFlavorJavaFileListType()) {
-                    // Get all the dropped files.
-                    files = (List<?>) transferable.getTransferData(flavor);
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        return files;
     }
 }

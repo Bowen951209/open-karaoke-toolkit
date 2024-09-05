@@ -110,6 +110,18 @@ public class Timeline extends JPanel {
         return canvas;
     }
 
+    /**
+     * Toggle the playback status: if it's currently playing, pause it; if it's paused, resume playback.
+     */
+    public void playSwitch() {
+        if (isPlaying)
+            timePause();
+        else
+            timePlay();
+
+        isPlaying = !isPlaying;
+    }
+
     public void timePlay() {
         timer.start();
         controlPanel.playPauseButton.setIcon(PAUSE_BUTTON_ICON);
@@ -255,7 +267,9 @@ public class Timeline extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 // Space: play/pause
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) controlPanel.playPauseButton.doClick();
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    playSwitch();
+                }
                 else if (e.isControlDown()) {
                     // Ctrl + Z: Undo
                     if (e.getKeyCode() == KeyEvent.VK_Z) {
@@ -328,13 +342,8 @@ public class Timeline extends JPanel {
             playPauseButton.addActionListener(e -> {
                 if (saveLoadManager.getLoadedAudio() == null) return;
 
+                playSwitch();
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
-
-                isPlaying = !isPlaying;
-                if (isPlaying)
-                    timePlay();
-                else
-                    timePause();
             });
             playPauseButton.setPreferredSize(ICON_SIZE);
 

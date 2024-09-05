@@ -97,6 +97,9 @@ public class Audio {
 
         isPlaying = false;
         line.stop();
+
+        // Set time to the get-time, this is for the time position correction.
+        setTimeTo(getTimePosition());
     }
 
     public void setTimeTo(int ms) {

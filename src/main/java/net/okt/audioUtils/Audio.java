@@ -11,14 +11,19 @@ import java.nio.ShortBuffer;
 public class Audio {
     private final SourceDataLine line;
     private final FFmpegFrameGrabber grabber;
+    private final FloatControl volumeControl;
     private final int sampleRate;
+    /**
+     * The range of the audio's volume in decibel.
+     */
+    private final float minDecibel, maxDecibel;
+
 
     private volatile boolean isPlaying;
 
     private Thread playThread;
     private boolean isFinished;
     private float speed = 1;
-    private float volume = 1;
     /**
      * The {@link #line} position where last time method {@link #setTimeTo(int)} was called.
      */
@@ -43,6 +48,15 @@ public class Audio {
         DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
         line = (SourceDataLine) AudioSystem.getLine(info);
         line.open(audioFormat);
+
+        // Check and set the volume if supported.
+        if (line.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+            volumeControl = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
+
+            // Get the minimum and maximum volume in decibels
+            minDecibel = volumeControl.getMinimum();
+            maxDecibel = volumeControl.getMaximum();
+        } else throw new UnsupportedOperationException("Volume control is not supported. Unable to proceed.");
     }
 
     public void play() {
@@ -60,7 +74,7 @@ public class Audio {
                         ShortBuffer sb = (ShortBuffer) frame.samples[0];
                         byte[] audioBytes = new byte[sb.remaining() * 2];
                         for (int i = 0; sb.remaining() > 0; i += 2) {
-                            short val = (short) (sb.get() * volume);
+                            short val = sb.get();
                             audioBytes[i] = (byte) (val & 0xff);
                             audioBytes[i + 1] = (byte) ((val >> 8) & 0xff);
                         }
@@ -115,8 +129,16 @@ public class Audio {
         }
     }
 
-    public void setVolume(float volume) {
-        this.volume = volume;
+    /**
+     * Set the volume of the audio.
+     * @param percentage the percentage within the max and min volume, in range [0, 1].
+     */
+    public void setVolume(float percentage) {
+        // Convert percentage to decibel value
+        float volumeDec = minDecibel + percentage * (maxDecibel - minDecibel);
+
+        // Set the volume
+        volumeControl.setValue(volumeDec);
     }
 
     public void setSpeed(float speed) {

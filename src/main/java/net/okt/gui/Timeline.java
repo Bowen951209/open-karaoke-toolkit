@@ -404,6 +404,8 @@ public class Timeline extends JPanel {
                 Audio audio = saveLoadManager.getLoadedAudio();
                 if (audio != null)
                     audio.setSpeed(speed.get());
+
+                scrollPane.requestFocus(); // we want to keep the timeline focused.
             });
 
             btn.setPreferredSize(ICON_SIZE);

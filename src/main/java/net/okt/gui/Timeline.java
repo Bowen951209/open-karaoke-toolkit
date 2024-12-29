@@ -392,7 +392,7 @@ public class Timeline extends JPanel {
 
             AtomicReference<Float> speed = new AtomicReference<>(1f);
 
-            JLabel speedLabel = new JLabel("x1");
+            JLabel speedLabel = new JLabel("x1.0");
             speedLabel.setFont(getFont());
 
             JButton btn = new JButton(FAST_FORWARD_ICON);

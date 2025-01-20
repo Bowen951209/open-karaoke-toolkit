@@ -16,7 +16,6 @@ import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Timeline extends JPanel {
     private static final ImageIcon PLAY_BUTTON_ICON = new ImageIcon(Objects.requireNonNull(Timeline.class.getResource("/icons/play.png")));
@@ -269,8 +268,7 @@ public class Timeline extends JPanel {
                 // Space: play/pause
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     playSwitch();
-                }
-                else if (e.isControlDown()) {
+                } else if (e.isControlDown()) {
                     // Ctrl + Z: Undo
                     if (e.getKeyCode() == KeyEvent.VK_Z) {
                         markUndo();
@@ -326,6 +324,9 @@ public class Timeline extends JPanel {
         private final JSlider zoomSlider = getZoomSlider();
         private final JLabel filenameLabel = new JLabel();
         private final JLabel timeLabel = new JLabel();
+        private final JLabel speedLabel = new JLabel("x1.0");
+
+        private float speed = 1f;
 
         public ControlPanel() {
             super(new BorderLayout(0, 0));
@@ -390,22 +391,38 @@ public class Timeline extends JPanel {
         private JPanel getFastForwardPanel() {
             JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 
-            AtomicReference<Float> speed = new AtomicReference<>(1f);
-
-            JLabel speedLabel = new JLabel("x1.0");
             speedLabel.setFont(getFont());
 
             JButton btn = new JButton(FAST_FORWARD_ICON);
             btn.addActionListener(e -> {
-                speed.updateAndGet(v -> (v + 0.5f));
-                if (speed.get() == 3.5f) speed.set(1f);
-                speedLabel.setText("x" + speed);
-
-                Audio audio = saveLoadManager.getLoadedAudio();
-                if (audio != null)
-                    audio.setSpeed(speed.get());
+                // Increase speed by 0.5x, reset to 1x if it reaches 3.5x. (1x, 1.5x, 2x, 2.5x, 3x)
+                speed += 0.5f;
+                if (speed == 3.5f) speed = 1f;
+                updateSpeed(speed);
 
                 scrollPane.requestFocus(); // we want to keep the timeline focused.
+            });
+
+            // Right click menu for setting speed.
+            JPopupMenu popupMenu = new JPopupMenu();
+            for (float i = 1; i < 3.5f; i += 0.5f) {
+                JMenuItem item = new JMenuItem("x" + i);
+
+                float finalI = i;
+                item.addActionListener(e -> {
+                    speed = finalI;
+                    updateSpeed(speed);
+                    scrollPane.requestFocus(); // we want to keep the timeline focused.
+                });
+                popupMenu.add(item);
+            }
+
+            btn.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getButton() == MouseEvent.BUTTON3)
+                        popupMenu.show(btn, e.getX(), e.getY());
+                }
             });
 
             btn.setPreferredSize(ICON_SIZE);
@@ -453,7 +470,7 @@ public class Timeline extends JPanel {
 
         private JPanel getVolumeSliderPanel() {
             VolumeSliderPanel sliderPanel = new VolumeSliderPanel(0, 100, 100);
-            sliderPanel.setPreferredSize(new Dimension(50 ,15));
+            sliderPanel.setPreferredSize(new Dimension(50, 15));
             sliderPanel.addValueChangeListener(() -> {
                 Audio audio = saveLoadManager.getLoadedAudio();
                 if (audio != null)
@@ -465,6 +482,14 @@ public class Timeline extends JPanel {
             panel.setPreferredSize(new Dimension(70, ICON_SIZE.height));
             panel.add(sliderPanel);
             return panel;
+        }
+
+        private void updateSpeed(float speed) {
+            speedLabel.setText("x" + speed);
+
+            Audio audio = saveLoadManager.getLoadedAudio();
+            if (audio != null)
+                audio.setSpeed(speed);
         }
     }
 

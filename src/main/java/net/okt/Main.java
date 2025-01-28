@@ -14,8 +14,6 @@ import java.io.File;
 public class Main extends JFrame {
     public static final String INIT_FRAME_TITLE = "Open Karaoke Toolkit";
 
-    public static Main mainFrame;
-
     private final SaveLoadManager saveLoadManager;
     private final LyricsProcessor lyricsProcessor;
     private final Viewport viewport;
@@ -25,7 +23,7 @@ public class Main extends JFrame {
     public Main(String title, String propsFile) {
         // Init settings.
         super(title);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize((int) (screenSize.width / 1.7f), (int) (screenSize.height / 1.7f));
 
@@ -40,11 +38,12 @@ public class Main extends JFrame {
 
         // The drag and drop.
         new DropTarget(this, new FileDropListener(saveLoadManager, textArea));
+
+        addComponents();
     }
 
     public static void main(String[] args) {
-        mainFrame = new Main(INIT_FRAME_TITLE, args.length == 0 ? null : args[0]);
-        mainFrame.addComponents();
+        new Main(INIT_FRAME_TITLE, args.length == 0 ? null : args[0]);
     }
 
     public Timeline getTimeline() {
@@ -108,6 +107,10 @@ public class Main extends JFrame {
 
         JFileChooser fileChooser = new JFileChooser();
 
+        // new project
+        JMenuItem newProject = getNewProject();
+        fileMenu.add(newProject);
+
         // load project
         JMenuItem loadProject = getLoadProject(fileChooser);
         fileMenu.add(loadProject);
@@ -138,6 +141,12 @@ public class Main extends JFrame {
         });
 
         return item;
+    }
+
+    private JMenuItem getNewProject() {
+        JMenuItem newProject = new JMenuItem("New Project");
+        newProject.addActionListener(e -> new Main(INIT_FRAME_TITLE, null));
+        return newProject;
     }
 
     private JMenuItem getLoadProject(JFileChooser fileChooser) {

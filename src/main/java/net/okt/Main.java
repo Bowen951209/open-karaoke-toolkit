@@ -85,7 +85,7 @@ public class Main extends JFrame {
             viewport.repaint();
             timeline.getCanvas().repaint();
         });
-        textArea.setText(saveLoadManager.getProp("text")); // I use Chinese for just now, sorry to English speaker :)
+        textArea.setText(saveLoadManager.getProp("text"));
 
         return textArea;
     }

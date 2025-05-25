@@ -153,10 +153,13 @@ public class SaveLoadManager {
             textArea.setText(getProp("text")); // Update to text area.
 
             // Marks.
-            String[] marksStrings = getProp("marks").split(",");
             marks.clear();
-            for (String string : marksStrings)
-                marks.add(Integer.valueOf(string));
+            String marksProp = getProp("marks");
+            if (!marksProp.isEmpty()) {
+                String[] marksStrings = getProp("marks").split(",");
+                for (String string : marksStrings)
+                    marks.add(Integer.valueOf(string));
+            }
 
             // Audio.
             File audioFile = new File(file.getParent(), getProp("audio"));
